@@ -37,7 +37,7 @@ const Navbar = () => {
           <a className="hover:text-(--primary)">Features</a>
           <a className="hover:text-(--primary)">Pricing</a>
           <a className="hover:text-(--primary)">Docs</a>
-          <a className="font-medium text-(--text)">Dashboard</a>
+          <NavLink to="/developer_dashboard" className="font-medium text-(--text)">Dashboard</NavLink>
         </div>
 
         {/* Right Side */}
@@ -84,7 +84,7 @@ const Navbar = () => {
 
                   {/* View Profile */}
                   <NavLink
-                    to="/profile"
+                    to="/developer_dashboard/profile"
                     onClick={() => setDropdown(false)}
                     className="flex items-center gap-2 px-3 py-2 hover:bg-(--bg-secondary)"
                   >
