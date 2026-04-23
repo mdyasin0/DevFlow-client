@@ -10,6 +10,7 @@ import Dashboard_layout from "../Developer_dashboard/Dashboard_layout";
 import Developer_projects from "../Developer_dashboard/Developer_projects";
 import Created_project from "../Developer_dashboard/Created_project";
 import Created_project_details from "../Developer_dashboard/Created_project_details";
+import Invitations from "../Developer_dashboard/Invitations";
 
 const router = createBrowserRouter([
   {
@@ -42,6 +43,10 @@ const router = createBrowserRouter([
           },{
             path:"/developer_dashboard/created_project_details/:id",
             element:<Created_project_details/>,
+          },
+          {
+            path:"/developer_dashboard/invitations" ,
+            element: <Invitations/>,
           }
         ],
       },
