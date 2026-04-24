@@ -11,6 +11,8 @@ import Developer_projects from "../Developer_dashboard/Developer_projects";
 import Created_project from "../Developer_dashboard/Created_project";
 import Created_project_details from "../Developer_dashboard/Created_project_details";
 import Invitations from "../Developer_dashboard/Invitations";
+import Joined_Team from "../Developer_dashboard/Joined_Team";
+import Joined_Team_Details from "../Developer_dashboard/Joined_Team_Details";
 
 const router = createBrowserRouter([
   {
@@ -47,6 +49,12 @@ const router = createBrowserRouter([
           {
             path:"/developer_dashboard/invitations" ,
             element: <Invitations/>,
+          },{
+            path:"/developer_dashboard/joined_team" ,
+            element: <Joined_Team/>,
+          },{
+            path:"/developer_dashboard/joined_team_details/:id",
+            element:<Joined_Team_Details/>,
           }
         ],
       },
