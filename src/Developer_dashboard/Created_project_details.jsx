@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router";
-
+import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 const Created_project_details = () => {
   const { id } = useParams();
   const [project, setProject] = useState(null);
@@ -26,6 +26,25 @@ const Created_project_details = () => {
     const data = await res.json();
     if (data.success) setProject(data.data);
   };
+const getTotalTasks = (project) => {
+  let todo = 0;
+  let running = 0;
+  let done = 0;
+
+  project?.teammember?.forEach((m) => {
+    todo += m.todo?.length || 0;
+    running += m.running?.length || 0;
+    done += m.done?.length || 0;
+  });
+
+  return [
+    { name: "Todo", value: todo },
+    { name: "Running", value: running },
+    { name: "Done", value: done },
+  ];
+};
+
+const chartData = project ? getTotalTasks(project) : [];
 
   useEffect(() => {
     fetchProject();
@@ -162,6 +181,31 @@ const Created_project_details = () => {
             See All Invite
           </button>
         </div>
+
+        <div className="bg-gray-900 p-6 rounded-xl border border-gray-700 mb-6">
+  <h2 className="text-blue-400 text-lg mb-4">📊 Project Progress</h2>
+
+  <div className="flex justify-center">
+    <PieChart width={350} height={300}>
+      <Pie
+        data={chartData}
+        cx="50%"
+        cy="50%"
+        innerRadius={70}
+        outerRadius={110}
+        paddingAngle={5}
+        dataKey="value"
+      >
+        <Cell fill="#facc15" /> {/* Todo - Yellow */}
+        <Cell fill="#3b82f6" /> {/* Running - Blue */}
+        <Cell fill="#22c55e" /> {/* Done - Green */}
+      </Pie>
+
+      <Tooltip />
+      <Legend />
+    </PieChart>
+  </div>
+</div>
         {/* see alll invite modal */}
 
         {showAllInvites && (
@@ -277,60 +321,82 @@ const Created_project_details = () => {
         )}
 
         {/* TABLE */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm border border-gray-700">
-            <thead className="bg-gray-800 text-gray-300">
-              <tr>
-                <th className="p-3 text-left">Name</th>
-                <th className="p-3 text-left">Email</th>
-                <th className="p-3 text-center">Tasks</th>
-                <th className="p-3 text-right">Action</th>
-              </tr>
-            </thead>
+    {/* TABLE */}
+<div className="overflow-x-auto">
+  <table className="w-full text-sm border border-gray-700">
 
-            <tbody>
-              {project.teammember.map((m, i) => (
-                <tr key={i} className="border-t border-gray-700">
-                  <td className="p-3">{m.name}</td>
-                  <td className="p-3">{m.email}</td>
+    {/* HEADER */}
+    <thead className="bg-gray-800 text-gray-300">
+      <tr>
+        <th className="p-3 text-left">Name</th>
+        <th className="p-3 text-left">Email</th>
 
-                  <td className="text-center space-x-2">
-                    {["todo", "running", "done"].map((type) => (
-                      <button
-                        key={type}
-                        onClick={() =>
-                          setTaskModal({
-                            open: true,
-                            type,
-                            member: m,
-                          })
-                        }
-                        className="bg-gray-700 px-2 py-1 rounded"
-                      >
-                        {type}
-                      </button>
-                    ))}
-                  </td>
+        <th className="p-3 text-center" colSpan={3}>
+          Tasks
+        </th>
 
-                  <td className="text-right p-3">
-                    <button
-                      onClick={() => setActiveMember(m.email)}
-                      className="bg-purple-600 px-3 py-1 rounded"
-                    >
-                      Work Assign
-                    </button>
-                    <button
-  onClick={() => handleRemoveMember(m.email)}
-  className="bg-red-700 px-3 py-1 rounded"
->
-  Remove Member
-</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <th className="p-3 text-right">Action</th>
+      </tr>
+
+      <tr className="bg-gray-900 text-gray-400 text-xs">
+        <th></th>
+        <th></th>
+        <th className="p-2 text-center">Todo</th>
+        <th className="p-2 text-center">Running</th>
+        <th className="p-2 text-center">Done</th>
+        <th></th>
+      </tr>
+    </thead>
+
+    {/* BODY */}
+    <tbody>
+      {project.teammember.map((m, i) => (
+        <tr key={i} className="border-t border-gray-700">
+
+          <td className="p-3">{m.name}</td>
+          <td className="p-3">{m.email}</td>
+
+          {/* TASK COUNTS */}
+          {["todo", "running", "done"].map((type) => (
+            <td key={type} className="text-center">
+              <button
+                onClick={() =>
+                  setTaskModal({
+                    open: true,
+                    type,
+                    member: m,
+                  })
+                }
+                className="bg-blue-600 hover:bg-blue-500 px-3 py-1 rounded w-12"
+              >
+                {m[type]?.length || 0}
+              </button>
+            </td>
+          ))}
+
+          {/* ACTION */}
+          <td className="text-right p-3 space-x-2">
+            <button
+              onClick={() => setActiveMember(m.email)}
+              className="bg-purple-600 px-3 py-1 rounded"
+            >
+              Assign
+            </button>
+
+            <button
+              onClick={() => handleRemoveMember(m.email)}
+              className="bg-red-700 px-3 py-1 rounded"
+            >
+              Remove
+            </button>
+          </td>
+
+        </tr>
+      ))}
+    </tbody>
+
+  </table>
+</div>
 
         {/* TASK MODAL */}
         {taskModal.open && (

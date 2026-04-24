@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router';
+import { AuthContext } from '../Firebase/AuthContext';
 
 const Joined_Team_Details = () => {
       const { id } = useParams();
   const [project, setProject] = useState(null);
-const [moveState, setMoveState] = useState({});
 
+const { user } = useContext(AuthContext);
+const loginEmail = user?.email;
   const [modal, setModal] = useState({
     open: false,
     member: null,
@@ -18,7 +20,9 @@ const [moveState, setMoveState] = useState({});
 
     if (data.success) setProject(data.data);
   };
-
+const myMember = project?.teammember?.find(
+  (m) => m.email === loginEmail
+);
   useEffect(() => {
     fetchProject();
   }, [id]);
@@ -49,48 +53,51 @@ const [moveState, setMoveState] = useState({});
           
         </div>
 
+       
         {/* TABLE */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm border border-gray-700">
-            <thead className="bg-gray-800">
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Todo</th>
-                <th>Running</th>
-                <th>Done</th>
-              </tr>
-            </thead>
+<div className="overflow-x-auto">
+  <table className="w-full text-sm border border-gray-700">
 
-            <tbody>
-              {project.teammember.map((m) => (
-                <tr key={m.email} className="border-t border-gray-700 text-center">
+    <thead className="bg-gray-800">
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Todo</th>
+        <th>Running</th>
+        <th>Done</th>
+      </tr>
+    </thead>
 
-                  <td>{m.name}</td>
-                  <td>{m.email}</td>
+    <tbody>
+      {myMember && (
+        <tr className="border-t border-gray-700 text-center">
 
-                  {["todo", "running", "done"].map((type) => (
-                    <td key={type}>
-                      <button
-                        className="bg-blue-600 px-2 py-1 rounded"
-                        onClick={() =>
-                          setModal({
-                            open: true,
-                            member: m,
-                            type,
-                          })
-                        }
-                      >
-                        {m[type].length}
-                      </button>
-                    </td>
-                  ))}
+          <td>{myMember.name}</td>
+          <td>{myMember.email}</td>
 
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+          {["todo", "running", "done"].map((type) => (
+            <td key={type}>
+              <button
+                className="bg-blue-600 px-2 py-1 rounded"
+                onClick={() =>
+                  setModal({
+                    open: true,
+                    member: myMember,
+                    type,
+                  })
+                }
+              >
+                {myMember[type]?.length || 0}
+              </button>
+            </td>
+          ))}
+
+        </tr>
+      )}
+    </tbody>
+
+  </table>
+</div>
 
         {/* MODAL */}
        {modal.open && (
