@@ -16,7 +16,7 @@ const Developer_projects = () => {
       {/* Main Card */}
       <div className="bg-gray-800 border border-gray-700 p-8 rounded-2xl shadow-2xl text-center max-w-md w-full space-y-6">
 
-        <h2 className="text-2xl font-bold">🚀 Start Your Project</h2>
+     
 
         <p className="flex justify-center items-center gap-2 text-gray-300 text-sm">
           You haven’t joined or created any team yet

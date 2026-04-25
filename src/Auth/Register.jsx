@@ -1,85 +1,124 @@
 import React, { useContext, useState } from "react";
 import { Link } from "react-router";
 import { FaEye, FaEyeSlash, FaGoogle } from "react-icons/fa";
-
 import Swal from "sweetalert2";
 import { AuthContext } from "../Firebase/AuthContext";
 
 const Register = () => {
   const { createUser, googleLogin, updateUserProfile } =
     useContext(AuthContext);
+
   const [showPass, setShowPass] = useState(false);
 
+  const [loading, setLoading] = useState(false); // register loading
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [uploading, setUploading] = useState(false); // ⭐ image upload state
+  const [photoURL, setPhotoURL] = useState(""); // store uploaded image
+
+  // 📸 IMAGE UPLOAD
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const res = await fetch(
+        "https://api.imgbb.com/1/upload?key=c0c2b847b1b59290ac14668dd140a262",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const imgData = await res.json();
+      setPhotoURL(imgData.data.url);
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Image Upload Failed",
+        text: err.message,
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // 🧠 REGISTER
   const handleRegister = async (e) => {
     e.preventDefault();
+
+    if (loading || uploading) return; // 🚫 block if uploading
+
+    if (!photoURL) {
+      Swal.fire({
+        icon: "warning",
+        title: "Please wait",
+        text: "Image is still uploading...",
+      });
+      return;
+    }
+
+    setLoading(true);
+
     const form = e.target;
 
     const name = form.name.value;
     const email = form.email.value;
     const password = form.password.value;
-    const image = form.image.files[0];
 
-    // 🔥 1. Upload image to ImgBB
-    const formData = new FormData();
-    formData.append("image", image);
+    try {
+      await createUser(email, password);
+      await updateUserProfile(name, photoURL);
 
-    const res = await fetch(
-      "https://api.imgbb.com/1/upload?key=c0c2b847b1b59290ac14668dd140a262",
-      {
+      await fetch("http://localhost:5000/users", {
         method: "POST",
-        body: formData,
-      },
-    );
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, role: "developer" }),
+      });
 
-    const imgData = await res.json();
-    const photoURL = imgData.data.url;
+      Swal.fire({
+        icon: "success",
+        title: "Account Created!",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Failed",
+        text: err.message,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    // 🔥 2. Create user
-    createUser(email, password)
+  // 🔵 GOOGLE LOGIN
+  const handleGoogle = () => {
+    if (googleLoading) return;
+    setGoogleLoading(true);
+
+    googleLogin()
       .then(async (res) => {
         const user = res.user;
 
-        // 🔥 3. Update profile with name + image
-        await updateUserProfile(name, photoURL);
-        // 🔥 SAVE TO BACKEND
         await fetch("http://localhost:5000/users", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name,
-            email,
+            name: user.displayName,
+            email: user.email,
             role: "developer",
           }),
         });
+
         Swal.fire({
           icon: "success",
-          title: "Account Created!",
-          text: "Welcome to DevFlow 🚀",
-          timer: 2000,
-          showConfirmButton: false,
-        });
-
-        console.log("User:", user);
-        console.log("Photo:", photoURL);
-      })
-      .catch((err) => {
-        Swal.fire({
-          icon: "error",
-          title: "Registration Failed",
-          text: err.message,
-        });
-      });
-  };
-
-  const handleGoogle = () => {
-    googleLogin()
-      .then(() => {
-        Swal.fire({
-          icon: "success",
-          title: "Logged in with Google!",
-          text: "Welcome to DevFlow 🚀",
+          title: "Logged in!",
           timer: 2000,
           showConfirmButton: false,
         });
@@ -90,7 +129,8 @@ const Register = () => {
           title: "Google Login Failed",
           text: err.message,
         });
-      });
+      })
+      .finally(() => setGoogleLoading(false));
   };
 
   return (
@@ -105,7 +145,7 @@ const Register = () => {
             name="name"
             type="text"
             placeholder="Full Name"
-            className="w-full p-3 rounded-lg bg-(--card) border border-(--border) text-(--text) placeholder:text-(--text-secondary) focus:outline-none focus:ring-2 focus:ring-(--primary)"
+            className="w-full p-3 rounded-lg border border-(--border)"
             required
           />
 
@@ -113,7 +153,7 @@ const Register = () => {
             name="email"
             type="email"
             placeholder="Email"
-            className="w-full p-3 rounded-lg bg-(--card) border border-(--border) text-(--text) placeholder:text-(--text-secondary) focus:outline-none focus:ring-2 focus:ring-(--primary)"
+            className="w-full p-3 rounded-lg border border-(--border)"
             required
           />
 
@@ -122,29 +162,49 @@ const Register = () => {
               name="password"
               type={showPass ? "text" : "password"}
               placeholder="Password"
-              className="w-full p-3 rounded-lg bg-(--card) border border-(--border) text-(--text) placeholder:text-(--text-secondary) focus:outline-none focus:ring-2 focus:ring-(--primary)"
+              className="w-full p-3 rounded-lg border border-(--border)"
               required
             />
+
             <span
               onClick={() => setShowPass(!showPass)}
               className="absolute right-3 top-3 cursor-pointer"
             >
-              {showPass ? (
-                <FaEyeSlash className="text-(--text-secondary)" />
-              ) : (
-                <FaEye className="text-(--text-secondary)" />
-              )}
+              {showPass ? <FaEyeSlash /> : <FaEye />}
             </span>
           </div>
+
+          {/* 📸 IMAGE INPUT */}
           <input
             name="image"
             type="file"
             accept="image/*"
-            className="w-full p-3 rounded-lg bg-(--card) border border-(--border) text-(--text)"
+            onChange={handleImageUpload}
+            className="w-full p-3 rounded-lg border border-(--border)"
+            disabled={uploading}
             required
           />
-          <button className="w-full py-3 rounded-lg text-white bg-(--primary)">
-            Register
+
+          {/* 🔥 Upload status */}
+          {uploading && (
+            <p className="text-sm text-yellow-500">
+              ⏳ Image uploading... please wait
+            </p>
+          )}
+
+          <button
+            disabled={loading || uploading || !photoURL}
+            className={`w-full py-3 rounded-lg text-white bg-(--primary) ${
+              loading || uploading || !photoURL
+                ? "opacity-50 cursor-not-allowed"
+                : ""
+            }`}
+          >
+            {uploading
+              ? "Uploading Image..."
+              : loading
+              ? "Creating Account..."
+              : "Register"}
           </button>
         </form>
 
@@ -152,9 +212,13 @@ const Register = () => {
 
         <button
           onClick={handleGoogle}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-lg border border-(--border)  p-3  bg-(--card)  text-(--text) placeholder:text-(--text-secondary) focus:outline-none focus:ring-2 focus:ring-(--primary)"
+          disabled={googleLoading}
+          className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg border ${
+            googleLoading ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         >
-          <FaGoogle /> Continue with Google
+          <FaGoogle />
+          {googleLoading ? "Processing..." : "Continue with Google"}
         </button>
 
         <p className="text-sm mt-4 text-(--text-secondary)">

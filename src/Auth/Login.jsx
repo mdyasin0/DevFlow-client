@@ -34,25 +34,46 @@ const Login = () => {
       });
   };
 
-  const handleGoogle = () => {
-    googleLogin()
-      .then(() => {
-        Swal.fire({
-          icon: "success",
-          title: "Google Login Success!",
-          timer: 2000,
-          showConfirmButton: false,
-        });
-      })
-      .catch((err) => {
-        Swal.fire({
-          icon: "error",
-          title: "Google Login Failed",
-          text: err.message,
-        });
-      });
-  };
+const handleGoogle = () => {
+  googleLogin()
+    .then(async (res) => {
+      const user = res.user;
 
+      try {
+        const response = await fetch("http://localhost:5000/users", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: user.displayName,
+            email: user.email,
+            role: "developer",
+          }),
+        });
+
+        await response.json(); // 🔥 শুধু consume করো (no alert)
+
+      } catch (err) {
+        console.log("DB save failed:", err.message);
+      }
+
+      Swal.fire({
+        icon: "success",
+        title: "Logged in with Google!",
+        text: "Welcome to DevFlow 🚀",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    })
+    .catch((err) => {
+      Swal.fire({
+        icon: "error",
+        title: "Google Login Failed",
+        text: err.message,
+      });
+    });
+};
   return (
     <div className="min-h-screen flex items-center justify-center bg-(--bg)">
       <div className="w-full max-w-md p-6 rounded-2xl shadow-lg bg-(--card) border border-(--border)">
