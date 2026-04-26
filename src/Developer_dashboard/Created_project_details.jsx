@@ -148,8 +148,8 @@ const chartData = project ? getTotalTasks(project) : [];
     return <p className="text-white text-center mt-10">Loading...</p>;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6">
-      <div className="max-w-6xl mx-auto bg-gray-900 p-6 rounded-2xl shadow-xl border border-gray-700">
+    <div className="min-h-screen bg-(--bg-secondary) text-white p-6">
+      <div className="max-w-6xl mx-auto bg-(--bg-secondary) p-6 rounded-2xl shadow-xl border border-gray-700">
         {/* HEADER */}
         <div className="flex justify-between items-start mb-6">
           <div>
@@ -181,8 +181,28 @@ const chartData = project ? getTotalTasks(project) : [];
             See All Invite
           </button>
         </div>
+             {/* INVITE */}
+      {showInvite && (
+  <div className="flex gap-2 mb-6">
+    
+    <input
+      className="flex-1 p-2 rounded bg-(--card) border border-(--border) text-(--text) placeholder:text-(--text-secondary)"
+      placeholder="Enter email"
+      value={inviteEmail}
+      onChange={(e) => setInviteEmail(e.target.value)}
+    />
 
-        <div className="bg-gray-900 p-6 rounded-xl border border-gray-700 mb-6">
+    <button
+      onClick={handleInvite}
+      className="bg-(--success) hover:opacity-90 text-white px-4 py-2 rounded"
+    >
+      Send
+    </button>
+
+  </div>
+)}
+
+        <div className="bg-(--bg-secondary) p-6 rounded-xl border border-gray-700 mb-6">
   <h2 className="text-blue-400 text-lg mb-4">📊 Project Progress</h2>
 
   <div className="flex justify-center">
@@ -196,9 +216,9 @@ const chartData = project ? getTotalTasks(project) : [];
         paddingAngle={5}
         dataKey="value"
       >
-        <Cell fill="#facc15" /> {/* Todo - Yellow */}
-        <Cell fill="#3b82f6" /> {/* Running - Blue */}
-        <Cell fill="#22c55e" /> {/* Done - Green */}
+       <Cell fill="var(--warning)" /> {/* Todo */}
+<Cell fill="var(--primary)" /> {/* Running */}
+<Cell fill="var(--success)" /> {/* Done */}
       </Pie>
 
       <Tooltip />
@@ -208,125 +228,136 @@ const chartData = project ? getTotalTasks(project) : [];
 </div>
         {/* see alll invite modal */}
 
-        {showAllInvites && (
-          <div className="fixed inset-0 bg-black/70 flex justify-center items-center">
-            <div className="bg-gray-900 p-6 w-175 rounded-xl">
-              <h2 className="text-xl text-yellow-400 mb-4">All Invites</h2>
+      {showAllInvites && (
+  <div className="fixed inset-0 bg-black/70 flex justify-center items-center">
+    <div className="bg-(--card) p-6 w-175 rounded-xl border border-(--border) text-(--text)">
+      
+      <h2 className="text-xl text-(--warning) mb-4">All Invites</h2>
 
-              {/* CARDS */}
-              <div className="grid grid-cols-3 gap-4 mb-6 text-center">
-                <div className="bg-gray-800 p-4 rounded">
-                  <p className="text-green-400 text-lg">
-                    {
-                      project.invite_email?.filter(
-                        (i) => i.status === "approved",
-                      ).length
-                    }
-                  </p>
-                  <p className="text-gray-400 text-sm">Approved</p>
-                </div>
+      {/* CARDS */}
+      <div className="grid grid-cols-3 gap-4 mb-6 text-center">
+        
+        <div className="bg-(--bg-secondary) p-4 rounded border border-(--border)">
+          <p className="text-(--success) text-lg">
+            {
+              project.invite_email?.filter(
+                (i) => i.status === "approved",
+              ).length
+            }
+          </p>
+          <p className="text-(--text-secondary) text-sm">Approved</p>
+        </div>
 
-                <div className="bg-gray-800 p-4 rounded">
-                  <p className="text-yellow-400 text-lg">
-                    {
-                      project.invite_email?.filter(
-                        (i) => i.status === "pending",
-                      ).length
-                    }
-                  </p>
-                  <p className="text-gray-400 text-sm">Pending</p>
-                </div>
+        <div className="bg-(--bg-secondary) p-4 rounded border border-(--border)">
+          <p className="text-(--warning) text-lg">
+            {
+              project.invite_email?.filter(
+                (i) => i.status === "pending",
+              ).length
+            }
+          </p>
+          <p className="text-(--text-secondary) text-sm">Pending</p>
+        </div>
 
-                <div className="bg-gray-800 p-4 rounded">
-                  <p className="text-red-400 text-lg">
-                    {
-                      project.invite_email?.filter(
-                        (i) => i.status === "rejected",
-                      ).length
-                    }
-                  </p>
-                  <p className="text-gray-400 text-sm">Rejected</p>
-                </div>
-              </div>
+        <div className="bg-(--bg-secondary) p-4 rounded border border-(--border)">
+          <p className="text-(--danger) text-lg">
+            {
+              project.invite_email?.filter(
+                (i) => i.status === "rejected",
+              ).length
+            }
+          </p>
+          <p className="text-(--text-secondary) text-sm">Rejected</p>
+        </div>
 
-              {/* TABLE */}
-              <div className="max-h-75 overflow-y-auto">
-                <table className="w-full text-sm border border-gray-700">
-                  <thead className="bg-gray-800 text-gray-300">
-                    <tr>
-                      <th className="p-2 text-left">Email</th>
-                      <th className="p-2 text-center">Status</th>
-                      <th className="p-2 text-right">Action</th>
-                    </tr>
-                  </thead>
+      </div>
 
-                  <tbody>
-                    {project.invite_email
-                      ?.filter((i) => i.status !== "approved") // ❗ approved বাদ
-                      .map((invite, i) => (
-                        <tr key={i} className="border-t border-gray-700">
-                          <td className="p-2">{invite.email}</td>
+      {/* TABLE */}
+      <div className="max-h-75 overflow-y-auto">
+        <table className="w-full text-sm border border-(--border)">
+          
+          <thead className="bg-(--bg-secondary) text-(--text-secondary)">
+            <tr>
+              <th className="p-2 text-left">Email</th>
+              <th className="p-2 text-center">Status</th>
+              <th className="p-2 text-right">Action</th>
+            </tr>
+          </thead>
 
-                          <td className="text-center">
-                            <span
-                              className={
-                                invite.status === "pending"
-                                  ? "text-yellow-400"
-                                  : "text-red-400"
-                              }
-                            >
-                              {invite.status}
-                            </span>
-                          </td>
+          <tbody>
+            {project.invite_email
+              ?.filter((i) => i.status !== "approved")
+              .map((invite, i) => (
+                <tr key={i} className="border-t border-(--border)">
+                  
+                  <td className="p-2">{invite.email}</td>
 
-                          <td className="text-right p-2">
-                            <button
-                              onClick={() => handleRemoveInvite(invite.email)}
-                              className="bg-red-600 px-2 py-1 rounded text-xs"
-                            >
-                              Remove
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              </div>
+                  <td className="text-center">
+                    <span
+                      className={
+                        invite.status === "pending"
+                          ? "text-(--warning)"
+                          : "text-(--danger)"
+                      }
+                    >
+                      {invite.status}
+                    </span>
+                  </td>
 
-              <button
-                onClick={() => setShowAllInvites(false)}
-                className="mt-4 bg-red-600 px-4 py-2 rounded"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        )}
+                  <td className="text-right p-2">
+                    <button
+                      onClick={() => handleRemoveInvite(invite.email)}
+                      className="bg-(--danger) px-2 py-1 rounded text-xs text-white"
+                    >
+                      Remove
+                    </button>
+                  </td>
+
+                </tr>
+              ))}
+          </tbody>
+
+        </table>
+      </div>
+
+      <button
+        onClick={() => setShowAllInvites(false)}
+        className="mt-4 bg-(--danger) px-4 py-2 rounded text-white"
+      >
+        Close
+      </button>
+
+    </div>
+  </div>
+)}
         {/* INVITE */}
-        {showInvite && (
-          <div className="flex gap-2 mb-6">
-            <input
-              className="flex-1 p-2 rounded bg-gray-800 border border-gray-600 text-white"
-              placeholder="Enter email"
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-            />
-            <button
-              onClick={handleInvite}
-              className="bg-green-600 px-4 py-2 rounded"
-            >
-              Send
-            </button>
-          </div>
-        )}
+      {showInvite && (
+  <div className="flex gap-2 mb-6">
+    
+    <input
+      className="flex-1 p-2 rounded bg-(--card) border border-(--border) text-(--text) placeholder:text-(--text-secondary)"
+      placeholder="Enter email"
+      value={inviteEmail}
+      onChange={(e) => setInviteEmail(e.target.value)}
+    />
 
-        {/* TABLE */}
+    <button
+      onClick={handleInvite}
+      className="bg-(--success) hover:opacity-90 text-white px-4 py-2 rounded"
+    >
+      Send
+    </button>
+
+  </div>
+)}
+
+  
     {/* TABLE */}
 <div className="overflow-x-auto">
-  <table className="w-full text-sm border border-gray-700">
+  <table className="w-full text-sm border border-(--border)">
 
     {/* HEADER */}
-    <thead className="bg-gray-800 text-gray-300">
+    <thead className="bg-(--bg-secondary) text-(--text)">
       <tr>
         <th className="p-3 text-left">Name</th>
         <th className="p-3 text-left">Email</th>
@@ -338,7 +369,7 @@ const chartData = project ? getTotalTasks(project) : [];
         <th className="p-3 text-right">Action</th>
       </tr>
 
-      <tr className="bg-gray-900 text-gray-400 text-xs">
+      <tr className="bg-(--bg) text-(--text-secondary) text-xs">
         <th></th>
         <th></th>
         <th className="p-2 text-center">Todo</th>
@@ -351,10 +382,13 @@ const chartData = project ? getTotalTasks(project) : [];
     {/* BODY */}
     <tbody>
       {project.teammember.map((m, i) => (
-        <tr key={i} className="border-t border-gray-700">
+        <tr
+          key={i}
+          className="border-t border-(--border) text-(--text)"
+        >
 
           <td className="p-3">{m.name}</td>
-          <td className="p-3">{m.email}</td>
+          <td className="p-3 text-(--text-secondary)">{m.email}</td>
 
           {/* TASK COUNTS */}
           {["todo", "running", "done"].map((type) => (
@@ -367,7 +401,7 @@ const chartData = project ? getTotalTasks(project) : [];
                     member: m,
                   })
                 }
-                className="bg-blue-600 hover:bg-blue-500 px-3 py-1 rounded w-12"
+                className="bg-(--primary) hover:bg-(--primary-hover) text-white px-3 py-1 rounded w-12"
               >
                 {m[type]?.length || 0}
               </button>
@@ -378,14 +412,14 @@ const chartData = project ? getTotalTasks(project) : [];
           <td className="text-right p-3 space-x-2">
             <button
               onClick={() => setActiveMember(m.email)}
-              className="bg-purple-600 px-3 py-1 rounded"
+              className="bg-(--secondary) text-white px-3 py-1 rounded"
             >
               Assign
             </button>
 
             <button
               onClick={() => handleRemoveMember(m.email)}
-              className="bg-red-700 px-3 py-1 rounded"
+              className="bg-(--danger) text-white px-3 py-1 rounded"
             >
               Remove
             </button>
@@ -399,116 +433,135 @@ const chartData = project ? getTotalTasks(project) : [];
 </div>
 
         {/* TASK MODAL */}
-        {taskModal.open && (
-          <div className="fixed inset-0 bg-black/70 flex justify-center items-center">
-            <div className="bg-gray-900 p-5 w-130 rounded">
-              <h2 className="mb-3 text-blue-400">
-                {taskModal.type.toUpperCase()} TASKS
-              </h2>
+       {taskModal.open && (
+  <div className="fixed inset-0 bg-black/70 flex justify-center items-center">
+    <div className="bg-(--card) text-(--text) p-5 w-130 rounded border border-(--border)">
 
-              {project?.teammember?.find(
-                (m) => m.email === taskModal.member?.email,
-              )?.[taskModal.type]?.length ? (
-                project.teammember
-                  .find((m) => m.email === taskModal.member?.email)
-                  [taskModal.type].map((t) => (
-                    <div key={t.id} className="bg-gray-800 p-3 mb-2 rounded">
-                      <p dangerouslySetInnerHTML={{ __html: t.text }} />
+      <h2 className="mb-3 text-(--primary)">
+        {taskModal.type.toUpperCase()} TASKS
+      </h2>
 
-                      <div className="text-xs text-gray-400 mt-1">
-                        🕒 {t.createdAt}
-                      </div>
+      {project?.teammember?.find(
+        (m) => m.email === taskModal.member?.email,
+      )?.[taskModal.type]?.length ? (
+        project.teammember
+          .find((m) => m.email === taskModal.member?.email)
+          [taskModal.type].map((t) => (
+            <div
+              key={t.id}
+              className="bg-(--bg-secondary) p-3 mb-2 rounded border border-(--border)"
+            >
+              <p
+                className="text-(--text)"
+                dangerouslySetInnerHTML={{ __html: t.text }}
+              />
 
-                      <div className="flex gap-3 mt-2">
-                        <button
-                          onClick={() =>
-                            startEdit(t, taskModal.type, taskModal.member)
-                          }
-                          className="text-blue-400"
-                        >
-                          ✏️
-                        </button>
+              <div className="text-xs text-(--text-secondary) mt-1">
+                🕒 {t.createdAt}
+              </div>
 
-                        <button
-                          onClick={() =>
-                            handleDelete(
-                              taskModal.type,
-                              t.id,
-                              taskModal.member.email,
-                            )
-                          }
-                          className="text-red-400"
-                        >
-                          🗑
-                        </button>
-                      </div>
-                    </div>
-                  ))
-              ) : (
-                <p className="text-gray-400">No tasks</p>
-              )}
+              <div className="flex gap-3 mt-2">
+                <button
+                  onClick={() =>
+                    startEdit(t, taskModal.type, taskModal.member)
+                  }
+                  className="text-(--primary)"
+                >
+                  ✏️
+                </button>
 
-              <button
-                onClick={() => setTaskModal({ open: false })}
-                className="mt-3 bg-red-600 px-3"
-              >
-                Close
-              </button>
+                <button
+                  onClick={() =>
+                    handleDelete(
+                      taskModal.type,
+                      t.id,
+                      taskModal.member.email,
+                    )
+                  }
+                  className="text-(--danger)"
+                >
+                  🗑
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          ))
+      ) : (
+        <p className="text-(--text-secondary)">No tasks</p>
+      )}
+
+      <button
+        onClick={() => setTaskModal({ open: false })}
+        className="mt-3 bg-(--danger) text-white px-3 py-1 rounded"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+)}
 
         {/* EDIT MODAL */}
         {editData && (
-          <div className="fixed inset-0 bg-black/70 flex items-center justify-center">
-            <div className="bg-gray-900 p-5 w-100 rounded">
-              <textarea
-                className="w-full p-2 bg-gray-800 text-white"
-                value={editText}
-                onChange={(e) => setEditText(e.target.value)}
-              />
+  <div className="fixed inset-0 bg-black/70 flex items-center justify-center">
+    <div className="bg-(--card) p-5 w-100 rounded border border-(--border) shadow-lg">
 
-              <div className="flex gap-2 mt-3">
-                <button onClick={handleUpdate} className="bg-green-600 px-3">
-                  Save
-                </button>
+      <textarea
+        className="w-full p-2 bg-(--bg-secondary) text-(--text) border border-(--border) rounded"
+        value={editText}
+        onChange={(e) => setEditText(e.target.value)}
+      />
 
-                <button
-                  onClick={() => setEditData(null)}
-                  className="bg-red-600 px-3"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+      <div className="flex gap-2 mt-3">
+
+        <button
+          onClick={handleUpdate}
+          className="bg-(--success) text-white px-3 py-1 rounded"
+        >
+          Save
+        </button>
+
+        <button
+          onClick={() => setEditData(null)}
+          className="bg-(--danger) text-white px-3 py-1 rounded"
+        >
+          Cancel
+        </button>
+
+      </div>
+    </div>
+  </div>
+)}
 
         {/* ASSIGN MODAL */}
-        {activeMember && (
-          <div className="fixed inset-0 bg-black/70 flex justify-center items-center">
-            <div className="bg-gray-900 p-5 w-105 rounded">
-              <textarea
-                className="w-full p-2 bg-gray-800 text-white"
-                value={taskText}
-                onChange={(e) => setTaskText(e.target.value)}
-              />
+       {activeMember && (
+  <div className="fixed inset-0 bg-black/70 flex justify-center items-center">
+    <div className="bg-(--card) p-5 w-105 rounded border border-(--border)">
+      
+      <textarea
+        className="w-full p-2 bg-(--bg-secondary) text-(--text) border border-(--border)"
+        value={taskText}
+        onChange={(e) => setTaskText(e.target.value)}
+      />
 
-              <div className="flex gap-2 mt-3">
-                <button onClick={handleTaskSave} className="bg-green-600 px-3">
-                  Save
-                </button>
+      <div className="flex gap-2 mt-3">
+        
+        <button
+          onClick={handleTaskSave}
+          className="px-3 py-1 rounded text-white bg-(--success)"
+        >
+          Save
+        </button>
 
-                <button
-                  onClick={() => setActiveMember(null)}
-                  className="bg-red-600 px-3"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <button
+          onClick={() => setActiveMember(null)}
+          className="px-3 py-1 rounded text-white bg-(--danger)"
+        >
+          Cancel
+        </button>
+
+      </div>
+    </div>
+  </div>
+)}
       </div>
     </div>
   );

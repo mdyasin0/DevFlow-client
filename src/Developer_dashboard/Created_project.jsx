@@ -3,12 +3,30 @@ import { AuthContext } from "../Firebase/AuthContext";
 import { useNavigate } from "react-router";
 import Developer_projects from "./Developer_projects";
 
-
 const Created_project = () => {
   const { user } = useContext(AuthContext);
   const [projects, setProjects] = useState([]);
   const navigate = useNavigate();
+const handleDelete = async (id) => {
+  const confirmDelete = window.confirm("Are you sure you want to delete this project?");
 
+  if (!confirmDelete) return;
+
+  try {
+    const res = await fetch(`http://localhost:5000/projects/${id}`, {
+      method: "DELETE",
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      setProjects((prev) => prev.filter((p) => p._id !== id));
+      alert("Project deleted successfully 🗑️");
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}; 
   useEffect(() => {
     if (user?.email) {
       fetch(`http://localhost:5000/projects/${user.email}`)
@@ -26,50 +44,88 @@ const Created_project = () => {
 
   const hasProjects = projects.length > 0;
 
-  // 🚨 NO USER EMAIL yet safety
   if (!user?.email) return null;
 
-  // ❌ NO PROJECTS → show full empty state UI
   if (!hasProjects) {
     return <Developer_projects />;
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6 relative">
+    <div className="bg-(--bg) text-(--text) min-h-full p-6">
 
-      {/* TOP RIGHT BUTTON */}
-      <button
-        onClick={() =>
-          navigate("/developer_dashboard/create_project")
-        }
-        className="absolute top-6 right-6 bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg font-semibold shadow-md"
-      >
-        + Create Project
-      </button>
+      {/* HEADER */}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold">📂 My Projects</h2>
 
-      <h2 className="text-2xl font-bold mb-6">📂 My Projects</h2>
+        <button
+          onClick={() => navigate("/developer_dashboard/create_project")}
+          className="bg-(--primary) hover:bg-(--primary-hover) text-white px-4 py-2 rounded-lg shadow"
+        >
+          + Create Project
+        </button>
+      </div>
 
-      {/* PROJECT LIST */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {projects.map((project) => (
-          <div
-            key={project._id}
-            onClick={() =>
-              navigate(
-                `/developer_dashboard/created_project_details/${project._id}`
-              )
-            }
-            className="bg-gray-800 p-5 rounded-xl shadow-md border border-gray-700 cursor-pointer"
-          >
-            <h3 className="text-lg font-semibold text-blue-400">
-              {project.projectTitle}
-            </h3>
+      {/* TABLE */}
+      <div className="overflow-x-auto rounded-xl border border-(--border) bg-(--card)">
+        <table className="w-full text-sm">
 
-            <p className="text-sm text-gray-300 mt-2">
-              Team: {project.teamName}
-            </p>
-          </div>
-        ))}
+          {/* HEAD */}
+          <thead className="bg-(--bg-secondary) text-(--text-secondary)">
+            <tr className="text-left">
+              <th className="px-5 py-3">Team Name</th>
+              <th className="px-5 py-3">Project Title</th>
+              <th className="px-5 py-3">Start Time</th>
+              <th className="px-5 py-3 text-center">Action</th>
+            </tr>
+          </thead>
+
+          {/* BODY */}
+          <tbody>
+            {projects.map((project) => (
+              <tr
+                key={project._id}
+                className="border-t border-(--border) hover:bg-(--bg-secondary) transition"
+              >
+                <td className="px-5 py-3 font-medium">
+                  {project.teamName}
+                </td>
+
+                <td className="px-5 py-3">
+                  {project.projectTitle}
+                </td>
+
+                <td className="px-5 py-3 text-(--text-secondary)">
+                  {new Date(project.created_time).toLocaleDateString()}
+                </td>
+
+                <td className="px-5 py-3 text-center flex gap-2 justify-center">
+  
+  {/* View Details */}
+  <button
+    onClick={() =>
+      navigate(
+        `/developer_dashboard/created_project_details/${project._id}`
+      )
+    }
+    className="px-3 py-1 rounded-lg bg-(--secondary) text-white hover:opacity-90"
+  >
+    View Details
+  </button>
+
+  {/* Delete Project */}
+  <button
+    onClick={() => handleDelete(project._id)}
+    className="px-3 py-1 rounded-lg bg-(--danger) text-white hover:opacity-90"
+  >
+    Delete
+  </button>
+
+</td>
+              </tr>
+            ))}
+          </tbody>
+
+        </table>
       </div>
     </div>
   );

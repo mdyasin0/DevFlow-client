@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import App from "../App";
 
@@ -32,7 +32,7 @@ const router = createBrowserRouter([
         path: "/developer_dashboard",
         element: <Dashboard_layout />,
         children: [
-          { index: true, element: <Profile /> },
+          { index: true, element: <Navigate to="/developer_dashboard/profile" />},
           {
             path: "/developer_dashboard/profile",
             element: <Profile />,

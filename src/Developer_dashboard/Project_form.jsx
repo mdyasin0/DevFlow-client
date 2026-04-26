@@ -4,7 +4,8 @@ import { AuthContext } from '../Firebase/AuthContext';
 const Project_form = () => {
   const [teamName, setTeamName] = useState("");
   const [projectTitle, setProjectTitle] = useState("");
-   const { user} = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -35,10 +36,10 @@ const Project_form = () => {
     }
   };
 
-    return (
-          <form
+  return (
+    <form
       onSubmit={handleSubmit}
-      className="bg-white text-black p-6 rounded-lg shadow-lg space-y-4 w-80"
+      className="bg-(--card) text-(--text) p-6 rounded-lg shadow-lg space-y-4 w-80 border border-(--border)"
     >
       <h2 className="text-lg font-bold">Create Project</h2>
 
@@ -47,7 +48,7 @@ const Project_form = () => {
         placeholder="Team Name"
         value={teamName}
         onChange={(e) => setTeamName(e.target.value)}
-        className="w-full border p-2 rounded"
+        className="w-full border border-(--border) p-2 rounded bg-(--bg) text-(--text)"
         required
       />
 
@@ -56,18 +57,18 @@ const Project_form = () => {
         placeholder="Project Title"
         value={projectTitle}
         onChange={(e) => setProjectTitle(e.target.value)}
-        className="w-full border p-2 rounded"
+        className="w-full border border-(--border) p-2 rounded bg-(--bg) text-(--text)"
         required
       />
 
       <button
         type="submit"
-        className="bg-green-500 text-white w-full py-2 rounded"
+        className="bg-(--primary) hover:bg-(--primary-hover) text-white w-full py-2 rounded"
       >
         Submit
       </button>
     </form>
-    );
+  );
 };
 
 export default Project_form;

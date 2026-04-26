@@ -11,24 +11,22 @@ const Developer_projects = () => {
   const { user } = useContext(AuthContext);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-gray-900 to-gray-800 text-white px-4">
+    <div className="min-h-screen flex items-center justify-center bg-(--bg) text-(--text) px-4">
 
       {/* Main Card */}
-      <div className="bg-gray-800 border border-gray-700 p-8 rounded-2xl shadow-2xl text-center max-w-md w-full space-y-6">
+      <div className="bg-(--card) border border-(--border) p-8 rounded-2xl shadow-2xl text-center max-w-md w-full space-y-6">
 
-     
-
-        <p className="flex justify-center items-center gap-2 text-gray-300 text-sm">
+        <p className="flex justify-center items-center gap-2 text-(--text-secondary) text-sm">
           You haven’t joined or created any team yet
           <CiCircleQuestion
             onClick={() => setmodal(true)}
-            className="cursor-pointer text-xl hover:text-blue-400 transition"
+            className="cursor-pointer text-xl hover:text-(--primary) transition"
           />
         </p>
 
         <button
           onClick={() => setform(true)}
-          className="w-full bg-blue-500 hover:bg-blue-600 transition py-2 rounded-lg font-semibold shadow-md"
+          className="w-full bg-(--primary) hover:bg-(--primary-hover) transition py-2 rounded-lg font-semibold shadow-md text-white"
         >
           + Create Project
         </button>
@@ -37,7 +35,7 @@ const Developer_projects = () => {
       {/* Info Modal */}
       {modal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50">
-          <div className="bg-white text-black p-6 rounded-2xl shadow-xl max-w-sm w-full relative">
+          <div className="bg-(--card) text-(--text) p-6 rounded-2xl shadow-xl max-w-sm w-full relative border border-(--border)">
 
             <button
               onClick={() => setmodal(false)}
@@ -48,15 +46,15 @@ const Developer_projects = () => {
 
             <h3 className="text-lg font-bold mb-3">ℹ️ Team Info</h3>
 
-            <p className="text-sm text-gray-700 leading-relaxed">
+            <p className="text-sm text-(--text-secondary) leading-relaxed">
               If you want to join a team, contact the team manager or leader to get invited.
               <br /><br />
               Or you can create your own team and start managing projects.
             </p>
 
-            <p className="mt-4 text-sm">
+            <p className="mt-4 text-sm text-(--text-secondary)">
               Read more in{" "}
-              <NavLink to="/" className="text-blue-500 font-semibold hover:underline">
+              <NavLink to="/" className="text-(--primary) font-semibold hover:underline">
                 documentation
               </NavLink>
             </p>
@@ -67,7 +65,7 @@ const Developer_projects = () => {
       {/* Form Modal */}
       {form && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md relative">
+          <div className="bg-(--card) text-(--text) p-6 rounded-2xl shadow-xl w-full max-w-md relative border border-(--border)">
 
             <button
               onClick={() => setform(false)}
