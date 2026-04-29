@@ -13,6 +13,8 @@ import Created_project_details from "../Developer_dashboard/Created_project_deta
 import Invitations from "../Developer_dashboard/Invitations";
 import Joined_Team from "../Developer_dashboard/Joined_Team";
 import Joined_Team_Details from "../Developer_dashboard/Joined_Team_Details";
+import Admin_Dashboard_Layout from "../Admin_Dashboard/admin_dashboard_Layout";
+import Email_Communication from "../Admin_Dashboard/Email_Communication";
 
 const router = createBrowserRouter([
   {
@@ -57,7 +59,18 @@ const router = createBrowserRouter([
             element:<Joined_Team_Details/>,
           }
         ],
-      },
+      },{
+        path:"/admin_dashboard_layout" ,
+        element: <Admin_Dashboard_Layout/>,
+      children:[
+        
+        { index: true, element: <Navigate to="/admin_dashboard_layout/email_communication" />},
+        {
+          path:"/admin_dashboard_layout/email_communication",
+          element: <Email_Communication/>,
+        }
+      ]
+      }
     ],
   },
 ]);

@@ -24,25 +24,32 @@ const Navbar = () => {
 
   return (
     <nav className="w-full sticky top-0 z-50 backdrop-blur border-b bg-(--bg) border-(--border) text-(--text)">
-      
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-
         {/* Logo */}
-        <h1 className="text-xl font-bold text-(--primary)">
-          DevFlow
-        </h1>
+        <h1 className="text-xl font-bold text-(--primary)">DevFlow</h1>
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-6 text-sm text-(--text-secondary)">
           <a className="hover:text-(--primary)">Features</a>
           <a className="hover:text-(--primary)">Pricing</a>
           <a className="hover:text-(--primary)">Docs</a>
-          <NavLink to="/developer_dashboard" className="font-medium text-(--text)">Dashboard</NavLink>
+          <NavLink
+            to="/developer_dashboard"
+            className="font-medium text-(--text)"
+          >
+            Dashboard
+          </NavLink>
+         
+           <NavLink
+            to="/admin_dashboard_layout"
+            className="font-medium text-(--text)"
+          >
+            admin_Dashboard
+          </NavLink>
         </div>
 
         {/* Right Side */}
         <div className="hidden md:flex items-center gap-3">
-
           {/* Theme */}
           <button
             onClick={toggleTheme}
@@ -59,7 +66,6 @@ const Navbar = () => {
           {/* USER AREA */}
           {user ? (
             <div className="relative">
-
               {/* Profile Image */}
               <img
                 src={user?.photoURL || "https://i.pravatar.cc/40"}
@@ -71,7 +77,6 @@ const Navbar = () => {
               {/* DROPDOWN */}
               {dropdown && (
                 <div className="absolute right-0 mt-3 w-48 bg-(--card) border border-(--border) rounded-lg shadow-lg overflow-hidden">
-
                   {/* Profile Info */}
                   <div className="p-3 border-b border-(--border)">
                     <p className="text-sm font-medium">
