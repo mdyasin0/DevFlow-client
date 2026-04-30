@@ -16,6 +16,7 @@ import Joined_Team_Details from "../Developer_dashboard/Joined_Team_Details";
 import Admin_Dashboard_Layout from "../Admin_Dashboard/admin_dashboard_Layout";
 import Email_Communication from "../Admin_Dashboard/Email_Communication";
 import User_Administration from "../Admin_Dashboard/User_Administration";
+import Site_Overview from "../Admin_Dashboard/Site_Overview";
 
 const router = createBrowserRouter([
   {
@@ -30,6 +31,9 @@ const router = createBrowserRouter([
       {
         path: "/login",
         element: <Login />,
+      },{
+          path: "/profile",
+            element: <Profile />,
       },
       {
         path: "/developer_dashboard",
@@ -72,7 +76,13 @@ const router = createBrowserRouter([
         },{
           path:"/admin_dashboard_layout/user_administration",
           element: <User_Administration/>,
-        }
+        },{
+          path:"/admin_dashboard_layout/site_overview",
+          element: <Site_Overview/>,
+        }, {
+            path: "/admin_dashboard_layout/profile",
+            element: <Profile />,
+          }
       ]
       }
     ],

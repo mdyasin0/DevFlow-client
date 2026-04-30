@@ -89,7 +89,7 @@ const Navbar = () => {
 
                   {/* View Profile */}
                   <NavLink
-                    to="/developer_dashboard/profile"
+                    to="/profile"
                     onClick={() => setDropdown(false)}
                     className="flex items-center gap-2 px-3 py-2 hover:bg-(--bg-secondary)"
                   >

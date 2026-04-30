@@ -1,5 +1,6 @@
 import React from 'react';
 import { CgProfile } from 'react-icons/cg';
+import { GrOverview } from 'react-icons/gr';
 import { IoHome } from 'react-icons/io5';
 import { MdCreateNewFolder, MdOutlineInsertInvitation } from 'react-icons/md';
 import { RiTeamFill } from 'react-icons/ri';
@@ -38,7 +39,7 @@ const Admin_Dashboard_Layout = () => {
           </NavLink>
 
           <NavLink
-            to="/developer_dashboard/profile"
+            to="/admin_dashboard_layout/profile"
             className={({ isActive }) =>
               `${navClass} ${
                 isActive
@@ -79,7 +80,7 @@ const Admin_Dashboard_Layout = () => {
           </NavLink>
 
           <NavLink
-            to="/developer_dashboard/invitations"
+            to="/admin_dashboard_layout/site_overview"
             className={({ isActive }) =>
               `${navClass} ${
                 isActive
@@ -88,7 +89,7 @@ const Admin_Dashboard_Layout = () => {
               }`
             }
           >
-            <MdOutlineInsertInvitation /> Invitations
+            <GrOverview /> Site_Overview
           </NavLink>
         </div>
       </aside>
