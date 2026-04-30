@@ -5,7 +5,7 @@ import Swal from "sweetalert2";
 import { AuthContext } from "../Firebase/AuthContext";
 
 const Register = () => {
-  const { createUser, googleLogin, updateUserProfile } =
+  const { createUser, googleLogin, logOut, updateUserProfile } =
     useContext(AuthContext);
 
   const [showPass, setShowPass] = useState(false);
@@ -15,6 +15,30 @@ const Register = () => {
   const [uploading, setUploading] = useState(false); // ⭐ image upload state
   const [photoURL, setPhotoURL] = useState(""); // store uploaded image
 
+  
+const checkIfBlocked = async (email) => {
+  try {
+    const res = await fetch(`http://localhost:5000/users/${email}`);
+    const data = await res.json();
+
+    if (!data.success) return false;
+
+    if (data.data.isBlocked) {
+      Swal.fire({
+        icon: "error",
+        title: "You are blocked",
+        text: "Contact admin",
+      });
+
+      return true; // blocked
+    }
+
+    return false; // not blocked
+  } catch (err) {
+    console.log(err.message);
+    return false;
+  }
+};
   // 📸 IMAGE UPLOAD
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -104,8 +128,19 @@ const Register = () => {
 
     googleLogin()
       .then(async (res) => {
+
         const user = res.user;
 
+      const blocked = await checkIfBlocked(user.email);
+
+      if (blocked) {
+        // 🚨 FORCE LOGOUT
+   
+        await logOut(); // IMPORTANT (Firebase logout)
+
+        setGoogleLoading(false);
+        return;
+      }
         await fetch("http://localhost:5000/users", {
           method: "POST",
           headers: { "Content-Type": "application/json" },

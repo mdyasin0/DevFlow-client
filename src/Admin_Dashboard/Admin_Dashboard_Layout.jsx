@@ -4,6 +4,7 @@ import { IoHome } from 'react-icons/io5';
 import { MdCreateNewFolder, MdOutlineInsertInvitation } from 'react-icons/md';
 import { RiTeamFill } from 'react-icons/ri';
 import { SiMinutemailer } from 'react-icons/si';
+import { TbDeviceIpadMinus } from 'react-icons/tb';
 import { NavLink, Outlet } from 'react-router';
 
 const Admin_Dashboard_Layout = () => {
@@ -65,7 +66,7 @@ const Admin_Dashboard_Layout = () => {
           </NavLink>
 
           <NavLink
-            to="/developer_dashboard/joined_team"
+            to="/admin_dashboard_layout/user_administration"
             className={({ isActive }) =>
               `${navClass} ${
                 isActive
@@ -74,7 +75,7 @@ const Admin_Dashboard_Layout = () => {
               }`
             }
           >
-            <RiTeamFill /> Joined Team
+            <TbDeviceIpadMinus /> User-Administration
           </NavLink>
 
           <NavLink

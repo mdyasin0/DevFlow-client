@@ -15,6 +15,7 @@ import Joined_Team from "../Developer_dashboard/Joined_Team";
 import Joined_Team_Details from "../Developer_dashboard/Joined_Team_Details";
 import Admin_Dashboard_Layout from "../Admin_Dashboard/admin_dashboard_Layout";
 import Email_Communication from "../Admin_Dashboard/Email_Communication";
+import User_Administration from "../Admin_Dashboard/User_Administration";
 
 const router = createBrowserRouter([
   {
@@ -68,6 +69,9 @@ const router = createBrowserRouter([
         {
           path:"/admin_dashboard_layout/email_communication",
           element: <Email_Communication/>,
+        },{
+          path:"/admin_dashboard_layout/user_administration",
+          element: <User_Administration/>,
         }
       ]
       }

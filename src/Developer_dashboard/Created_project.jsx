@@ -2,12 +2,15 @@ import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../Firebase/AuthContext";
 import { useNavigate } from "react-router";
 import Developer_projects from "./Developer_projects";
+import { IoCloseCircleOutline } from "react-icons/io5";
+import Project_form from "./Project_form";
 
 const Created_project = () => {
   const { user } = useContext(AuthContext);
   const [projects, setProjects] = useState([]);
   const navigate = useNavigate();
   const [selectedProject, setSelectedProject] = useState(null);
+  const [open,setOpen]=useState(false);
 const [isModalOpen, setIsModalOpen] = useState(false);
 const handleUpdate = async () => {
   try {
@@ -92,13 +95,27 @@ const handleDelete = async (id) => {
         <h2 className="text-2xl font-bold">📂 My Projects</h2>
 
         <button
-          onClick={() => navigate("/developer_dashboard/create_project")}
+          onClick={() => setOpen(!open)}
           className="bg-(--primary) hover:bg-(--primary-hover) text-white px-4 py-2 rounded-lg shadow"
         >
           + Create Project
         </button>
       </div>
+  {open && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50">
+          <div className="bg-(--card) text-(--text) p-6 rounded-2xl shadow-xl w-full max-w-md relative border border-(--border)">
 
+            <button
+              onClick={() => setOpen(false)}
+              className="absolute top-3 right-3 text-red-500 text-2xl"
+            >
+              <IoCloseCircleOutline />
+            </button>
+
+            <Project_form user={user} />
+          </div>
+        </div>
+      )}
       {/* TABLE */}
       <div className="overflow-x-auto rounded-xl border border-(--border) bg-(--card)">
         <table className="w-full text-sm">

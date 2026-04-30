@@ -5,63 +5,91 @@ import { AuthContext } from "../Firebase/AuthContext";
 import Swal from "sweetalert2";
 
 const Login = () => {
-  const { signInUser, googleLogin } = useContext(AuthContext);
+  const { signInUser, googleLogin , logOut } = useContext(AuthContext);
   const [showPass, setShowPass] = useState(false);
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    const form = e.target;
 
-    const email = form.email.value;
-    const password = form.password.value;
+const checkIfBlocked = async (email) => {
+  try {
+    const res = await fetch(`http://localhost:5000/users/${email}`);
+    const data = await res.json();
 
-    signInUser(email, password)
-      .then(() => {
-        Swal.fire({
-          icon: "success",
-          title: "Login Successful!",
-          text: "Welcome back to DevFlow 🚀",
-          timer: 2000,
-          showConfirmButton: false,
-        });
-      })
-      .catch((err) => {
-        Swal.fire({
-          icon: "error",
-          title: "Login Failed",
-          text: err.message,
-        });
+    if (!data.success) return false;
+
+    if (data.data.isBlocked) {
+      Swal.fire({
+        icon: "error",
+        title: "You are blocked",
+        text: "Contact admin",
       });
-  };
+
+      return true; // blocked
+    }
+
+    return false; // not blocked
+  } catch (err) {
+    console.log(err.message);
+    return false;
+  }
+};
+  const handleLogin = async (e) => {
+  e.preventDefault();
+
+  const form = e.target;
+  const email = form.email.value;
+  const password = form.password.value;
+
+  try {
+    await signInUser(email, password);
+
+    const blocked = await checkIfBlocked(email);
+
+    if (blocked) {
+      await logOut(); // 🔥 IMPORTANT
+      return;
+    }
+
+    Swal.fire({
+      icon: "success",
+      title: "Login Successful!",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+
+  } catch (err) {
+    Swal.fire({
+      icon: "error",
+      title: "Login Failed",
+      text: err.message,
+    });
+  }
+};
 
 const handleGoogle = () => {
   googleLogin()
     .then(async (res) => {
       const user = res.user;
 
-      try {
-        const response = await fetch("http://localhost:5000/users", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: user.displayName,
-            email: user.email,
-            role: "developer",
-          }),
-        });
+      const blocked = await checkIfBlocked(user.email);
 
-        await response.json(); // 🔥 শুধু consume করো (no alert)
-
-      } catch (err) {
-        console.log("DB save failed:", err.message);
+      if (blocked) {
+        await logOut(); // 🔥 FORCE LOGOUT
+        return;
       }
+
+      await fetch("http://localhost:5000/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: user.displayName,
+          email: user.email,
+          role: "developer",
+        }),
+      });
 
       Swal.fire({
         icon: "success",
         title: "Logged in with Google!",
-        text: "Welcome to DevFlow 🚀",
         timer: 2000,
         showConfirmButton: false,
       });
