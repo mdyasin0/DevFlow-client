@@ -24,6 +24,7 @@ const handleUpdate = async () => {
         body: JSON.stringify({
           teamName: selectedProject.teamName,
           projectTitle: selectedProject.projectTitle,
+          description: selectedProject.description,
         }),
       }
     );
@@ -216,6 +217,17 @@ const handleDelete = async (id) => {
         className="w-full border p-2 mb-3 rounded"
         placeholder="Project Title"
       />
+      <textarea
+  defaultValue={selectedProject?.description}
+  onChange={(e) =>
+    setSelectedProject({
+      ...selectedProject,
+      description: e.target.value,
+    })
+  }
+  className="w-full border p-2 mb-3 rounded"
+  placeholder="Project Description"
+/>
 
       <div className="flex justify-end gap-2">
         <button

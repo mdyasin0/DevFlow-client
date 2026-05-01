@@ -5,7 +5,7 @@ import { IoHome } from 'react-icons/io5';
 import { MdCreateNewFolder, MdOutlineInsertInvitation } from 'react-icons/md';
 import { RiTeamFill } from 'react-icons/ri';
 import { SiMinutemailer } from 'react-icons/si';
-import { TbDeviceIpadMinus } from 'react-icons/tb';
+import { TbDeviceIpadMinus, TbHeartRateMonitor } from 'react-icons/tb';
 import { NavLink, Outlet } from 'react-router';
 
 const Admin_Dashboard_Layout = () => {
@@ -90,6 +90,19 @@ const Admin_Dashboard_Layout = () => {
             }
           >
             <GrOverview /> Site_Overview
+          </NavLink>
+          
+          <NavLink
+            to="/admin_dashboard_layout/project_monitoring"
+            className={({ isActive }) =>
+              `${navClass} ${
+                isActive
+                  ? "bg-(--primary) text-white"
+                  : "text-(--text-secondary) hover:bg-(--bg-secondary)"
+              }`
+            }
+          >
+            <TbHeartRateMonitor /> Project_Monitoring
           </NavLink>
         </div>
       </aside>

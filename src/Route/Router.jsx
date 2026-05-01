@@ -17,6 +17,7 @@ import Admin_Dashboard_Layout from "../Admin_Dashboard/admin_dashboard_Layout";
 import Email_Communication from "../Admin_Dashboard/Email_Communication";
 import User_Administration from "../Admin_Dashboard/User_Administration";
 import Site_Overview from "../Admin_Dashboard/Site_Overview";
+import Project_Monitoring from "../Admin_Dashboard/Project_Monitoring";
 
 const router = createBrowserRouter([
   {
@@ -82,6 +83,9 @@ const router = createBrowserRouter([
         }, {
             path: "/admin_dashboard_layout/profile",
             element: <Profile />,
+          },{
+            path:"/admin_dashboard_layout/project_monitoring",
+            element: <Project_Monitoring/>,
           }
       ]
       }

@@ -5,13 +5,14 @@ const Project_form = () => {
   const [teamName, setTeamName] = useState("");
   const [projectTitle, setProjectTitle] = useState("");
   const { user } = useContext(AuthContext);
-
+const [description, setDescription] = useState("");
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const projectData = {
       teamName,
       projectTitle,
+      description,
       email: user?.email,
     };
 
@@ -60,7 +61,13 @@ const Project_form = () => {
         className="w-full border border-(--border) p-2 rounded bg-(--bg) text-(--text)"
         required
       />
-
+<textarea
+  placeholder="Project Description"
+  value={description}
+  onChange={(e) => setDescription(e.target.value)}
+  className="w-full border border-(--border) p-2 rounded bg-(--bg) text-(--text)"
+  required
+/>
       <button
         type="submit"
         className="bg-(--primary) hover:bg-(--primary-hover) text-white w-full py-2 rounded"
