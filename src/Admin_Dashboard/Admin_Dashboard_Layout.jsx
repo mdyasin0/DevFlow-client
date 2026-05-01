@@ -2,7 +2,7 @@ import React from 'react';
 import { CgProfile } from 'react-icons/cg';
 import { GrOverview } from 'react-icons/gr';
 import { IoHome } from 'react-icons/io5';
-import { MdCreateNewFolder, MdOutlineInsertInvitation } from 'react-icons/md';
+import { MdCreateNewFolder, MdOutlineAirplanemodeInactive, MdOutlineInsertInvitation } from 'react-icons/md';
 import { RiTeamFill } from 'react-icons/ri';
 import { SiMinutemailer } from 'react-icons/si';
 import { TbDeviceIpadMinus, TbHeartRateMonitor } from 'react-icons/tb';
@@ -103,6 +103,19 @@ const Admin_Dashboard_Layout = () => {
             }
           >
             <TbHeartRateMonitor /> Project_Monitoring
+          </NavLink>
+          
+          <NavLink
+            to="/admin_dashboard_layout/inactive_users"
+            className={({ isActive }) =>
+              `${navClass} ${
+                isActive
+                  ? "bg-(--primary) text-white"
+                  : "text-(--text-secondary) hover:bg-(--bg-secondary)"
+              }`
+            }
+          >
+           <MdOutlineAirplanemodeInactive /> Inactive_Users
           </NavLink>
         </div>
       </aside>

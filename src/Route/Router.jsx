@@ -18,6 +18,7 @@ import Email_Communication from "../Admin_Dashboard/Email_Communication";
 import User_Administration from "../Admin_Dashboard/User_Administration";
 import Site_Overview from "../Admin_Dashboard/Site_Overview";
 import Project_Monitoring from "../Admin_Dashboard/Project_Monitoring";
+import Inactive_Users from "../Admin_Dashboard/Inactive_Users";
 
 const router = createBrowserRouter([
   {
@@ -86,6 +87,9 @@ const router = createBrowserRouter([
           },{
             path:"/admin_dashboard_layout/project_monitoring",
             element: <Project_Monitoring/>,
+          },{
+            path:"/admin_dashboard_layout/inactive_users",
+            element: <Inactive_Users/>,
           }
       ]
       }
