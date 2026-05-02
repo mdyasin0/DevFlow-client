@@ -31,7 +31,13 @@ const Navbar = () => {
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-6 text-sm text-(--text-secondary)">
           <a className="hover:text-(--primary)">Features</a>
-          <a className="hover:text-(--primary)">Pricing</a>
+          
+            <NavLink
+            to="/pricingpage"
+            className="font-medium text-(--text)"
+          >
+            price
+          </NavLink>
           <a className="hover:text-(--primary)">Docs</a>
           <NavLink
             to="/developer_dashboard"

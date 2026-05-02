@@ -1,39 +1,34 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { FaUsers, FaTasks, FaChartLine, FaShieldAlt } from "react-icons/fa";
 
 const Home = () => {
   return (
     <div className="bg-(--bg) text-(--text)">
 
-      {/*  Hero Section */}
+      {/* HERO */}
       <section className="max-w-7xl mx-auto px-4 py-24 grid md:grid-cols-2 gap-12 items-center">
-
         <div>
           <h1 className="text-4xl md:text-5xl font-bold leading-tight">
-            Manage Projects Smarter with{" "}
-            <span className="text-(--primary)">AI</span>
+            Manage Projects Smarter with <span className="text-(--primary)">DevFlow</span>
           </h1>
 
           <p className="mt-5 text-(--text-secondary)">
-            DevFlow helps teams collaborate in real-time, manage tasks efficiently,
-            and boost productivity using smart AI-powered tools.
+            A complete team collaboration platform with project management, task tracking,
+            analytics, and role-based control — all in one place.
           </p>
 
           <div className="mt-8 flex gap-4">
-
-            <button className="px-6 py-3 bg-(--primary) text-white rounded-xl shadow hover:bg-(--primary-hover) transition">
+            <button className="px-6 py-3 bg-(--primary) text-white rounded-xl shadow hover:bg-(--primary-hover)">
               Get Started
             </button>
-
-            <button className="px-6 py-3 border border-(--border) rounded-xl hover:bg-(--bg-secondary) transition">
-              Live Demo
+            <button className="px-6 py-3 border border-(--border) rounded-xl hover:bg-(--bg-secondary)">
+              View Demo
             </button>
-
           </div>
         </div>
 
-        {/* Image */}
-        <div className="bg-(--card) p-6 rounded-2xl shadow-lg border border-(--border)">
+        <div className="bg-(--card) p-6 rounded-2xl shadow border border-(--border)">
           <img
             src="https://images.unsplash.com/photo-1551288049-bebda4e38f71"
             alt="dashboard"
@@ -42,95 +37,94 @@ const Home = () => {
         </div>
       </section>
 
-      {/*  Features */}
+      {/* STATS */}
+      <section className="max-w-7xl mx-auto px-4 py-16 grid md:grid-cols-4 gap-6 text-center">
+        {[
+          { label: "Users", value: "1K+" },
+          { label: "Projects", value: "500+" },
+          { label: "Tasks Completed", value: "10K+" },
+          { label: "Teams", value: "200+" },
+        ].map((item, i) => (
+          <div key={i} className="bg-(--card) p-6 rounded-xl border border-(--border)">
+            <h3 className="text-2xl font-bold text-(--primary)">{item.value}</h3>
+            <p className="text-(--text-secondary)">{item.label}</p>
+          </div>
+        ))}
+      </section>
+
+      {/* FEATURES */}
       <section className="max-w-7xl mx-auto px-4 py-20">
+        <h2 className="text-3xl font-bold text-center mb-12">Core Features</h2>
 
-        <h2 className="text-3xl font-bold text-center mb-12">
-          Powerful Features
-        </h2>
-
-        <div className="grid md:grid-cols-3 gap-6">
-
+        <div className="grid md:grid-cols-4 gap-6">
           {[
-            "AI Task Assistant",
-            "Real-time Collaboration",
-            "Kanban Board",
-            "Analytics Dashboard",
-            "Notifications",
-            "Role-based Access",
+            { icon: <FaTasks />, title: "Task Management" },
+            { icon: <FaUsers />, title: "Team Collaboration" },
+            { icon: <FaChartLine />, title: "Analytics Dashboard" },
+            { icon: <FaShieldAlt />, title: "Role-based Access" },
           ].map((item, i) => (
             <motion.div
               key={i}
               whileHover={{ scale: 1.05 }}
-              className="p-6 bg-(--card) border border-(--border) rounded-2xl shadow hover:shadow-lg transition"
+              className="p-6 bg-(--card) border border-(--border) rounded-xl text-center"
             >
-              <h3 className="font-semibold text-lg mb-2 text-(--primary)">
-                {item}
-              </h3>
-              <p className="text-sm text-(--text-secondary)">
-                Improve workflow and team productivity with advanced tools.
-              </p>
+              <div className="text-3xl text-(--primary) mb-3 flex justify-center">
+                {item.icon}
+              </div>
+              <h3 className="font-semibold">{item.title}</h3>
             </motion.div>
           ))}
-
         </div>
       </section>
 
-      {/* Analytics */}
-      <section className="bg-(--bg-secondary) py-20 border-y border-(--border)">
+      {/* HOW IT WORKS */}
+      <section className="bg-(--bg-secondary) py-20">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
 
-        <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-2 gap-10 items-center">
-
-          <div>
-            <h2 className="text-3xl font-bold">
-              Track Performance with Insights
-            </h2>
-            <p className="mt-4 text-(--text-secondary)">
-              Visualize your team progress with powerful analytics and charts.
-            </p>
+          <div className="grid md:grid-cols-3 gap-8 text-center">
+            {[
+              "Create Project",
+              "Invite Team Members",
+              "Assign & Track Tasks",
+            ].map((step, i) => (
+              <div key={i} className="bg-(--card) p-6 rounded-xl border">
+                <h3 className="font-bold text-lg text-(--primary)">Step {i + 1}</h3>
+                <p className="mt-2">{step}</p>
+              </div>
+            ))}
           </div>
-
-          <div className="bg-(--card) p-6 rounded-xl border border-(--border)">
-            <div className="h-44 bg-(--primary)/20 rounded-lg"></div>
-          </div>
-
         </div>
       </section>
 
-      {/*  Collaboration */}
+      {/* ANALYTICS */}
       <section className="max-w-7xl mx-auto px-4 py-20 grid md:grid-cols-2 gap-10 items-center">
-
-        <div className="bg-(--card) p-6 rounded-xl border border-(--border)">
-          <div className="h-44 bg-(--secondary)/30 rounded-lg"></div>
-        </div>
-
         <div>
-          <h2 className="text-3xl font-bold">
-            Collaborate in Real-time
-          </h2>
+          <h2 className="text-3xl font-bold">Analytics & Performance</h2>
           <p className="mt-4 text-(--text-secondary)">
-            Stay connected with your team, comment instantly, and track every update.
+            Track task completion, team performance, and productivity insights using charts.
           </p>
         </div>
 
+        <div className="bg-(--card) p-6 rounded-xl border">
+          <img
+  src="https://images.unsplash.com/photo-1551288049-bebda4e38f71"
+  alt="analytics dashboard"
+  className="rounded-xl"
+/>
+        </div>
       </section>
 
-      {/*  CTA */}
+      {/* CTA */}
       <section className="bg-(--primary) text-white text-center py-20">
-
-        <h2 className="text-3xl font-bold">
-          Start building with DevFlow today
-        </h2>
-
-        <p className="mt-4 opacity-90">
-          Join teams who are boosting productivity with DevFlow.
-        </p>
-
-        <button className="mt-6 px-6 py-3 bg-white text-(--primary) font-semibold rounded-xl hover:opacity-90">
+        <h2 className="text-3xl font-bold">Start Managing Your Team Today</h2>
+        <p className="mt-4">Boost productivity and simplify workflows.</p>
+        <button className="mt-6 px-6 py-3 bg-white text-(--primary) rounded-xl font-semibold">
           Get Started
         </button>
-
       </section>
+
+     
 
     </div>
   );

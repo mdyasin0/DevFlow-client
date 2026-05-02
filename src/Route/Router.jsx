@@ -19,6 +19,7 @@ import User_Administration from "../Admin_Dashboard/User_Administration";
 import Site_Overview from "../Admin_Dashboard/Site_Overview";
 import Project_Monitoring from "../Admin_Dashboard/Project_Monitoring";
 import Inactive_Users from "../Admin_Dashboard/Inactive_Users";
+import PricingPage from "../Pages/PricingPage";
 
 const router = createBrowserRouter([
   {
@@ -36,6 +37,10 @@ const router = createBrowserRouter([
       },{
           path: "/profile",
             element: <Profile />,
+      },
+      {
+path:"/pricingpage",
+element:<PricingPage/>,
       },
       {
         path: "/developer_dashboard",
