@@ -187,9 +187,10 @@ const handleDelete = async (id) => {
 
         </table>
       </div>
-      {isModalOpen && (
+   {isModalOpen && (
   <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
-    <div className="bg-white p-6 rounded-lg w-[400px]">
+    <div className="bg-(--card) text-(--text) p-6 rounded-lg w-100 shadow-[0_4px_20px_var(--shadow)] border border-(--border)">
+      
       <h2 className="text-xl font-bold mb-4">Update Project</h2>
 
       <input
@@ -201,7 +202,7 @@ const handleDelete = async (id) => {
             teamName: e.target.value,
           })
         }
-        className="w-full border p-2 mb-3 rounded"
+        className="w-full border border-(--border) bg-(--bg-secondary) text-(--text) p-2 mb-3 rounded focus:outline-none focus:ring-2 focus:ring-(--primary)"
         placeholder="Team Name"
       />
 
@@ -214,36 +215,38 @@ const handleDelete = async (id) => {
             projectTitle: e.target.value,
           })
         }
-        className="w-full border p-2 mb-3 rounded"
+        className="w-full border border-(--border) bg-(--bg-secondary) text-(--text) p-2 mb-3 rounded focus:outline-none focus:ring-2 focus:ring-(--primary)"
         placeholder="Project Title"
       />
+
       <textarea
-  defaultValue={selectedProject?.description}
-  onChange={(e) =>
-    setSelectedProject({
-      ...selectedProject,
-      description: e.target.value,
-    })
-  }
-  className="w-full border p-2 mb-3 rounded"
-  placeholder="Project Description"
-/>
+        defaultValue={selectedProject?.description}
+        onChange={(e) =>
+          setSelectedProject({
+            ...selectedProject,
+            description: e.target.value,
+          })
+        }
+        className="w-full border border-(--border) bg-(--bg-secondary) text-(--text) p-2 mb-3 rounded focus:outline-none focus:ring-2 focus:ring-(--primary)"
+        placeholder="Project Description"
+      />
 
       <div className="flex justify-end gap-2">
         <button
           onClick={() => setIsModalOpen(false)}
-          className="px-4 py-2 bg-gray-400 text-white rounded"
+          className="px-4 py-2 bg-(--border) text-(--text) rounded hover:bg-(--text-secondary) transition"
         >
           Cancel
         </button>
 
         <button
           onClick={handleUpdate}
-          className="px-4 py-2 bg-green-500 text-white rounded"
+          className="px-4 py-2 bg-(--primary) text-white rounded hover:bg-(--primary-hover) transition"
         >
           Update
         </button>
       </div>
+
     </div>
   </div>
 )}

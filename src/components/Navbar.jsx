@@ -26,11 +26,12 @@ const Navbar = () => {
     <nav className="w-full sticky top-0 z-50 backdrop-blur border-b bg-(--bg) border-(--border) text-(--text)">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
-        <h1 className="text-xl font-bold text-(--primary)">DevFlow</h1>
+        <NavLink to="/"><h1 className="text-xl font-bold text-(--primary)">DevFlow</h1></NavLink>
+        
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-6 text-sm text-(--text-secondary)">
-          <a className="hover:text-(--primary)">Features</a>
+         
           
             <NavLink
             to="/pricingpage"

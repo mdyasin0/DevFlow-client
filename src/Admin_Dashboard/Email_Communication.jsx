@@ -105,98 +105,91 @@ useEffect(() => {
   };
 
   return (
-    <div className="p-6 bg-(--bg) text-(--text) min-h-screen">
-        
-      {/* 🔹 Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Email Communication</h1>
-        <p className="text-(--text-secondary) text-sm">
-          Manage and send emails to users easily
-        </p>
-      </div>
+   <div className="p-6 bg-(--bg) text-(--text) min-h-screen">
 
-      {/* 🔹 Cards */}
-      <div className="grid md:grid-cols-4 sm:grid-cols-2 grid-cols-1 gap-4 mb-8">
-        <Card title="Total Users" value={users?.length || 0} />
-        <Card
-          title="Managers"
-          value={[...new Set(projects.map((p) => p.created_by))].length}
-        />
-        <Card
-          title="Developers"
-          value={users?.filter((u) => u.role === "developer")?.length || 0}
-        />
-        <Card
-          title="Admins"
-          value={users?.filter((u) => u.role === "admin")?.length || 0}
-        />
-      </div>
+  {/* 🔹 Header */}
+  <div className="mb-6">
+    <h1 className="text-2xl font-bold">Email Communication</h1>
+    <p className="text-(--text-secondary) text-sm">
+      Manage and send emails to users easily
+    </p>
+  </div>
 
-      {/* 🔹 Filters */}
-      <div className="bg-(--card) border border-(--border) rounded-2xl p-4 shadow mb-6">
-        <h2 className="mb-3 font-semibold">Filter Emails</h2>
+  {/* 🔹 Cards */}
+  <div className="grid md:grid-cols-4 sm:grid-cols-2 grid-cols-1 gap-4 mb-8">
+    <Card title="Total Users" value={users?.length || 0} />
+    <Card
+      title="Managers"
+      value={[...new Set(projects.map((p) => p.created_by))].length}
+    />
+    <Card
+      title="Developers"
+      value={users?.filter((u) => u.role === "developer")?.length || 0}
+    />
+    <Card
+      title="Admins"
+      value={users?.filter((u) => u.role === "admin")?.length || 0}
+    />
+  </div>
 
-        <div className="flex flex-wrap gap-2">
-          <FilterBtn text="team members" onClick={getDeveloperEmails} />
-          <FilterBtn text="team-Managers" onClick={getManagerEmails} />
-          <FilterBtn text="team members and team-Managers" onClick={getAllDevelopers} />
-          <FilterBtn text="Admins" onClick={getAdmins} />
-          <FilterBtn text="All login Users" onClick={getAllUsers} />
-        </div>
-      </div>
+  {/* 🔹 Filters */}
+  <div className="bg-(--card) border border-(--border) rounded-2xl p-4 shadow-[0_4px_10px_var(--shadow)] mb-6">
+    <h2 className="mb-3 font-semibold">Filter Emails</h2>
 
-      {/* 🔹 Selected Emails */}
-      <div className="bg-(--card) border border-(--border) rounded-2xl p-4 shadow mb-6">
-       
+    <div className="flex flex-wrap gap-2">
+      <FilterBtn text="team members" onClick={getDeveloperEmails} />
+      <FilterBtn text="team-Managers" onClick={getManagerEmails} />
+      <FilterBtn text="team members and team-Managers" onClick={getAllDevelopers} />
+      <FilterBtn text="Admins" onClick={getAdmins} />
+      <FilterBtn text="All login Users" onClick={getAllUsers} />
+    </div>
+  </div>
 
-     <div className="flex items-center justify-between">
-  <h2 className="mb-3 font-semibold">Selected Emails</h2>
+  {/* 🔹 Selected Emails */}
+  <div className="bg-(--card) border border-(--border) rounded-2xl p-4 shadow-[0_4px_10px_var(--shadow)] mb-6">
+    <div className="flex items-center justify-between">
+      <h2 className="mb-3 font-semibold">Selected Emails</h2>
 
-  <span className="px-4 py-1 rounded-full bg-(--primary)/10 text-(--primary) font-semibold">
-    {selectedEmails.length} recipients
-  </span>
-</div>
+      <span className="px-4 py-1 rounded-full bg-(--primary)/10 text-(--primary) font-semibold">
+        {selectedEmails.length} recipients
+      </span>
+    </div>
+  </div>
 
+  {/* 🔹 Email Form */}
+  <div className="bg-(--card) border border-(--border) rounded-2xl p-4 shadow-[0_4px_10px_var(--shadow)]">
+    <h2 className="mb-4 font-semibold">Compose Email</h2>
 
-      </div>
+    {/* Subject */}
+    <input
+      className="w-full mb-3 p-3 rounded-xl border border-(--border) bg-(--bg-secondary) text-(--text) focus:outline-none focus:ring-2 focus:ring-(--primary)"
+      placeholder="Enter subject..."
+      onChange={(e) => setSubject(e.target.value)}
+    />
 
-      {/* 🔹 Email Form */}
-      <div className="bg-(--card) border border-(--border) rounded-2xl p-4 shadow">
-        <h2 className="mb-4 font-semibold">Compose Email</h2>
-
-        {/* Subject */}
-        <input
-          className="w-full mb-3 p-3 rounded-xl border border-(--border) bg-transparent focus:outline-none focus:ring-2 focus:ring-(--primary)"
-          placeholder="Enter subject..."
-          onChange={(e) => setSubject(e.target.value)}
-        />
-
-        {/* Message */}
-        <div className="mb-4">
-          <div
-            className="bg-white text-black rounded-xl border border-(--border)"
-           
-          >
-            <div ref={quillRef} />
-          </div>
-        </div>
-
-        {/* Send Button */}
-        <button
-          onClick={handleSend}
-          className="w-full py-3 rounded-xl bg-(--primary) text-white font-semibold hover:bg-(--primary-hover) transition"
-        >
-          Send Email
-        </button>
+    {/* Message */}
+    <div className="mb-4">
+      <div className="bg-(--bg-secondary) text-(--text) rounded-xl border border-(--border)">
+        <div ref={quillRef} />
       </div>
     </div>
+
+    {/* Send Button */}
+    <button
+      onClick={handleSend}
+      className="w-full py-3 rounded-xl bg-(--primary) text-white font-semibold hover:bg-(--primary-hover) transition"
+    >
+      Send Email
+    </button>
+  </div>
+</div>
   );
 };
 
 const Card = ({ title, value }) => (
-  <div className="bg-(--card) border border-(--border) p-4 rounded-2xl shadow hover:shadow-md transition">
+  <div className="bg-(--card) border border-(--border) p-4 rounded-2xl shadow-[0_4px_10px_var(--shadow)] hover:shadow-[0_6px_14px_var(--shadow)] transition">
     <p className="text-sm text-(--text-secondary)">{title}</p>
-    <h2 className="text-2xl font-bold mt-2">{value}</h2>
+    <h2 className="text-2xl font-bold mt-2 text-(--text)">{value}</h2>
   </div>
 );
 

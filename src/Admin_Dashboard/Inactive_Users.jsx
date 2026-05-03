@@ -116,110 +116,155 @@ const Inactive_Users = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
-{/* ===== CARDS ===== */}
-<div className="grid grid-cols-2 gap-4 mb-6">
+   <div className="p-6 space-y-6 bg-(--bg) text-(--text)">
 
-  <div className="bg-green-100 p-4 rounded shadow">
-    <h2 className="text-lg font-semibold">Active Users</h2>
-    <p className="text-2xl font-bold text-green-600">
-      {
-        users.filter((u) => {
-          const last = new Date(u.lastActiveAt);
-          const now = new Date();
-          const diff = (now - last) / (1000 * 60 * 60 * 24);
-          return diff <= 7;
-        }).length
-      }
+  {/* ===== CARDS ===== */}
+  <div className="grid grid-cols-2 gap-4 mb-6">
+
+    {/* Active Users */}
+    <div className="p-4 rounded-xl shadow"
+      style={{
+        background: "var(--card)",
+        border: "1px solid var(--border)",
+        boxShadow: "0 2px 10px var(--shadow)"
+      }}
+    >
+      <h2 className="text-lg font-semibold text-(--text-secondary)">
+        Active Users
+      </h2>
+      <p className="text-2xl font-bold text-(--success)">
+        {
+          users.filter((u) => {
+            const last = new Date(u.lastActiveAt);
+            const now = new Date();
+            const diff = (now - last) / (1000 * 60 * 60 * 24);
+            return diff <= 7;
+          }).length
+        }
+      </p>
+    </div>
+
+    {/* Inactive Users */}
+    <div className="p-4 rounded-xl shadow"
+      style={{
+        background: "var(--card)",
+        border: "1px solid var(--border)",
+        boxShadow: "0 2px 10px var(--shadow)"
+      }}
+    >
+      <h2 className="text-lg font-semibold text-(--text-secondary)">
+        Inactive Users
+      </h2>
+      <p className="text-2xl font-bold text-(--danger)">
+        {
+          users.filter((u) => {
+            const last = new Date(u.lastActiveAt);
+            const now = new Date();
+            const diff = (now - last) / (1000 * 60 * 60 * 24);
+            return diff > 7;
+          }).length
+        }
+      </p>
+    </div>
+
+  </div>
+
+  {/* ===== RECIPIENT ===== */}
+  <div
+    className="p-4 rounded-xl shadow space-y-3"
+    style={{
+      background: "var(--card)",
+      border: "1px solid var(--border)",
+      boxShadow: "0 2px 10px var(--shadow)"
+    }}
+  >
+    <h2 className="text-xl font-bold">
+      Select Recipients
+    </h2>
+
+    <select
+      className="w-full p-2 rounded border bg-(--bg-secondary) text-(--text)"
+      onChange={(e) => setRecipientType(e.target.value)}
+    >
+      <option value="allInactive">All Inactive Users</option>
+      <option value="custom">Custom Range</option>
+    </select>
+
+    {recipientType === "custom" && (
+      <div className="flex gap-2">
+        <input
+          type="number"
+          placeholder="Value (e.g 20)"
+          className="w-full p-2 rounded border bg-(--bg-secondary)"
+          onChange={(e) => setRangeValue(e.target.value)}
+        />
+
+        <select
+          className="p-2 rounded border bg-(--bg-secondary)"
+          onChange={(e) => setRangeType(e.target.value)}
+        >
+          <option value="days">Days</option>
+          <option value="months">Months</option>
+          <option value="years">Years</option>
+        </select>
+      </div>
+    )}
+
+    <button
+      onClick={handleRecipient}
+      className="w-full py-2 rounded font-semibold text-white"
+      style={{ background: "var(--primary)" }}
+    >
+      Load Recipients
+    </button>
+
+    <p className="text-sm text-(--text-secondary)">
+      Selected: {selectedEmails.length}
     </p>
   </div>
 
-  <div className="bg-red-100 p-4 rounded shadow">
-    <h2 className="text-lg font-semibold">Inactive Users</h2>
-    <p className="text-2xl font-bold text-red-600">
-      {
-        users.filter((u) => {
-          const last = new Date(u.lastActiveAt);
-          const now = new Date();
-          const diff = (now - last) / (1000 * 60 * 60 * 24);
-          return diff > 7;
-        }).length
-      }
-    </p>
+  {/* ===== EMAIL ===== */}
+  <div
+    className="p-4 rounded-xl shadow space-y-3"
+    style={{
+      background: "var(--card)",
+      border: "1px solid var(--border)",
+      boxShadow: "0 2px 10px var(--shadow)"
+    }}
+  >
+    <h2 className="text-xl font-bold">
+      Send Email
+    </h2>
+
+    <input
+      className="w-full p-2 rounded border bg-(--bg-secondary)"
+      placeholder="Subject"
+      value={subject}
+      onChange={(e) => setSubject(e.target.value)}
+    />
+
+    {/* QUILL EDITOR */}
+    <div
+      className="rounded border p-2"
+      style={{
+        background: "var(--bg-secondary)",
+        color: "var(--text)"
+      }}
+    >
+      <div ref={quillRef} />
+    </div>
+
+    <button
+      onClick={sendEmail}
+      className="w-full py-2 rounded font-semibold text-white"
+      style={{ background: "var(--success)" }}
+    >
+      Send Email
+    </button>
+
   </div>
 
 </div>
-      {/* RECIPIENT */}
-      <div className="bg-white p-4 rounded shadow">
-        <h2 className="text-xl font-bold mb-3">Select Recipients</h2>
-
-        <select
-          className="w-full border p-2 mb-3"
-          onChange={(e) => setRecipientType(e.target.value)}
-        >
-          <option value="allInactive">All Inactive Users</option>
-          <option value="custom">Custom Range</option>
-        </select>
-
-        {recipientType === "custom" && (
-          <div className="flex gap-2 mb-3">
-            <input
-              type="number"
-              placeholder="Value (e.g 20)"
-              className="border p-2 w-full"
-              onChange={(e) => setRangeValue(e.target.value)}
-            />
-
-            <select
-              className="border p-2"
-              onChange={(e) => setRangeType(e.target.value)}
-            >
-              <option value="days">Days</option>
-              <option value="months">Months</option>
-              <option value="years">Years</option>
-            </select>
-          </div>
-        )}
-
-        <button
-          onClick={handleRecipient}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          Load Recipients
-        </button>
-
-        <p className="mt-2 text-sm">
-          Selected: {selectedEmails.length}
-        </p>
-      </div>
-
-      {/* EMAIL */}
-      <div className="bg-white p-4 rounded shadow">
-
-        <h2 className="text-xl font-bold mb-3">Send Email</h2>
-
-        {/* SUBJECT */}
-        <input
-          className="w-full border p-2 mb-3"
-          placeholder="Subject"
-          value={subject}
-          onChange={(e) => setSubject(e.target.value)}
-        />
-
-        {/* QUILL EDITOR */}
-        <div className="border rounded mb-3 bg-white text-black">
-          <div ref={quillRef} />
-        </div>
-
-        <button
-          onClick={sendEmail}
-          className="bg-green-500 text-white px-4 py-2 rounded w-full"
-        >
-          Send Email
-        </button>
-
-      </div>
-    </div>
   );
 };
 

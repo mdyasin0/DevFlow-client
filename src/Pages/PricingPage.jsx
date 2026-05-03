@@ -48,11 +48,19 @@ export default function PricingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-900 to-black text-white p-6">
+    <div
+      className="min-h-screen p-6"
+      style={{
+        background: "linear-gradient(to bottom right, var(--bg), var(--bg-secondary))",
+        color: "var(--text)",
+      }}
+    >
       {/* Hero */}
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h1>
-        <p className="text-gray-400">
+        <h1 className="text-4xl font-bold mb-4">
+          Simple, Transparent Pricing
+        </h1>
+        <p style={{ color: "var(--text-secondary)" }}>
           Start free, scale as your team grows with DevFlow
         </p>
       </div>
@@ -63,33 +71,69 @@ export default function PricingPage() {
           <motion.div
             key={index}
             whileHover={{ scale: 1.05 }}
-            className={`p-6 rounded-2xl shadow-lg border ${
-              plan.highlight
-                ? "border-blue-500 bg-gray-800"
-                : "border-gray-700 bg-gray-900"
-            }`}
+            className="p-6 rounded-2xl border shadow-lg"
+            style={{
+              background: "var(--card)",
+              borderColor: plan.highlight
+                ? "var(--primary)"
+                : "var(--border)",
+              boxShadow: `0 10px 25px var(--shadow)`,
+            }}
           >
             {plan.highlight && (
-              <span className="bg-blue-500 text-xs px-3 py-1 rounded-full">
+              <span
+                className="text-xs px-3 py-1 rounded-full"
+                style={{
+                  background: "var(--primary)",
+                  color: "#fff",
+                }}
+              >
                 Most Popular
               </span>
             )}
 
             <h2 className="text-2xl font-semibold mt-4">{plan.name}</h2>
-            <p className="text-gray-400 text-sm mb-4">{plan.desc}</p>
+            <p
+              className="text-sm mb-4"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              {plan.desc}
+            </p>
 
             <h3 className="text-3xl font-bold mb-6">
               {plan.price}
-              <span className="text-sm text-gray-400">/month</span>
+              <span
+                className="text-sm"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                /month
+              </span>
             </h3>
 
             <ul className="space-y-2 mb-6">
               {plan.features.map((f, i) => (
-                <li key={i} className="text-gray-300">✔ {f}</li>
+                <li
+                  key={i}
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  ✔ {f}
+                </li>
               ))}
             </ul>
 
-            <button className="w-full py-2 rounded-xl bg-blue-600 hover:bg-blue-700 transition">
+            <button
+              className="w-full py-2 rounded-xl transition"
+              style={{
+                background: "var(--primary)",
+                color: "#fff",
+              }}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.background = "var(--primary-hover)")
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.background = "var(--primary)")
+              }
+            >
               {plan.button}
             </button>
           </motion.div>
@@ -103,17 +147,21 @@ export default function PricingPage() {
         <div className="space-y-4">
           <div>
             <h3 className="font-semibold">Is DevFlow free?</h3>
-            <p className="text-gray-400">Yes, with limitations.</p>
+            <p style={{ color: "var(--text-secondary)" }}>
+              Yes, with limitations.
+            </p>
           </div>
 
           <div>
             <h3 className="font-semibold">Can I upgrade later?</h3>
-            <p className="text-gray-400">Yes, anytime.</p>
+            <p style={{ color: "var(--text-secondary)" }}>
+              Yes, anytime.
+            </p>
           </div>
 
           <div>
             <h3 className="font-semibold">Is my data secure?</h3>
-            <p className="text-gray-400">
+            <p style={{ color: "var(--text-secondary)" }}>
               Yes, we use secure authentication systems.
             </p>
           </div>

@@ -69,72 +69,94 @@ const User_Administration = () => {
   };
 
   return (
-    <div className="p-6">
-      {/* Search */}
-      <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Search by email..."
-          className="w-full md:w-1/3 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
+   <div className="p-6 bg-(--bg) text-(--text) min-h-screen">
+  {/* Search */}
+  <div className="mb-4">
+    <input
+      type="text"
+      placeholder="Search by email..."
+      className="w-full md:w-1/3 px-4 py-2 rounded-lg border 
+                 border-(--border) 
+                 bg-(--card) 
+                 text-(--text) 
+                 placeholder:text-(--text-secondary)
+                 focus:outline-none focus:ring-2 focus:ring-(--primary)"
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+    />
+  </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full border border-gray-200 rounded-lg">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="p-3 text-left">Name</th>
-              <th className="p-3 text-left">Email</th>
-              <th className="p-3 text-left">Role</th>
-              <th className="p-3 text-center">Actions</th>
-            </tr>
-          </thead>
+  {/* Table */}
+  <div className="overflow-x-auto">
+    <table className="w-full border border-(--border) rounded-lg overflow-hidden">
+      
+      <thead className="bg-(--bg-secondary) text-(--text)">
+        <tr>
+          <th className="p-3 text-left">Name</th>
+          <th className="p-3 text-left">Email</th>
+          <th className="p-3 text-left">Role</th>
+          <th className="p-3 text-center">Actions</th>
+        </tr>
+      </thead>
 
-          <tbody>
-            {filteredUsers.map((user) => (
-              <tr key={user._id} className="border-t">
-                <td className="p-3">{user.name}</td>
-                <td className="p-3">{user.email}</td>
-                <td className="p-3 capitalize">{user.role}</td>
+      <tbody>
+        {filteredUsers.map((user) => (
+          <tr
+            key={user._id}
+            className="border-t border-(--border) hover:bg-(--bg-secondary) transition"
+          >
+            <td className="p-3">{user.name}</td>
+            <td className="p-3 text-(--text-secondary)">{user.email}</td>
+            <td className="p-3 capitalize">{user.role}</td>
 
-                <td className="p-3 flex gap-2 justify-center">
-                  {user.isBlocked ? (
-  <button
-    onClick={() => handleUnblock(user._id)}
-    className="px-3 py-1 bg-green-500 text-white rounded"
-  >
-    Unblock
-  </button>
-) : (
-  <button
-    onClick={() => handleBlock(user._id)}
-    className="px-3 py-1 bg-red-500 text-white rounded"
-  >
-    Block
-  </button>
-)}
-                  <select
-                    value={user.role}
-                    onChange={(e) => handleRoleChange(user._id, e.target.value)}
-                    className="px-2 py-1 border rounded"
-                  >
-                    <option value="developer">Developer</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            <td className="p-3 flex gap-2 justify-center items-center">
+              
+              {user.isBlocked ? (
+                <button
+                  onClick={() => handleUnblock(user._id)}
+                  className="px-3 py-1 rounded 
+                             bg-(--success) text-white 
+                             hover:opacity-90 transition"
+                >
+                  Unblock
+                </button>
+              ) : (
+                <button
+                  onClick={() => handleBlock(user._id)}
+                  className="px-3 py-1 rounded 
+                             bg-(--danger) text-white 
+                             hover:opacity-90 transition"
+                >
+                  Block
+                </button>
+              )}
 
-        {filteredUsers.length === 0 && (
-          <p className="text-center mt-4 text-gray-500">No users found</p>
-        )}
-      </div>
-    </div>
+              <select
+                value={user.role}
+                onChange={(e) =>
+                  handleRoleChange(user._id, e.target.value)
+                }
+                className="px-2 py-1 rounded border 
+                           border-(--border) 
+                           bg-(--card) 
+                           text-(--text)"
+              >
+                <option value="developer">Developer</option>
+                <option value="admin">Admin</option>
+              </select>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+
+    {filteredUsers.length === 0 && (
+      <p className="text-center mt-4 text-(--text-secondary)">
+        No users found
+      </p>
+    )}
+  </div>
+</div>
   );
 };
 

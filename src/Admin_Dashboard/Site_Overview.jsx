@@ -65,27 +65,31 @@ const Site_Overview = () => {
   }).length;
 
   return (
-    <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+   <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 bg-(--bg-secondary) min-h-screen transition-colors duration-300">
+  
+  <Card title="Total Users" value={totalUsers} />
+  <Card title="Total Admin" value={totalAdmin} />
+  <Card title="Active Users" value={activeUsers} />
 
-      {/* Card */}
-      <Card title="Total Users" value={totalUsers} />
-      <Card title="Total Admin" value={totalAdmin} />
-      <Card title="Active Users" value={activeUsers} />
+  <Card title="Total Managers" value={managers} />
+  <Card title="Total Projects" value={totalProjects} />
+  <Card title="Active Projects" value={activeProjects} />
 
-      <Card title="Total Managers" value={managers} />
-      <Card title="Total Projects" value={totalProjects} />
-      <Card title="Active Projects" value={activeProjects} />
-
-    </div>
+</div>
   );
 };
 
 // 🔥 Reusable Card
 const Card = ({ title, value }) => {
   return (
-    <div className="p-6 rounded-xl shadow bg-white border">
-      <h2 className="text-gray-500 text-sm">{title}</h2>
-      <p className="text-3xl font-bold text-blue-600">{value}</p>
+    <div className="p-6 rounded-xl border shadow-sm bg-(--card) border-(--border) transition-colors duration-300">
+      <h2 className="text-sm text-(--text-secondary)">
+        {title}
+      </h2>
+
+      <p className="text-3xl font-bold text-(--primary) mt-2">
+        {value}
+      </p>
     </div>
   );
 };
