@@ -345,7 +345,7 @@ const rankingData = useMemo(() => {
     🏆 Team Performance
   </h2>
 
-  <div className="w-full h-[320px]">
+  <div className="w-full h-80">
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={rankingData}>
         <XAxis dataKey="name" />

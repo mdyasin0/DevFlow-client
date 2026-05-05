@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { socket } from "../Socket";
 
 const Project_Monitoring = () => {
   const [projects, setProjects] = useState([]);
@@ -51,6 +52,17 @@ const handleStatusChange = async (id, status) => {
     console.log(error);
   }
 };
+useEffect(() => {
+  socket.on("newProject", (newProject) => {
+    console.log("🆕 New Project:", newProject);
+
+    setProjects((prev) => [newProject, ...prev]);
+  });
+
+  return () => {
+    socket.off("newProject");
+  };
+}, []);
   return (
    <div className="p-6 min-h-screen bg-(--bg) text-(--text)">
 

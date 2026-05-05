@@ -12,6 +12,7 @@ import {
 
 import { AuthContext } from "./AuthContext";
 import app from "./firebase.config";
+import { socket } from "../Socket";
 
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
@@ -20,6 +21,35 @@ const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+
+useEffect(() => {
+  if (user?.email) {
+    socket.connect(); // connect only when user আছে
+
+    socket.emit("join", user.email); // room join
+
+    console.log("Socket connected & joined:", user.email);
+  }
+
+  return () => {
+    socket.disconnect(); // logout বা unmount হলে disconnect
+  };
+}, [user]);
+
+useEffect(() => {
+  socket.on("newNotification", (data) => {
+    console.log("🔔 Notification:", data);
+  });
+
+  socket.on("taskUpdated", (data) => {
+    console.log("⚡ Task updated:", data);
+  });
+
+  return () => {
+    socket.off("newNotification");
+    socket.off("taskUpdated");
+  };
+}, []);
   // 🔹 Register
   const createUser = (email, password) => {
     setLoading(true);
