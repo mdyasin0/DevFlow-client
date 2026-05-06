@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { Link } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { FaEye, FaEyeSlash, FaGoogle } from "react-icons/fa";
 import { AuthContext } from "../Firebase/AuthContext";
 import Swal from "sweetalert2";
@@ -7,8 +7,10 @@ import Swal from "sweetalert2";
 const Login = () => {
   const { signInUser, googleLogin , logOut } = useContext(AuthContext);
   const [showPass, setShowPass] = useState(false);
-
-
+ const navigate = useNavigate();
+  const location = useLocation();
+  // user যেই page থেকে এসেছে
+  const from = location.state?.from?.pathname || "/";
 const checkIfBlocked = async (email) => {
   try {
     const res = await fetch(`http://localhost:5000/users/${email}`);
@@ -55,7 +57,8 @@ const checkIfBlocked = async (email) => {
       timer: 2000,
       showConfirmButton: false,
     });
-
+   // ✅ login success → return to previous page
+      navigate(from, { replace: true });
   } catch (err) {
     Swal.fire({
       icon: "error",
@@ -83,7 +86,7 @@ const handleGoogle = () => {
         body: JSON.stringify({
           name: user.displayName,
           email: user.email,
-          role: "developer",
+          
         }),
       });
 
@@ -93,6 +96,7 @@ const handleGoogle = () => {
         timer: 2000,
         showConfirmButton: false,
       });
+        navigate(from, { replace: true });
     })
     .catch((err) => {
       Swal.fire({

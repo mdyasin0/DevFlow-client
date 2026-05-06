@@ -20,6 +20,8 @@ import Site_Overview from "../Admin_Dashboard/Site_Overview";
 import Project_Monitoring from "../Admin_Dashboard/Project_Monitoring";
 import Inactive_Users from "../Admin_Dashboard/Inactive_Users";
 import PricingPage from "../Pages/PricingPage";
+import Unauthorized from "../Pages/Unauthorized";
+import ProtectedRoute from "../components/ProtectedRoute";
 
 const router = createBrowserRouter([
   {
@@ -34,70 +36,155 @@ const router = createBrowserRouter([
       {
         path: "/login",
         element: <Login />,
-      },{
-          path: "/profile",
-            element: <Profile />,
       },
       {
-path:"/pricingpage",
-element:<PricingPage/>,
+        path: "/profile",
+        element: <Profile />,
+      },
+      {
+        path: "/pricingpage",
+        element: <PricingPage />,
+      },
+      {
+        path: "/unauthorized",
+        element: <Unauthorized />,
       },
       {
         path: "/developer_dashboard",
-        element: <Dashboard_layout />,
+        element: 
+        (
+              <ProtectedRoute allowedRoles={["developer"]}>
+                <Dashboard_layout />
+              </ProtectedRoute>
+            ),
         children: [
-          { index: true, element: <Navigate to="/developer_dashboard/profile" />},
           {
-            path: "/developer_dashboard/profile",
-            element: <Profile />,
-          },{
-            path:"/developer_dashboard/developer_projects" ,
-            element: <Developer_projects/> ,
-          },{
-            path:"/developer_dashboard/created_project" ,
-            element : <Created_project/>,
-          },{
-            path:"/developer_dashboard/created_project_details/:id",
-            element:<Created_project_details/>,
+            index: true,
+            element: <Navigate to="/developer_dashboard/profile" />,
           },
           {
-            path:"/developer_dashboard/invitations" ,
-            element: <Invitations/>,
-          },{
-            path:"/developer_dashboard/joined_team" ,
-            element: <Joined_Team/>,
-          },{
-            path:"/developer_dashboard/joined_team_details/:id",
-            element:<Joined_Team_Details/>,
-          }
+            path: "/developer_dashboard/profile",
+            element: (
+              <ProtectedRoute allowedRoles={["developer"]}>
+                <Profile />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "/developer_dashboard/developer_projects",
+            element: (
+              <ProtectedRoute allowedRoles={["developer"]}>
+                <Developer_projects />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "/developer_dashboard/created_project",
+            element: (
+              <ProtectedRoute allowedRoles={["developer"]}>
+                <Created_project />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "/developer_dashboard/created_project_details/:id",
+            element: (
+              <ProtectedRoute allowedRoles={["developer"]}>
+                <Created_project_details />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "/developer_dashboard/invitations",
+            element: (
+              <ProtectedRoute allowedRoles={["developer"]}>
+                <Invitations />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "/developer_dashboard/joined_team",
+            element: (
+              <ProtectedRoute allowedRoles={["developer"]}>
+                <Joined_Team />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "/developer_dashboard/joined_team_details/:id",
+            element: (
+              <ProtectedRoute allowedRoles={["developer"]}>
+                <Joined_Team_Details />
+              </ProtectedRoute>
+            ),
+          },
         ],
-      },{
-        path:"/admin_dashboard_layout" ,
-        element: <Admin_Dashboard_Layout/>,
-      children:[
-        
-        { index: true, element: <Navigate to="/admin_dashboard_layout/email_communication" />},
-        {
-          path:"/admin_dashboard_layout/email_communication",
-          element: <Email_Communication/>,
-        },{
-          path:"/admin_dashboard_layout/user_administration",
-          element: <User_Administration/>,
-        },{
-          path:"/admin_dashboard_layout/site_overview",
-          element: <Site_Overview/>,
-        }, {
+      },
+      {
+        path: "/admin_dashboard_layout",
+        element: 
+         (
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Admin_Dashboard_Layout />
+              </ProtectedRoute>
+            ),
+        children: [
+          {
+            index: true,
+            element: (
+              <Navigate to="/admin_dashboard_layout/email_communication" />
+            ),
+          },
+          {
+            path: "/admin_dashboard_layout/email_communication",
+            element: (
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Email_Communication />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "/admin_dashboard_layout/user_administration",
+            element:  (
+              <ProtectedRoute allowedRoles={["admin"]}>
+               <User_Administration />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "/admin_dashboard_layout/site_overview",
+            element: (
+              <ProtectedRoute allowedRoles={["admin"]}>
+               <Site_Overview />
+              </ProtectedRoute>
+            ),
+          },
+          {
             path: "/admin_dashboard_layout/profile",
-            element: <Profile />,
-          },{
-            path:"/admin_dashboard_layout/project_monitoring",
-            element: <Project_Monitoring/>,
-          },{
-            path:"/admin_dashboard_layout/inactive_users",
-            element: <Inactive_Users/>,
-          }
-      ]
-      }
+            element:  (
+              <ProtectedRoute allowedRoles={["admin"]}>
+               <Profile />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "/admin_dashboard_layout/project_monitoring",
+            element:  (
+              <ProtectedRoute allowedRoles={["admin"]}>
+               <Project_Monitoring />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "/admin_dashboard_layout/inactive_users",
+            element:(
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Inactive_Users /> 
+              </ProtectedRoute>
+            ),
+          },
+        ],
+      },
     ],
   },
 ]);

@@ -15,14 +15,14 @@ const Navbar = () => {
   const [openNoti, setOpenNoti] = useState(false);
 
   const { theme, toggleTheme } = useContext(ThemeContext);
-  const { user, logOut } = useContext(AuthContext);
+  const { user, logOut, role } = useContext(AuthContext);
   const navigate = useNavigate();
 
   // 🔥 FETCH NOTIFICATIONS (ROLE BASED)
   useEffect(() => {
-    if (!user?.email) return;
+    
 
-    fetch(`http://localhost:5000/notifications?email=${user.email}`)
+    fetch(`http://localhost:5000/notifications`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
@@ -57,7 +57,24 @@ const Navbar = () => {
   const unreadCount = useMemo(() => {
     return notifications.filter((n) => !n.read).length;
   }, [notifications]);
+useEffect(() => {
+  if (!user?._id) return;
 
+  const handleConnect = () => {
+    socket.emit("join", user._id);
+  };
+
+  socket.on("connect", handleConnect);
+
+  if (socket.connected) {
+    socket.emit("join", user._id);
+    console.log("mothwer chod=============",user._id);
+  }
+
+  return () => {
+    socket.off("connect", handleConnect);
+  };
+}, [user?._id]);
   return (
     <nav className="w-full sticky top-0 z-50 backdrop-blur border-b bg-(--bg) border-(--border) text-(--text)">
       <div className="max-w-7xl mx-auto relative px-4 py-3 flex items-center justify-between">
@@ -112,12 +129,13 @@ const Navbar = () => {
             price
           </NavLink>
           <a className="hover:text-(--primary)">Docs</a>
-          <NavLink to="/developer_dashboard" className="font-medium text-(--text)">
+           {role === "developer" &&   <NavLink to="/developer_dashboard" className="font-medium text-(--text)">
             Dashboard
-          </NavLink>
-          <NavLink to="/admin_dashboard_layout" className="font-medium text-(--text)">
+          </NavLink>}
+         {role === "admin" &&  <NavLink to="/admin_dashboard_layout" className="font-medium text-(--text)">
             admin_Dashboard
-          </NavLink>
+          </NavLink>}
+         
         </div>
 
         {/* Right Side */}

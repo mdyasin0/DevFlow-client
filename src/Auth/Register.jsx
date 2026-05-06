@@ -101,7 +101,7 @@ const checkIfBlocked = async (email) => {
       await fetch("http://localhost:5000/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, role: "developer" }),
+        body: JSON.stringify({ name, email }),
       });
 
       Swal.fire({
@@ -147,7 +147,7 @@ const checkIfBlocked = async (email) => {
           body: JSON.stringify({
             name: user.displayName,
             email: user.email,
-            role: "developer",
+            
           }),
         });
 

@@ -21,7 +21,35 @@ const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+const [dbUser, setDbUser] = useState(null);
+const [roleLoading, setRoleLoading] = useState(true);
+useEffect(() => {
+  const fetchUserRole = async () => {
+    if (user?.email) {
+      setRoleLoading(true);
 
+      try {
+        const res = await fetch(
+          `http://localhost:5000/user/${user.email}`
+        );
+        const data = await res.json();
+
+        if (data.success) {
+          setDbUser(data.data);
+        }
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setRoleLoading(false);
+      }
+    } else {
+      setDbUser(null);
+      setRoleLoading(false);
+    }
+  };
+
+  fetchUserRole();
+}, [user]);
 useEffect(() => {
   if (user?.email) {
     socket.connect(); // connect only when user আছে
@@ -105,6 +133,9 @@ useEffect(() => {
     googleLogin,
     logOut,
     updateUserProfile, // 🔥 added here
+     role: dbUser?.role,
+       roleLoading,
+         dbUser, 
   };
 
   return (

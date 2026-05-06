@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { socket } from "../Socket";
+import { AuthContext } from "../Firebase/AuthContext";
 
 const Project_Monitoring = () => {
   const [projects, setProjects] = useState([]);
   const [filter, setFilter] = useState("all");
   const [selectedDescription, setSelectedDescription] = useState(null);
-
+  const { user} = useContext(AuthContext);
   useEffect(() => {
     fetch("http://localhost:5000/projects")
       .then((res) => res.json())
@@ -34,7 +35,9 @@ const handleStatusChange = async (id, status) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ 
+          status ,
+           updatedBy: user.email,}),
       }
     );
 
