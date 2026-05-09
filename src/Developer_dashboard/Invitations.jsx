@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../Firebase/AuthContext";
+import { socket } from "../Socket";
 
 const Invitations = () => {
   const [projects, setProjects] = useState([]);
@@ -46,7 +47,46 @@ const Invitations = () => {
 
     fetchData();
   }, [user?.email]);
+useEffect(() => {
+  if (user?._id) {
+    socket.emit("join", user._id);
+  }
+}, [user]);
+useEffect(() => {
+  if (projects.length > 0) {
+    projects.forEach((p) => {
+      socket.emit("joinProject", p._id);
+    });
+  }
+}, [projects]);
+useEffect(() => {
+  socket.on("projectUpdated", (updatedProject) => {
+    setProjects((prev) =>
+      prev.map((p) =>
+        p._id === updatedProject._id ? updatedProject : p
+      )
+    );
+  });
 
+  return () => socket.off("projectUpdated");
+}, []);
+useEffect(() => {
+  socket.on("newInvitation", async (data) => {
+    console.log("🔥 new invitation:", data);
+
+    // 🔥 BEST WAY (simple & reliable)
+    const res = await fetch(
+      `http://localhost:5000/my-invitations/${user.email}`
+    );
+    const result = await res.json();
+
+    if (result.success) {
+      setProjects(result.data);
+    }
+  });
+
+  return () => socket.off("newInvitation");
+}, [user?.email]);
   // ✅ action handler
   const handleAction = async (projectId, status) => {
     const confirmAction = window.confirm(

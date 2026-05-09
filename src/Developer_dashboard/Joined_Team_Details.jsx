@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { AuthContext } from "../Firebase/AuthContext";
+import { socket } from "../Socket";
 
 const Joined_Team_Details = () => {
   const { id } = useParams();
@@ -8,7 +9,9 @@ const Joined_Team_Details = () => {
 
   const { user } = useContext(AuthContext);
   const loginEmail = user?.email;
-
+const liveMember = project?.teammember?.find(
+  (m) => m.email === loginEmail
+);
   const [modal, setModal] = useState({
     open: false,
     member: null,
@@ -23,7 +26,26 @@ const Joined_Team_Details = () => {
   };
 
   const myMember = project?.teammember?.find((m) => m.email === loginEmail);
+useEffect(() => {
+  if (id) {
+    socket.emit("joinProject", id);
+  }
+}, [id]);
+useEffect(() => {
+  if (!id) return;
 
+  socket.emit("joinProject", id);
+
+  const handleUpdate = () => {
+    fetchProject(); // 🔥 always fresh data
+  };
+
+  socket.on("projectUpdated", handleUpdate);
+
+  return () => {
+    socket.off("projectUpdated", handleUpdate);
+  };
+}, [id]);
   useEffect(() => {
     fetchProject();
   }, [id]);
@@ -105,8 +127,8 @@ const Joined_Team_Details = () => {
 
               {/* CONTENT */}
             <div className="p-4 max-h-[60vh] overflow-y-auto space-y-3">
-  {modal.member[modal.type].length > 0 ? (
-    modal.member[modal.type].map((t) => {
+  {modal.member ?.[modal.type]?.length > 0 ? (
+    liveMember?.[modal.type]?.map((t) => {
       const priorityColor =
         t.priority === "high"
           ? "bg-red-500/10 text-red-500 border-red-500/30"

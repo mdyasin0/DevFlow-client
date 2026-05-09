@@ -66,6 +66,43 @@ useEffect(() => {
     socket.off("newProject");
   };
 }, []);
+useEffect(() => {
+  const handleDelete = (data) => {
+    console.log("🗑 Project Deleted:", data);
+
+    setProjects((prev) =>
+      prev.filter((p) => p._id !== data.projectId)
+    );
+  };
+
+  socket.on("projectDeleted", handleDelete);
+
+  return () => {
+    socket.off("projectDeleted", handleDelete);
+  };
+}, []);
+useEffect(() => {
+  if (user?.email) {
+    fetch(`http://localhost:5000/users/${user.email}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          socket.emit("join", data.data._id); // 🔥 MongoDB ID
+        }
+      });
+  }
+}, [user?.email]);
+useEffect(() => {
+  socket.connect();
+
+  socket.on("connect", () => {
+    console.log("socket connected:", socket.id);
+  });
+
+  return () => {
+    socket.disconnect();
+  };
+}, []);
   return (
    <div className="p-6 min-h-screen bg-(--bg) text-(--text)">
 

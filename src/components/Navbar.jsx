@@ -7,6 +7,8 @@ import { ThemeContext } from "../color/ThemeContext";
 import { AuthContext } from "../Firebase/AuthContext";
 import { Link, NavLink, useNavigate } from "react-router";
 import { FaEllipsisV } from "react-icons/fa";
+import {  Socket } from "socket.io-client";
+import { socket } from "../Socket";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
@@ -18,7 +20,31 @@ const Navbar = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
   const { user, logOut, role } = useContext(AuthContext);
   const navigate = useNavigate();
+const [dbUser, setDbUser] = useState(null);
+useEffect(() => {
+  if (!user?.email) return;
 
+  fetch(`http://localhost:5000/users/${user.email}`)
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        setDbUser(data.data); // 🔥 এখানে MongoDB user আসবে
+      }
+    });
+}, [user?.email]);
+useEffect(() => {
+  if (dbUser?._id) {
+    socket.emit("join", dbUser._id); // ✅ correct
+    console.log("Joined room:", dbUser._id);
+  }
+}, [dbUser]);
+useEffect(() => {
+  socket.on("newNotification", (data) => {
+    setNotifications((prev) => [data, ...prev]);
+  });
+
+  return () => socket.off("newNotification");
+}, []);
   // 🔥 FETCH NOTIFICATIONS (ROLE BASED)
   useEffect(() => {
     if (!user?.email) return;
@@ -114,7 +140,7 @@ const Navbar = () => {
             </div>
 
             {/* Body */}
-            <div className="max-h-96 overflow-y-auto">
+            <div className="max-h-96 py-10 overflow-y-auto">
               {notifications.length === 0 ? (
                 <p className="p-4 text-sm text-center text-(--text-secondary)">
                   No notifications

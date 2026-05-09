@@ -3,6 +3,7 @@ import { useParams } from "react-router";
 import { useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { PieChart, Pie, Cell,  } from "recharts";
+import { socket } from "../Socket";
 
 const Created_project_details = () => {
   const { id } = useParams();
@@ -23,7 +24,18 @@ const Created_project_details = () => {
 
   const [editData, setEditData] = useState(null);
   const [editText, setEditText] = useState("");
+useEffect(() => {
+  if (!id) return;
 
+  socket.emit("joinProject", id);
+}, [id]);
+useEffect(() => {
+  socket.on("projectUpdated", (updatedProject) => {
+    setProject(updatedProject); // 💥 instant UI update
+  });
+
+  return () => socket.off("projectUpdated");
+}, []);
   // ✅ FETCH PROJECT (reuseable)
   const fetchProject = async () => {
     const res = await fetch(`http://localhost:5000/project/${id}`);
@@ -108,6 +120,21 @@ const rankingData = useMemo(() => {
         : index + 1,
     }));
 }, [project]);
+useEffect(() => {
+  if (!id) return;
+
+  socket.emit("joinProject", id);
+
+  const handleUpdate = (updatedProject) => {
+    setProject(updatedProject);
+  };
+
+  socket.on("projectUpdated", handleUpdate);
+
+  return () => {
+    socket.off("projectUpdated", handleUpdate);
+  };
+}, [id]);
   useEffect(() => {
     fetchProject();
   }, [id]);
@@ -253,7 +280,7 @@ const rankingData = useMemo(() => {
             <div className="mt-2 text-sm text-gray-400 space-y-1">
               <p>👤 Manager: {project.created_by}</p>
               <p>🕒 Start: {new Date(project.created_time).toLocaleString()}</p>
-              <p>👥 Total Members: {project.teammember.length}</p>
+              <p>👥 Total Members: {project.teammember ?.length}</p>
             </div>
           </div>
 
@@ -523,7 +550,7 @@ const rankingData = useMemo(() => {
 
             {/* BODY */}
             <tbody>
-              {project.teammember.map((m, i) => (
+              {project.teammember?.map((m, i) => (
                 <tr
                   key={i}
                   className="border-t border-(--border) text-(--text)"

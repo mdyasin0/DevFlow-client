@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import Developer_projects from "./Developer_projects";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import Project_form from "./Project_form";
+import { socket } from "../Socket";
 
 const Created_project = () => {
   const { user } = useContext(AuthContext);
@@ -80,6 +81,36 @@ const handleDelete = async (id) => {
     }
   }, [user]);
 
+useEffect(() => {
+  if (!user?._id) return;
+
+  socket.connect(); // 🔥 IMPORTANT
+
+  socket.emit("join", user._id.toString());
+
+  return () => {
+    socket.disconnect();
+  };
+}, [user]);
+useEffect(() => {
+  const handler = async (data) => {
+    console.log("🔥 realtime update:", data);
+
+    // 🔥 RE-FETCH projects again
+    const res = await fetch(
+      `http://localhost:5000/projects/${user.email}`
+    );
+    const result = await res.json();
+
+    if (result.success) {
+      setProjects(result.data);
+    }
+  };
+
+  socket.on("project_status_updated", handler);
+
+  return () => socket.off("project_status_updated", handler);
+}, [user]);
   const hasProjects = projects.length > 0;
 
   if (!user?.email) return null;
