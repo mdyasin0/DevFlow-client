@@ -6,7 +6,9 @@ const User_Administration = () => {
 
   // Load users
   useEffect(() => {
-    fetch("http://localhost:5000/users")
+    fetch("http://localhost:5000/users" ,{
+      credentials:"include"
+    })
       .then((res) => res.json())
       .then((data) => {
         setUsers(data.data);
@@ -14,18 +16,19 @@ const User_Administration = () => {
   }, []);
 
   // Filter users by email
-  const filteredUsers = users.filter((user) =>
+  const filteredUsers = users?.filter((user) =>
     user.email.toLowerCase().includes(search.toLowerCase()),
   );
 
   const handleBlock = (id) => {
     fetch(`http://localhost:5000/users/block/${id}`, {
       method: "PATCH",
+      credentials:"include",
     })
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
-          const updated = users.map((user) =>
+          const updated = users?.map((user) =>
             user._id === id ? { ...user, isBlocked: true } : user,
           );
           setUsers(updated);
@@ -36,11 +39,12 @@ const User_Administration = () => {
   const handleUnblock = (id) => {
     fetch(`http://localhost:5000/users/unblock/${id}`, {
       method: "PATCH",
+      credentials:"include",
     })
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
-          const updated = users.map((user) =>
+          const updated = users?.map((user) =>
             user._id === id ? { ...user, isBlocked: false } : user,
           );
           setUsers(updated);
@@ -54,13 +58,14 @@ const User_Administration = () => {
       headers: {
         "Content-Type": "application/json",
       },
+      credentials:"include",
       body: JSON.stringify({ role: newRole }),
     })
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
           // UI update
-          const updatedUsers = users.map((user) =>
+          const updatedUsers = users?.map((user) =>
             user._id === id ? { ...user, role: newRole } : user,
           );
           setUsers(updatedUsers);
@@ -100,7 +105,7 @@ const User_Administration = () => {
       </thead>
 
       <tbody>
-        {filteredUsers.map((user) => (
+        {filteredUsers?.map((user) => (
           <tr
             key={user._id}
             className="border-t border-(--border) hover:bg-(--bg-secondary) transition"
@@ -150,7 +155,7 @@ const User_Administration = () => {
       </tbody>
     </table>
 
-    {filteredUsers.length === 0 && (
+    {filteredUsers?.length === 0 && (
       <p className="text-center mt-4 text-(--text-secondary)">
         No users found
       </p>

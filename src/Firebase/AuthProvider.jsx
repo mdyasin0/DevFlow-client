@@ -23,6 +23,26 @@ const AuthProvider = ({ children }) => {
 
 const [dbUser, setDbUser] = useState(null);
 const [roleLoading, setRoleLoading] = useState(true);
+
+const getJwtToken = async (email) => {
+  try {
+ fetch("http://localhost:5000/jwt", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+       credentials: "include",
+      body: JSON.stringify({ email }),
+    });
+
+   
+
+  } catch (error) {
+    console.log("JWT Error:", error);
+  }
+};  
+
+
 useEffect(() => {
   const fetchUserRole = async () => {
     if (user?.email) {
@@ -30,7 +50,9 @@ useEffect(() => {
 
       try {
         const res = await fetch(
-          `http://localhost:5000/user/${user.email}`
+          `http://localhost:5000/user/${user.email}`,{
+            credentials:"include",
+          }
         );
         const data = await res.json();
 
@@ -51,18 +73,20 @@ useEffect(() => {
   fetchUserRole();
 }, [user]);
 useEffect(() => {
-  if (user?.email) {
-    socket.connect(); // connect only when user আছে
+  if (!dbUser?._id) return;
 
-    socket.emit("join", user.email); // room join
-
-    console.log("Socket connected & joined:", user.email);
+  if (!socket.connected) {
+    socket.connect();
   }
 
+  socket.emit("join", dbUser._id);
+
+  console.log("Socket joined:", dbUser._id);
+
   return () => {
-    socket.disconnect(); // logout বা unmount হলে disconnect
+    socket.disconnect();
   };
-}, [user]);
+}, [dbUser?._id]);
 
 useEffect(() => {
   socket.on("newNotification", (data) => {
@@ -99,6 +123,11 @@ useEffect(() => {
   // 🔹 Logout
   const logOut = () => {
     setLoading(true);
+   fetch("http://localhost:5000/logout", {
+    method: "POST",
+    credentials: "include",
+  });
+    socket.disconnect();
     return signOut(auth);
   };
 
@@ -116,14 +145,24 @@ useEffect(() => {
   };
 
   // 🔥 User state track
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
+useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    setUser(currentUser);
 
-    return () => unsubscribe();
-  }, []);
+    if (currentUser?.email) {
+      // 🔥 JWT CREATE
+      await getJwtToken(currentUser.email);
+    } else {
+      // 🔥 logout হলে token remove
+     
+      
+    }
+
+    setLoading(false);
+  });
+
+  return () => unsubscribe();
+}, []);
 
   const authInfo = {
     user,

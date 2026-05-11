@@ -43,12 +43,16 @@ useEffect(() => {
  
 
   const loadUsers = async () => {
-    const res = await axios.get("http://localhost:5000/users");
+    const res = await axios.get("http://localhost:5000/users" ,{
+      withCredentials: true,
+    });
     setUsers(res.data.data);
   };
 
   const loadProjects = async () => {
-    const res = await axios.get("http://localhost:5000/projects");
+    const res = await axios.get("http://localhost:5000/projects" ,{
+      withCredentials: true,
+    });
     setProjects(res.data.data);
   };
  // load data
@@ -99,6 +103,9 @@ useEffect(() => {
       emails: selectedEmails,
       subject,
       message,
+    },
+  {
+      withCredentials: true, // 🔥 IMPORTANT
     });
 
     alert("Email Sent!");

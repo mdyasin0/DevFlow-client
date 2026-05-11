@@ -12,7 +12,9 @@ const Invitations = () => {
   useEffect(() => {
     if (!user?.email) return;
 
-    fetch(`http://localhost:5000/user/${user.email}`)
+    fetch(`http://localhost:5000/user/${user.email}`,{
+      credentials: "include"
+    })
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
@@ -30,7 +32,9 @@ const Invitations = () => {
         setLoading(true);
 
         const res = await fetch(
-          `http://localhost:5000/my-invitations/${user.email}`
+          `http://localhost:5000/my-invitations/${user.email}`,{
+              credentials: "include",
+          }
         );
         const data = await res.json();
 
@@ -76,7 +80,9 @@ useEffect(() => {
 
     // 🔥 BEST WAY (simple & reliable)
     const res = await fetch(
-      `http://localhost:5000/my-invitations/${user.email}`
+      `http://localhost:5000/my-invitations/${user.email}`,{
+          credentials: "include",
+      }
     );
     const result = await res.json();
 
@@ -101,6 +107,7 @@ useEffect(() => {
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({
             email: user.email,
             name: userName,

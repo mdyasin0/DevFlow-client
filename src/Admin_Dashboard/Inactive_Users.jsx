@@ -41,7 +41,9 @@ const Inactive_Users = () => {
   }, [quill]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/approved_users")
+    fetch("http://localhost:5000/approved_users" ,{
+      credentials:"include",
+    })
       .then((res) => res.json())
       .then((data) => {
         if (data.success) setUsers(data.data);
@@ -104,6 +106,7 @@ const Inactive_Users = () => {
 
     await fetch("http://localhost:5000/email/send-inactive", {
       method: "POST",
+      credentials:"include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         emails: selectedEmails,

@@ -22,6 +22,7 @@ const handleUpdate = async () => {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
           teamName: selectedProject.teamName,
           projectTitle: selectedProject.projectTitle,
@@ -54,6 +55,7 @@ const handleDelete = async (id) => {
   try {
     const res = await fetch(`http://localhost:5000/projects/${id}`, {
       method: "DELETE",
+      credentials: "include",
     });
 
     const data = await res.json();
@@ -68,7 +70,11 @@ const handleDelete = async (id) => {
 }; 
   useEffect(() => {
     if (user?.email) {
-      fetch(`http://localhost:5000/projects/${user.email}`)
+      fetch(`http://localhost:5000/projects/${user.email}`
+        , {
+      credentials: "include",
+    }
+      )
         .then((res) => res.json())
         .then((data) => {
           if (data.success) {
@@ -98,7 +104,9 @@ useEffect(() => {
 
     // 🔥 RE-FETCH projects again
     const res = await fetch(
-      `http://localhost:5000/projects/${user.email}`
+      `http://localhost:5000/projects/${user.email}`, {
+      credentials: "include",
+    }
     );
     const result = await res.json();
 

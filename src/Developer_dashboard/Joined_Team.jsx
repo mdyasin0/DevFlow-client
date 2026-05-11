@@ -17,7 +17,9 @@ const Joined_Team = () => {
       setLoading(true);
       try {
         const res = await fetch(
-          `http://localhost:5000/my-projects/${email}`
+          `http://localhost:5000/my-projects/${email}`,{
+             credentials: "include",
+          }
         );
         const data = await res.json();
 

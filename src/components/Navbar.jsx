@@ -24,7 +24,9 @@ const [dbUser, setDbUser] = useState(null);
 useEffect(() => {
   if (!user?.email) return;
 
-  fetch(`http://localhost:5000/users/${user.email}`)
+  fetch(`http://localhost:5000/users/${user.email}`,{
+    credentials:"include",
+  })
     .then((res) => res.json())
     .then((data) => {
       if (data.success) {
@@ -49,7 +51,9 @@ useEffect(() => {
   useEffect(() => {
     if (!user?.email) return;
 
-    fetch(`http://localhost:5000/notifications?email=${user.email}`)
+    fetch(`http://localhost:5000/notifications?email=${user.email}` ,{
+      credentials:"include",
+    })
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
@@ -62,6 +66,7 @@ useEffect(() => {
     try {
       const res = await fetch(`http://localhost:5000/notifications/${id}`, {
         method: "DELETE",
+        credentials:"include",
       });
 
       const data = await res.json();
@@ -80,7 +85,8 @@ useEffect(() => {
         `http://localhost:5000/notifications/${id}/toggle-read`,
         {
           method: "PATCH",
-        },
+          credentials:"include",
+        }
       );
 
       const data = await res.json();

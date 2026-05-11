@@ -13,7 +13,9 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
       if (user?.email) {
         try {
           const res = await fetch(
-            `http://localhost:5000/user/${user.email}`
+            `http://localhost:5000/user/${user.email}`,{
+              credentials:"include",
+            }
           );
           const data = await res.json();
 

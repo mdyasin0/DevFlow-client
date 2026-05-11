@@ -22,6 +22,7 @@ const [description, setDescription] = useState("");
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include", 
         body: JSON.stringify(projectData),
       });
 

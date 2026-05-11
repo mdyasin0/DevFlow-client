@@ -13,7 +13,9 @@ const Login = () => {
   const from = location.state?.from?.pathname || "/";
 const checkIfBlocked = async (email) => {
   try {
-    const res = await fetch(`http://localhost:5000/users/${email}`);
+    const res = await fetch(`http://localhost:5000/users/${email}`,{
+      credentials:"include",
+    });
     const data = await res.json();
 
     if (!data.success) return false;
@@ -82,6 +84,7 @@ const handleGoogle = () => {
 
       await fetch("http://localhost:5000/users", {
         method: "POST",
+        credentials:"include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: user.displayName,

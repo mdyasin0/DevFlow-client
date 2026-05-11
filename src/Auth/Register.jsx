@@ -18,7 +18,9 @@ const Register = () => {
   
 const checkIfBlocked = async (email) => {
   try {
-    const res = await fetch(`http://localhost:5000/users/${email}`);
+    const res = await fetch(`http://localhost:5000/users/${email}` ,{
+      credentials:"include",
+    });
     const data = await res.json();
 
     if (!data.success) return false;
@@ -100,6 +102,7 @@ const checkIfBlocked = async (email) => {
 
       await fetch("http://localhost:5000/users", {
         method: "POST",
+        credentials:"include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email }),
       });
@@ -143,6 +146,7 @@ const checkIfBlocked = async (email) => {
       }
         await fetch("http://localhost:5000/users", {
           method: "POST",
+          credentials:"include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name: user.displayName,

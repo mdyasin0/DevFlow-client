@@ -8,7 +8,9 @@ const Project_Monitoring = () => {
   const [selectedDescription, setSelectedDescription] = useState(null);
   const { user} = useContext(AuthContext);
   useEffect(() => {
-    fetch("http://localhost:5000/projects")
+    fetch("http://localhost:5000/projects",{
+      credentials:"include",
+    })
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
@@ -32,6 +34,7 @@ const handleStatusChange = async (id, status) => {
       `http://localhost:5000/projects/${id}/status`,
       {
         method: "PATCH",
+        credentials:"include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -83,7 +86,9 @@ useEffect(() => {
 }, []);
 useEffect(() => {
   if (user?.email) {
-    fetch(`http://localhost:5000/users/${user.email}`)
+    fetch(`http://localhost:5000/users/${user.email}`,{
+      credentials:"include",
+    })
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {

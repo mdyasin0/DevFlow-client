@@ -38,7 +38,10 @@ useEffect(() => {
 }, []);
   // ✅ FETCH PROJECT (reuseable)
   const fetchProject = async () => {
-    const res = await fetch(`http://localhost:5000/project/${id}`);
+    const res = await fetch(`http://localhost:5000/project/${id}`,{
+     
+      credentials: "include",
+    });
     const data = await res.json();
     if (data.success) setProject(data.data);
   };
@@ -143,6 +146,7 @@ useEffect(() => {
     const res = await fetch(`http://localhost:5000/invite/${id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ email: inviteEmail }),
     });
 
@@ -160,6 +164,7 @@ useEffect(() => {
         `http://localhost:5000/reopen-task/${project._id}`,
         {
           method: "PATCH",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
@@ -185,6 +190,7 @@ useEffect(() => {
     const res = await fetch(`http://localhost:5000/add-task/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
+       credentials: "include",
       body: JSON.stringify({
         email: activeMember,
         text: taskText,
@@ -208,6 +214,7 @@ useEffect(() => {
     await fetch(`http://localhost:5000/delete-task/${id}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
+       credentials: "include",
       body: JSON.stringify({
         email,
         type,
@@ -229,6 +236,7 @@ useEffect(() => {
       `http://localhost:5000/remove-member/${id}/${encodeURIComponent(email)}`,
       {
         method: "DELETE",
+        credentials: "include"
       },
     );
 
@@ -240,6 +248,7 @@ useEffect(() => {
       `http://localhost:5000/remove-invite/${id}/${encodeURIComponent(email)}`,
       {
         method: "DELETE",
+        credentials: "include"
       },
     );
 
@@ -251,6 +260,7 @@ useEffect(() => {
     await fetch(`http://localhost:5000/update-task/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
+       credentials: "include",
       body: JSON.stringify({
         email: editData.member.email,
         type: editData.type,

@@ -9,9 +9,7 @@ const Joined_Team_Details = () => {
 
   const { user } = useContext(AuthContext);
   const loginEmail = user?.email;
-const liveMember = project?.teammember?.find(
-  (m) => m.email === loginEmail
-);
+  const liveMember = project?.teammember?.find((m) => m.email === loginEmail);
   const [modal, setModal] = useState({
     open: false,
     member: null,
@@ -19,33 +17,35 @@ const liveMember = project?.teammember?.find(
   });
 
   const fetchProject = async () => {
-    const res = await fetch(`http://localhost:5000/project/${id}`);
+    const res = await fetch(`http://localhost:5000/project/${id}`,{
+      credentials: "include",
+    });
     const data = await res.json();
 
     if (data.success) setProject(data.data);
   };
 
   const myMember = project?.teammember?.find((m) => m.email === loginEmail);
-useEffect(() => {
-  if (id) {
+  useEffect(() => {
+    if (id) {
+      socket.emit("joinProject", id);
+    }
+  }, [id]);
+  useEffect(() => {
+    if (!id) return;
+
     socket.emit("joinProject", id);
-  }
-}, [id]);
-useEffect(() => {
-  if (!id) return;
 
-  socket.emit("joinProject", id);
+    const handleUpdate = () => {
+      fetchProject(); // 🔥 always fresh data
+    };
 
-  const handleUpdate = () => {
-    fetchProject(); // 🔥 always fresh data
-  };
+    socket.on("projectUpdated", handleUpdate);
 
-  socket.on("projectUpdated", handleUpdate);
-
-  return () => {
-    socket.off("projectUpdated", handleUpdate);
-  };
-}, [id]);
+    return () => {
+      socket.off("projectUpdated", handleUpdate);
+    };
+  }, [id]);
   useEffect(() => {
     fetchProject();
   }, [id]);
@@ -126,127 +126,139 @@ useEffect(() => {
               </div>
 
               {/* CONTENT */}
-            <div className="p-4 max-h-[60vh] overflow-y-auto space-y-3">
-  {modal.member ?.[modal.type]?.length > 0 ? (
-    liveMember?.[modal.type]?.map((t) => {
-      const priorityColor =
-        t.priority === "high"
-          ? "bg-red-500/10 text-red-500 border-red-500/30"
-          : t.priority === "medium"
-          ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/30"
-          : "bg-green-500/10 text-green-500 border-green-500/30";
+              <div className="p-4 max-h-[60vh] overflow-y-auto space-y-3">
+                {modal.member?.[modal.type]?.length > 0 ? (
+                  liveMember?.[modal.type]?.map((t) => {
+                    const priorityColor =
+                      t.priority === "high"
+                        ? "bg-red-500/10 text-red-500 border-red-500/30"
+                        : t.priority === "medium"
+                          ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/30"
+                          : "bg-green-500/10 text-green-500 border-green-500/30";
 
-      const isLate =
-        t.submittedAt &&
-        new Date(t.submittedAt) > new Date(t.deadline);
+                    const isLate =
+                      t.submittedAt &&
+                      new Date(t.submittedAt) > new Date(t.deadline);
 
-      return (
-        <div
-          key={t.id}
-          className="bg-(--bg-secondary) p-4 rounded-xl border border-(--border) hover:shadow-md transition"
-        >
-          {/* TASK TEXT */}
-          <p className="text-(--text) font-medium text-lg">
-            {t.text}
-          </p>
+                    return (
+                      <div
+                        key={t.id}
+                        className="bg-(--bg-secondary) p-4 rounded-xl border border-(--border) hover:shadow-md transition"
+                      >
+                        {/* TASK TEXT */}
+                        <p className="text-(--text) font-medium text-lg">
+                          {t.text}
+                        </p>
 
-          {/* META */}
-          <div className="mt-3 flex flex-wrap items-center gap-2">
+                        {/* META */}
+                        <div className="mt-3 flex flex-wrap items-center gap-2">
+                          <span className="px-2 py-1 text-xs rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                            🟢 Start: {new Date(t.createdAt).toLocaleString()}
+                          </span>
 
-            <span className="px-2 py-1 text-xs rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-              🟢 Start: {new Date(t.createdAt).toLocaleString()}
-            </span>
+                          <span className="px-2 py-1 text-xs rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                            📅 Deadline: {new Date(t.deadline).toLocaleString()}
+                          </span>
 
-            <span className="px-2 py-1 text-xs rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-              📅 Deadline: {new Date(t.deadline).toLocaleString()}
-            </span>
+                          {t.submittedAt && (
+                            <span className="px-2 py-1 text-xs rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                              🕒 Done:{" "}
+                              {new Date(t.submittedAt).toLocaleString()}
+                            </span>
+                          )}
 
-            {t.submittedAt && (
-              <span className="px-2 py-1 text-xs rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                🕒 Done: {new Date(t.submittedAt).toLocaleString()}
-              </span>
-            )}
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full border ${priorityColor}`}
+                          >
+                            ⚡ {t.priority}
+                          </span>
 
-            <span
-              className={`px-2 py-1 text-xs rounded-full border ${priorityColor}`}
-            >
-              ⚡ {t.priority}
-            </span>
+                          {t.submittedAt && (
+                            <span
+                              className={`px-2 py-1 text-xs rounded-full border ${
+                                isLate
+                                  ? "bg-red-500/10 text-red-500 border-red-500/30"
+                                  : "bg-green-500/10 text-green-500 border-green-500/30"
+                              }`}
+                            >
+                              {isLate ? "Late ⛔" : "In Time ✅"}
+                            </span>
+                          )}
+                        </div>
 
-            {t.submittedAt && (
-              <span
-                className={`px-2 py-1 text-xs rounded-full border ${
-                  isLate
-                    ? "bg-red-500/10 text-red-500 border-red-500/30"
-                    : "bg-green-500/10 text-green-500 border-green-500/30"
-                }`}
-              >
-                {isLate ? "Late ⛔" : "In Time ✅"}
-              </span>
-            )}
-          </div>
+                        {/* ACTION */}
+                        <div className="mt-4 flex justify-end">
+                          {modal.type === "todo" && (
+                            <button
+                              onClick={async () => {
+                                await fetch(
+                                  `http://localhost:5000/move-task/${id}`,
+                                  {
+                                    method: "PATCH",
+                                    headers: {
+                                      "Content-Type": "application/json",
+                                    },
+                                    credentials: "include",
+                                    body: JSON.stringify({
+                                      taskId: t.id,
+                                      from: "todo",
+                                      to: "running",
+                                      email: modal.member.email,
+                                    }),
+                                  },
+                                );
 
-          {/* ACTION */}
-          <div className="mt-4 flex justify-end">
-            {modal.type === "todo" && (
-              <button
-                onClick={async () => {
-                  await fetch(`http://localhost:5000/move-task/${id}`, {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      taskId: t.id,
-                      from: "todo",
-                      to: "running",
-                      email: modal.member.email,
-                    }),
-                  });
+                                fetchProject();
+                              }}
+                              className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                            >
+                              Move → Running
+                            </button>
+                          )}
 
-                  fetchProject();
-                }}
-                className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-              >
-                Move → Running
-              </button>
-            )}
+                          {modal.type === "running" && (
+                            <button
+                              onClick={async () => {
+                                await fetch(
+                                  `http://localhost:5000/move-task/${id}`,
+                                  {
+                                    method: "PATCH",
+                                    headers: {
+                                      "Content-Type": "application/json",
+                                    },
+                                    credentials: "include",
+                                    body: JSON.stringify({
+                                      taskId: t.id,
+                                      from: "running",
+                                      to: "done",
+                                      email: modal.member.email,
+                                    }),
+                                  },
+                                );
 
-            {modal.type === "running" && (
-              <button
-                onClick={async () => {
-                  await fetch(`http://localhost:5000/move-task/${id}`, {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      taskId: t.id,
-                      from: "running",
-                      to: "done",
-                      email: modal.member.email,
-                    }),
-                  });
+                                fetchProject();
+                              }}
+                              className="px-4 py-2 text-sm rounded-lg bg-green-600 text-white hover:bg-green-700"
+                            >
+                              Move → Done
+                            </button>
+                          )}
 
-                  fetchProject();
-                }}
-                className="px-4 py-2 text-sm rounded-lg bg-green-600 text-white hover:bg-green-700"
-              >
-                Move → Done
-              </button>
-            )}
-
-            {modal.type === "done" && (
-              <span className="text-xs text-gray-400 italic">
-                Completed ✓
-              </span>
-            )}
-          </div>
-        </div>
-      );
-    })
-  ) : (
-    <p className="text-(--text-secondary) text-center">
-      No tasks found
-    </p>
-  )}
-</div>
+                          {modal.type === "done" && (
+                            <span className="text-xs text-gray-400 italic">
+                              Completed ✓
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="text-(--text-secondary) text-center">
+                    No tasks found
+                  </p>
+                )}
+              </div>
 
               {/* FOOTER */}
               <div className="p-4 border-t border-(--border) flex justify-end">
