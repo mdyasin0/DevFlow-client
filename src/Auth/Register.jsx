@@ -5,43 +5,19 @@ import Swal from "sweetalert2";
 import { AuthContext } from "../Firebase/AuthContext";
 
 const Register = () => {
-  const { createUser, googleLogin, logOut, updateUserProfile } =
+  const { createUser, googleLogin, updateUserProfile } =
     useContext(AuthContext);
 
   const [showPass, setShowPass] = useState(false);
 
   const [loading, setLoading] = useState(false); // register loading
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [uploading, setUploading] = useState(false); // ⭐ image upload state
+  const [uploading, setUploading] = useState(false); //  image upload state
   const [photoURL, setPhotoURL] = useState(""); // store uploaded image
 
   
-const checkIfBlocked = async (email) => {
-  try {
-    const res = await fetch(`http://localhost:5000/users/${email}` ,{
-      credentials:"include",
-    });
-    const data = await res.json();
 
-    if (!data.success) return false;
-
-    if (data.data.isBlocked) {
-      Swal.fire({
-        icon: "error",
-        title: "You are blocked",
-        text: "Contact admin",
-      });
-
-      return true; // blocked
-    }
-
-    return false; // not blocked
-  } catch (err) {
-    console.log(err.message);
-    return false;
-  }
-};
-  // 📸 IMAGE UPLOAD
+  //  IMAGE UPLOAD
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -73,11 +49,11 @@ const checkIfBlocked = async (email) => {
     }
   };
 
-  // 🧠 REGISTER
+  // REGISTER
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    if (loading || uploading) return; // 🚫 block if uploading
+    if (loading || uploading) return; //  block if uploading
 
     if (!photoURL) {
       Swal.fire({
@@ -124,7 +100,7 @@ const checkIfBlocked = async (email) => {
     }
   };
 
-  // 🔵 GOOGLE LOGIN
+  //  GOOGLE LOGIN
   const handleGoogle = () => {
     if (googleLoading) return;
     setGoogleLoading(true);
@@ -134,16 +110,7 @@ const checkIfBlocked = async (email) => {
 
         const user = res.user;
 
-      const blocked = await checkIfBlocked(user.email);
-
-      if (blocked) {
-        // 🚨 FORCE LOGOUT
-   
-        await logOut(); // IMPORTANT (Firebase logout)
-
-        setGoogleLoading(false);
-        return;
-      }
+ 
         await fetch("http://localhost:5000/users", {
           method: "POST",
           credentials:"include",
@@ -213,7 +180,7 @@ const checkIfBlocked = async (email) => {
             </span>
           </div>
 
-          {/* 📸 IMAGE INPUT */}
+          {/*  IMAGE INPUT */}
           <input
             name="image"
             type="file"
@@ -224,10 +191,10 @@ const checkIfBlocked = async (email) => {
             required
           />
 
-          {/* 🔥 Upload status */}
+          {/*  Upload status */}
           {uploading && (
             <p className="text-sm text-yellow-500">
-              ⏳ Image uploading... please wait
+               Image uploading... please wait
             </p>
           )}
 

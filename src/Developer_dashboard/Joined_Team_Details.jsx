@@ -2,12 +2,16 @@ import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { AuthContext } from "../Firebase/AuthContext";
 import { socket } from "../Socket";
+import { FcManager } from "react-icons/fc";
+import { GoStopwatch } from "react-icons/go";
+import { IoIosPeople } from "react-icons/io";
+import { IoCheckmarkDoneOutline } from "react-icons/io5";
 
 const Joined_Team_Details = () => {
   const { id } = useParams();
   const [project, setProject] = useState(null);
 
-  const { user } = useContext(AuthContext);
+  const { user, logOut } = useContext(AuthContext);
   const loginEmail = user?.email;
   const liveMember = project?.teammember?.find((m) => m.email === loginEmail);
   const [modal, setModal] = useState({
@@ -17,9 +21,15 @@ const Joined_Team_Details = () => {
   });
 
   const fetchProject = async () => {
-    const res = await fetch(`http://localhost:5000/project/${id}`,{
+    const res = await fetch(`http://localhost:5000/project/${id}`, {
       credentials: "include",
     });
+    if (res.status === 401 || res.status === 403) {
+      alert("Session expired. Please login again");
+      await logOut();
+      window.location.href = "/login";
+      return;
+    }
     const data = await res.json();
 
     if (data.success) setProject(data.data);
@@ -37,7 +47,7 @@ const Joined_Team_Details = () => {
     socket.emit("joinProject", id);
 
     const handleUpdate = () => {
-      fetchProject(); // 🔥 always fresh data
+      fetchProject(); // always fresh data
     };
 
     socket.on("projectUpdated", handleUpdate);
@@ -48,9 +58,14 @@ const Joined_Team_Details = () => {
   }, [id]);
   useEffect(() => {
     fetchProject();
-  }, [id]);
+  }, [id, fetchProject]);
 
-  if (!project) return <p className="text-(--text) p-10">Loading...</p>;
+  if (!project)
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <span className="loading loading-spinner text-primary"></span>
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-(--bg) text-(--text) p-6">
@@ -60,16 +75,16 @@ const Joined_Team_Details = () => {
           <h1 className="text-2xl text-(--primary)">{project.teamName}</h1>
           <p>{project.projectTitle}</p>
 
-          <p className="text-(--text-secondary) mt-2">
-            👤 Manager: {project.created_by}
+          <p className="text-(--text-secondary) flex items-center gap-1  mt-2">
+            <FcManager /> Manager: {project.created_by}
           </p>
 
-          <p className="text-(--text-secondary)">
-            🕒 Start: {new Date(project.created_time).toLocaleString()}
+          <p className="text-(--text-secondary) flex items-center gap-1 ">
+            <GoStopwatch /> Start: {new Date(project.created_time).toLocaleString()}
           </p>
 
-          <p className="text-(--text-secondary) mt-2">
-            👥 Members: {project.teammember.length}
+          <p className="text-(--text-secondary) flex items-center gap-1  mt-2">
+            <IoIosPeople /> Members: {project.teammember.length}
           </p>
         </div>
 
@@ -126,7 +141,7 @@ const Joined_Team_Details = () => {
               </div>
 
               {/* CONTENT */}
-              <div className="p-4 max-h-[60vh] overflow-y-auto space-y-3">
+              <div className="p-4 max-h-[60vh] max-w-xl overflow-y-auto space-y-3">
                 {modal.member?.[modal.type]?.length > 0 ? (
                   liveMember?.[modal.type]?.map((t) => {
                     const priorityColor =
@@ -153,16 +168,16 @@ const Joined_Team_Details = () => {
                         {/* META */}
                         <div className="mt-3 flex flex-wrap items-center gap-2">
                           <span className="px-2 py-1 text-xs rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                            🟢 Start: {new Date(t.createdAt).toLocaleString()}
+                            Start: {new Date(t.createdAt).toLocaleString()}
                           </span>
 
                           <span className="px-2 py-1 text-xs rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                            📅 Deadline: {new Date(t.deadline).toLocaleString()}
+                             Deadline: {new Date(t.deadline).toLocaleString()}
                           </span>
 
                           {t.submittedAt && (
                             <span className="px-2 py-1 text-xs rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                              🕒 Done:{" "}
+                               Done:{" "}
                               {new Date(t.submittedAt).toLocaleString()}
                             </span>
                           )}
@@ -170,7 +185,7 @@ const Joined_Team_Details = () => {
                           <span
                             className={`px-2 py-1 text-xs rounded-full border ${priorityColor}`}
                           >
-                            ⚡ {t.priority}
+                             {t.priority}
                           </span>
 
                           {t.submittedAt && (
@@ -181,7 +196,7 @@ const Joined_Team_Details = () => {
                                   : "bg-green-500/10 text-green-500 border-green-500/30"
                               }`}
                             >
-                              {isLate ? "Late ⛔" : "In Time ✅"}
+                              {isLate ? "Late " : "In Time "}
                             </span>
                           )}
                         </div>
@@ -191,7 +206,7 @@ const Joined_Team_Details = () => {
                           {modal.type === "todo" && (
                             <button
                               onClick={async () => {
-                                await fetch(
+                                const res = await fetch(
                                   `http://localhost:5000/move-task/${id}`,
                                   {
                                     method: "PATCH",
@@ -207,7 +222,12 @@ const Joined_Team_Details = () => {
                                     }),
                                   },
                                 );
-
+                                if (res.status === 401 || res.status === 403) {
+                                  alert("Session expired. Please login again");
+                                  await logOut();
+                                  window.location.href = "/login";
+                                  return;
+                                }
                                 fetchProject();
                               }}
                               className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700"
@@ -219,7 +239,7 @@ const Joined_Team_Details = () => {
                           {modal.type === "running" && (
                             <button
                               onClick={async () => {
-                                await fetch(
+                                const res = await fetch(
                                   `http://localhost:5000/move-task/${id}`,
                                   {
                                     method: "PATCH",
@@ -235,7 +255,12 @@ const Joined_Team_Details = () => {
                                     }),
                                   },
                                 );
-
+                                if (res.status === 401 || res.status === 403) {
+                                  alert("Session expired. Please login again");
+                                  await logOut();
+                                  window.location.href = "/login";
+                                  return;
+                                }
                                 fetchProject();
                               }}
                               className="px-4 py-2 text-sm rounded-lg bg-green-600 text-white hover:bg-green-700"
@@ -245,8 +270,8 @@ const Joined_Team_Details = () => {
                           )}
 
                           {modal.type === "done" && (
-                            <span className="text-xs text-gray-400 italic">
-                              Completed ✓
+                            <span className="text-xs text-gray-400 flex items-center gap-1 italic">
+                              Completed <IoCheckmarkDoneOutline />
                             </span>
                           )}
                         </div>

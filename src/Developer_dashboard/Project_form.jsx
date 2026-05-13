@@ -4,7 +4,7 @@ import { AuthContext } from '../Firebase/AuthContext';
 const Project_form = () => {
   const [teamName, setTeamName] = useState("");
   const [projectTitle, setProjectTitle] = useState("");
-  const { user } = useContext(AuthContext);
+  const { user , logOut } = useContext(AuthContext);
 const [description, setDescription] = useState("");
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,16 +25,21 @@ const [description, setDescription] = useState("");
         credentials: "include", 
         body: JSON.stringify(projectData),
       });
-
+   if (res.status === 401 || res.status === 403) {
+          alert("Session expired. Please login again");
+          await logOut();
+          window.location.href = "/login";
+          return;
+        }
       const data = await res.json();
 
       if (data.success) {
-        alert("Project Created ✅");
+        alert("Project Created ");
         setTeamName("");
         setProjectTitle("");
       }
     } catch (error) {
-      console.log(error);
+      alert(error);
     }
   };
 

@@ -1,29 +1,29 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../Firebase/AuthContext";
 import { socket } from "../Socket";
+import { useNavigate } from "react-router";
 
 const Invitations = () => {
   const [projects, setProjects] = useState([]);
-  const { user } = useContext(AuthContext);
+  const { user, logOut } = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState("");
-
-  // 👤 get user name
+const navigate = useNavigate();
+const [searchTerm, setSearchTerm] = useState("");
+  //  get user name
   useEffect(() => {
     if (!user?.email) return;
 
-    fetch(`http://localhost:5000/user/${user.email}`,{
-      credentials: "include"
-    })
+    fetch(`http://localhost:5000/user/${user.email}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
           setUserName(data.data.name);
         }
       });
-  }, [user?.email]);
+  }, [user?.email ]);
 
-  // 📦 fetch invitations
+  //  fetch invitations
   useEffect(() => {
     if (!user?.email) return;
 
@@ -32,10 +32,17 @@ const Invitations = () => {
         setLoading(true);
 
         const res = await fetch(
-          `http://localhost:5000/my-invitations/${user.email}`,{
-              credentials: "include",
-          }
+          `http://localhost:5000/my-invitations/${user.email}`,
+          {
+            credentials: "include",
+          },
         );
+        if (res.status === 401 || res.status === 403) {
+          alert("Session expired. Please login again");
+          await logOut();
+          window.location.href = "/login";
+          return;
+        }
         const data = await res.json();
 
         if (data.success) {
@@ -44,59 +51,68 @@ const Invitations = () => {
 
         setLoading(false);
       } catch (err) {
-        console.log(err);
+        alert(err);
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [user?.email]);
-useEffect(() => {
-  if (user?._id) {
-    socket.emit("join", user._id);
-  }
-}, [user]);
-useEffect(() => {
-  if (projects.length > 0) {
-    projects.forEach((p) => {
-      socket.emit("joinProject", p._id);
-    });
-  }
-}, [projects]);
-useEffect(() => {
-  socket.on("projectUpdated", (updatedProject) => {
-    setProjects((prev) =>
-      prev.map((p) =>
-        p._id === updatedProject._id ? updatedProject : p
-      )
-    );
-  });
-
-  return () => socket.off("projectUpdated");
-}, []);
-useEffect(() => {
-  socket.on("newInvitation", async (data) => {
-    console.log("🔥 new invitation:", data);
-
-    // 🔥 BEST WAY (simple & reliable)
-    const res = await fetch(
-      `http://localhost:5000/my-invitations/${user.email}`,{
-          credentials: "include",
-      }
-    );
-    const result = await res.json();
-
-    if (result.success) {
-      setProjects(result.data);
+  }, [user?.email ,logOut]);
+  useEffect(() => {
+    if (user?._id) {
+      socket.emit("join", user._id);
     }
-  });
+  }, [user]);
+  useEffect(() => {
+    if (projects.length > 0) {
+      projects.forEach((p) => {
+        socket.emit("joinProject", p._id);
+      });
+    }
+  }, [projects]);
+  useEffect(() => {
+    socket.on("projectUpdated", (updatedProject) => {
+      setProjects((prev) =>
+        prev.map((p) => (p._id === updatedProject._id ? updatedProject : p)),
+      );
+    });
 
-  return () => socket.off("newInvitation");
-}, [user?.email]);
-  // ✅ action handler
+    return () => socket.off("projectUpdated");
+  }, []);
+  useEffect(() => {
+    socket.on("newInvitation", async (data) => {
+    
+
+      //  BEST WAY (simple & reliable)
+      const res = await fetch(
+        `http://localhost:5000/my-invitations/${user.email}`,
+        {
+          credentials: "include",
+        },
+      );
+         if (res.status === 401 || res.status === 403) {
+          alert("Session expired. Please login again");
+          await logOut();
+          window.location.href = "/login";
+          return;
+        }
+      const result = await res.json();
+
+      if (result.success) {
+        setProjects(result.data);
+      }
+    });
+
+    return () => socket.off("newInvitation");
+  }, [user?.email ,logOut]);
+  const filteredProjects = projects.filter((project) =>
+  project.teamName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  project.projectTitle.toLowerCase().includes(searchTerm.toLowerCase())
+);
+  //  action handler
   const handleAction = async (projectId, status) => {
     const confirmAction = window.confirm(
-      "You have one chance. After selecting, you can't change it. Are you sure?"
+      "You have one chance. After selecting, you can't change it. Are you sure?",
     );
 
     if (!confirmAction) return;
@@ -113,9 +129,14 @@ useEffect(() => {
             name: userName,
             status,
           }),
-        }
+        },
       );
-
+   if (res.status === 401 || res.status === 403) {
+          alert("Session expired. Please login again");
+          await logOut();
+            navigate("/login");
+          return;
+        }
       const data = await res.json();
 
       if (data.success) {
@@ -127,48 +148,50 @@ useEffect(() => {
               ? {
                   ...p,
                   invite_email: p.invite_email.map((i) =>
-                    i.email === user.email ? { ...i, status } : i
+                    i.email === user.email ? { ...i, status } : i,
                   ),
                 }
-              : p
-          )
+              : p,
+          ),
         );
       } else {
         alert(data.message);
       }
     } catch (err) {
-      console.log(err);
+      alert(err);
       alert("Something went wrong");
     }
   };
 
   if (loading || !user) {
     return (
-      <div className="h-full flex items-center justify-center text-(--text)">
-        <div className="px-5 py-2 rounded-lg bg-(--primary) text-white shadow">
-          Loading invitations...
-        </div>
-      </div>
+    <div className="flex h-screen items-center justify-center"><span className="loading loading-spinner text-primary"></span></div>
     );
   }
 
   return (
     <div className="p-6 bg-(--bg-secondary) min-h-full text-(--text)">
-
       {/* HEADER */}
-      <h2 className="text-xl font-semibold mb-6 text-(--primary)">
+     
+      {filteredProjects.length === 0 ? ( <>  <p className="text-(--text-secondary)  justify-center items-center h-screen flex">No invitations found</p></>
+      
+      ) : (
+        <>
+             <h2 className="text-xl font-semibold mb-6 text-(--primary)">
         Your Invitations
       </h2>
-
-      {projects.length === 0 ? (
-        <p className="text-(--text-secondary)">
-          No invitations found
-        </p>
-      ) : (
-        <div className="overflow-x-auto rounded-xl border border-(--border) bg-(--card) shadow">
-
+ <div className="mb-4">
+  <input
+    type="text"
+    placeholder="Search by team name or project title..."
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    className="w-full md:w-1/2 px-4 py-2 rounded-lg border border-(--border) bg-(--card) text-(--text)"
+  />
+</div>
+          <div className="overflow-x-auto rounded-xl border border-(--border) bg-(--card) shadow">
+      
           <table className="w-full text-sm">
-
             {/* TABLE HEAD */}
             <thead className="bg-(--bg-secondary) text-(--text-secondary)">
               <tr className="text-left">
@@ -184,7 +207,7 @@ useEffect(() => {
             <tbody>
               {projects.map((project, index) => {
                 const invite = project.invite_email?.find(
-                  (i) => i.email === user.email
+                  (i) => i.email === user.email,
                 );
 
                 if (!invite) return null;
@@ -239,9 +262,10 @@ useEffect(() => {
                 );
               })}
             </tbody>
-
           </table>
         </div>
+        </>
+      
       )}
     </div>
   );

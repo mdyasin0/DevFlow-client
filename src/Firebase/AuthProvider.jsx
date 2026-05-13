@@ -26,22 +26,31 @@ const [roleLoading, setRoleLoading] = useState(true);
 
 const getJwtToken = async (email) => {
   try {
- fetch("http://localhost:5000/jwt", {
+    const res = await fetch("http://localhost:5000/jwt", {
       method: "POST",
       headers: {
         "content-type": "application/json",
       },
-       credentials: "include",
+      credentials: "include", //  MUST
       body: JSON.stringify({ email }),
     });
 
-   
-
+    const data = await res.json();
+    return data;
   } catch (error) {
-    console.log("JWT Error:", error);
+    alert( error);
   }
-};  
-
+}; 
+  // 🔹 Logout
+  const logOut = () => {
+    setLoading(true);
+   fetch("http://localhost:5000/logout", {
+    method: "POST",
+    credentials: "include",
+  });
+    socket.disconnect();
+    return signOut(auth);
+  };
 
 useEffect(() => {
   const fetchUserRole = async () => {
@@ -50,17 +59,16 @@ useEffect(() => {
 
       try {
         const res = await fetch(
-          `http://localhost:5000/user/${user.email}`,{
-            credentials:"include",
-          }
+          `http://localhost:5000/user/${user.email}`
         );
+        
         const data = await res.json();
 
         if (data.success) {
           setDbUser(data.data);
         }
       } catch (err) {
-        console.log(err);
+        alert(err);
       } finally {
         setRoleLoading(false);
       }
@@ -81,7 +89,7 @@ useEffect(() => {
 
   socket.emit("join", dbUser._id);
 
-  console.log("Socket joined:", dbUser._id);
+
 
   return () => {
     socket.disconnect();
@@ -89,49 +97,36 @@ useEffect(() => {
 }, [dbUser?._id]);
 
 useEffect(() => {
-  socket.on("newNotification", (data) => {
-    console.log("🔔 Notification:", data);
-  });
+  socket.on("newNotification");
 
-  socket.on("taskUpdated", (data) => {
-    console.log("⚡ Task updated:", data);
-  });
+  socket.on("taskUpdated");
 
   return () => {
     socket.off("newNotification");
     socket.off("taskUpdated");
   };
 }, []);
-  // 🔹 Register
+  //  Register
   const createUser = (email, password) => {
     setLoading(true);
     return createUserWithEmailAndPassword(auth, email, password);
   };
 
-  // 🔹 Login
+  //  Login
   const signInUser = (email, password) => {
     setLoading(true);
     return signInWithEmailAndPassword(auth, email, password);
   };
 
-  // 🔹 Google Login
+  //  Google Login
   const googleLogin = () => {
     setLoading(true);
     return signInWithPopup(auth, provider);
   };
 
-  // 🔹 Logout
-  const logOut = () => {
-    setLoading(true);
-   fetch("http://localhost:5000/logout", {
-    method: "POST",
-    credentials: "include",
-  });
-    socket.disconnect();
-    return signOut(auth);
-  };
 
-  // 🔥 NEW: Update Profile System (IMPORTANT)
+
+  //  NEW: Update Profile System (IMPORTANT)
   const updateUserProfile = (name, photoURL) => {
     return updateProfile(auth.currentUser, {
       displayName: name,
@@ -144,17 +139,17 @@ useEffect(() => {
     });
   };
 
-  // 🔥 User state track
+  //  User state track
 useEffect(() => {
   const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
     setUser(currentUser);
 
     if (currentUser?.email) {
-      // 🔥 JWT CREATE
+      //  JWT CREATE
       await getJwtToken(currentUser.email);
     } else {
-      // 🔥 logout হলে token remove
-     
+      //  if  logout  token remove
+    
       
     }
 
@@ -171,7 +166,7 @@ useEffect(() => {
     signInUser,
     googleLogin,
     logOut,
-    updateUserProfile, // 🔥 added here
+    updateUserProfile, //  added here
      role: dbUser?.role,
        roleLoading,
          dbUser, 

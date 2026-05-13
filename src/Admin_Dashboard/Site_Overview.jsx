@@ -1,35 +1,60 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../Firebase/AuthContext";
 
 const Site_Overview = () => {
   const [users, setUsers] = useState([]);
   const [projects, setProjects] = useState([]);
-
+const { logOut} = useContext(AuthContext);
   useEffect(() => {
     // Fetch users
     fetch("http://localhost:5000/users" ,{
       credentials:"include",
     })
-      .then((res) => res.json())
+      .then(async (res) => {
+      //  status check
+      if (res.status === 401 || res.status === 403) {
+        alert("Session expired. Please login again");
+
+        await logOut();
+
+        window.location.href = "/login";
+        return null;
+      }
+
+      return res.json();
+    })
       .then((data) => setUsers(data.data));
 
     // Fetch projects
     fetch("http://localhost:5000/projects",{
       credentials:"include",
     })
-      .then((res) => res.json())
-      .then((data) => setProjects(data.data));
-  }, []);
+      .then(async (res) => {
+      // status check
+      if (res.status === 401 || res.status === 403) {
+        alert("Session expired. Please login again");
 
-  // 🧠 CURRENT TIME
+        await logOut();
+
+        window.location.href = "/login";
+        return null;
+      }
+
+      return res.json();
+    })
+      .then((data) => setProjects(data.data));
+  });
+
+  // CURRENT TIME
   const now = new Date();
 
-  // ✅ Total Users
+  // Total Users
   const totalUsers = users.length;
 
-  // ✅ Total Admin
+  // Total Admin
   const totalAdmin = users.filter((u) => u.role === "admin").length;
 
-  // ✅ Active Users (lastActiveAt ≤ 10 days)
+  // Active Users (lastActiveAt ≤ 10 days)
   const activeUsers = users.filter((user) => {
     if (!user.lastActiveAt) return false;
 
@@ -39,15 +64,15 @@ const Site_Overview = () => {
     return diffDays <= 10;
   }).length;
 
-  // ✅ Total Managers (unique created_by)
+  // Total Managers (unique created_by)
   const managers = [
     ...new Set(projects.map((p) => p.created_by)),
   ].length;
 
-  // ✅ Total Projects
+  //  Total Projects
   const totalProjects = projects.length;
 
-  // ✅ Active Projects (latest todo task ≤ 7 days)
+  //  Active Projects (latest todo task ≤ 7 days)
   const activeProjects = projects.filter((project) => {
     let latestDate = null;
 
@@ -83,7 +108,7 @@ const Site_Overview = () => {
   );
 };
 
-// 🔥 Reusable Card
+//  Reusable Card
 const Card = ({ title, value }) => {
   return (
     <div className="p-6 rounded-xl border shadow-sm bg-(--card) border-(--border) transition-colors duration-300">

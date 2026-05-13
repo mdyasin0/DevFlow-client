@@ -1,23 +1,37 @@
 import React, { useContext, useEffect, useState } from "react";
 import { socket } from "../Socket";
 import { AuthContext } from "../Firebase/AuthContext";
+import { useNavigate } from "react-router";
 
 const Project_Monitoring = () => {
   const [projects, setProjects] = useState([]);
   const [filter, setFilter] = useState("all");
   const [selectedDescription, setSelectedDescription] = useState(null);
-  const { user} = useContext(AuthContext);
+  const { logOut,user} = useContext(AuthContext);
+  const navigate = useNavigate();
   useEffect(() => {
     fetch("http://localhost:5000/projects",{
       credentials:"include",
     })
-      .then((res) => res.json())
+      .then(async (res) => {
+      // status check
+      if (res.status === 401 || res.status === 403) {
+        alert("Session expired. Please login again");
+
+        await logOut();
+
+        window.location.href = "/login";
+        return null;
+      }
+
+      return res.json();
+    })
       .then((data) => {
         if (data.success) {
           setProjects(data.data);
         }
       });
-  }, []);
+  }, [logOut]);
 
   // filter
   const filteredProjects =
@@ -43,7 +57,12 @@ const handleStatusChange = async (id, status) => {
            updatedBy: user.email,}),
       }
     );
-
+   if (res.status === 401 || res.status === 403) {
+          alert("Session expired. Please login again");
+          await logOut();
+         navigate("/login", { replace: true });
+          return;
+        }
     const data = await res.json();
 
     if (data.success) {
@@ -55,12 +74,12 @@ const handleStatusChange = async (id, status) => {
       );
     }
   } catch (error) {
-    console.log(error);
+    alert(error);
   }
 };
 useEffect(() => {
   socket.on("newProject", (newProject) => {
-    console.log("🆕 New Project:", newProject);
+   
 
     setProjects((prev) => [newProject, ...prev]);
   });
@@ -71,7 +90,7 @@ useEffect(() => {
 }, []);
 useEffect(() => {
   const handleDelete = (data) => {
-    console.log("🗑 Project Deleted:", data);
+    
 
     setProjects((prev) =>
       prev.filter((p) => p._id !== data.projectId)
@@ -89,19 +108,31 @@ useEffect(() => {
     fetch(`http://localhost:5000/users/${user.email}`,{
       credentials:"include",
     })
-      .then((res) => res.json())
+      .then(async (res) => {
+      //  status check
+      if (res.status === 401 || res.status === 403) {
+        alert("Session expired. Please login again");
+
+        await logOut();
+
+        window.location.href = "/login";
+        return null;
+      }
+
+      return res.json();
+    })
       .then((data) => {
         if (data.success) {
-          socket.emit("join", data.data._id); // 🔥 MongoDB ID
+          socket.emit("join", data.data._id); 
         }
       });
   }
-}, [user?.email]);
+}, [user?.email , logOut]);
 useEffect(() => {
   socket.connect();
 
   socket.on("connect", () => {
-    console.log("socket connected:", socket.id);
+ 
   });
 
   return () => {

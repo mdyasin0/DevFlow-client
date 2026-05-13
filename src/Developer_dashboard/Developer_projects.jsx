@@ -44,7 +44,7 @@ const Developer_projects = () => {
               <IoCloseCircleOutline />
             </button>
 
-            <h3 className="text-lg font-bold mb-3">ℹ️ Team Info</h3>
+            <h3 className="text-lg font-bold mb-3"> Team Info</h3>
 
             <p className="text-sm text-(--text-secondary) leading-relaxed">
               If you want to join a team, contact the team manager or leader to get invited.

@@ -1,18 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useQuill } from "react-quilljs";
 import "quill/dist/quill.snow.css";
+import { AuthContext } from "../Firebase/AuthContext";
 
 const Inactive_Users = () => {
   const [users, setUsers] = useState([]);
   const [subject, setSubject] = useState("");
-
+const {  logOut} = useContext(AuthContext);
   const [recipientType, setRecipientType] = useState("allInactive");
   const [rangeValue, setRangeValue] = useState("");
   const [rangeType, setRangeType] = useState("days");
 
   const [selectedEmails, setSelectedEmails] = useState([]);
 
-  // 🔥 QUILL
+  //  QUILL
   const { quill, quillRef } = useQuill({
     theme: "snow",
     modules: {
@@ -44,11 +45,23 @@ const Inactive_Users = () => {
     fetch("http://localhost:5000/approved_users" ,{
       credentials:"include",
     })
-      .then((res) => res.json())
+     .then(async (res) => {
+      // status check
+      if (res.status === 401 || res.status === 403) {
+        alert("Session expired. Please login again");
+
+        await logOut();
+
+        window.location.href = "/login";
+        return null;
+      }
+
+      return res.json();
+    })
       .then((data) => {
         if (data.success) setUsers(data.data);
       });
-  }, []);
+  });
 
   const isActive = (date) => {
     const last = new Date(date);
@@ -89,7 +102,7 @@ const Inactive_Users = () => {
       const filtered = filterByRange(inactive);
 
       if (filtered.length === 0) {
-        alert("No recipients in this range ❌");
+        alert("No recipients in this range ");
         setSelectedEmails([]);
         return;
       }
@@ -98,25 +111,41 @@ const Inactive_Users = () => {
     }
   };
 
-  const sendEmail = async () => {
-    if (selectedEmails.length === 0) {
-      alert("No recipients selected ❌");
-      return;
-    }
+ const sendEmail = async () => {
+  if (selectedEmails.length === 0) {
+    alert("No recipients selected ");
+    return;
+  }
 
-    await fetch("http://localhost:5000/email/send-inactive", {
-      method: "POST",
-      credentials:"include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        emails: selectedEmails,
-        subject,
-        message,
-      }),
-    });
+  const res = await fetch("http://localhost:5000/email/send-inactive", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      emails: selectedEmails,
+      subject,
+      message,
+    }),
+  });
 
-    alert("Email sent 🚀");
-  };
+  //   auth check add 
+  if (res.status === 401 || res.status === 403) {
+    alert("Session expired. Please login again");
+
+    await logOut();
+
+    window.location.href = "/login";
+    return;
+  }
+
+  const data = await res.json();
+
+  if (data.success) {
+    alert("Email sent ");
+  } else {
+    alert(data.message || "Something went wrong");
+  }
+};
 
   return (
    <div className="p-6 space-y-6 bg-(--bg) text-(--text)">

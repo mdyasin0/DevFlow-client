@@ -5,37 +5,13 @@ import { AuthContext } from "../Firebase/AuthContext";
 import Swal from "sweetalert2";
 
 const Login = () => {
-  const { signInUser, googleLogin , logOut } = useContext(AuthContext);
+  const { signInUser, googleLogin} = useContext(AuthContext);
   const [showPass, setShowPass] = useState(false);
  const navigate = useNavigate();
   const location = useLocation();
-  // user যেই page থেকে এসেছে
+  // user back form which page 
   const from = location.state?.from?.pathname || "/";
-const checkIfBlocked = async (email) => {
-  try {
-    const res = await fetch(`http://localhost:5000/users/${email}`,{
-      credentials:"include",
-    });
-    const data = await res.json();
 
-    if (!data.success) return false;
-
-    if (data.data.isBlocked) {
-      Swal.fire({
-        icon: "error",
-        title: "You are blocked",
-        text: "Contact admin",
-      });
-
-      return true; // blocked
-    }
-
-    return false; // not blocked
-  } catch (err) {
-    console.log(err.message);
-    return false;
-  }
-};
   const handleLogin = async (e) => {
   e.preventDefault();
 
@@ -46,12 +22,9 @@ const checkIfBlocked = async (email) => {
   try {
     await signInUser(email, password);
 
-    const blocked = await checkIfBlocked(email);
+    
 
-    if (blocked) {
-      await logOut(); // 🔥 IMPORTANT
-      return;
-    }
+  
 
     Swal.fire({
       icon: "success",
@@ -59,7 +32,7 @@ const checkIfBlocked = async (email) => {
       timer: 2000,
       showConfirmButton: false,
     });
-   // ✅ login success → return to previous page
+   //  login success → return to previous page
       navigate(from, { replace: true });
   } catch (err) {
     Swal.fire({
@@ -75,16 +48,13 @@ const handleGoogle = () => {
     .then(async (res) => {
       const user = res.user;
 
-      const blocked = await checkIfBlocked(user.email);
+    
 
-      if (blocked) {
-        await logOut(); // 🔥 FORCE LOGOUT
-        return;
-      }
+      
 
-      await fetch("http://localhost:5000/users", {
+     await fetch("http://localhost:5000/users", {
         method: "POST",
-        credentials:"include",
+       
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: user.displayName,
@@ -114,7 +84,7 @@ const handleGoogle = () => {
       <div className="w-full max-w-md p-6 rounded-2xl shadow-lg bg-(--card) border border-(--border)">
 
         <h2 className="text-2xl font-bold text-(--text) mb-2">
-          Welcome Back 👋
+          Welcome Back 
         </h2>
 
         <form onSubmit={handleLogin} className="space-y-4">

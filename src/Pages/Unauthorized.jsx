@@ -11,7 +11,7 @@ const Unauthorized = () => {
       </h2>
 
       <p className="text-gray-600 mt-2 text-center max-w-md">
-        আপনি এই page-এ access করার permission নেই। দয়া করে সঠিক role দিয়ে login করুন বা admin এর সাথে যোগাযোগ করুন।
+        you have no  permission to access  this page .
       </p>
 
       <div className="mt-6 flex gap-4">

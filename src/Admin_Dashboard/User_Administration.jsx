@@ -1,19 +1,32 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../Firebase/AuthContext";
 
 const User_Administration = () => {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
-
+const { logOut } = useContext(AuthContext);
   // Load users
   useEffect(() => {
     fetch("http://localhost:5000/users" ,{
       credentials:"include"
     })
-      .then((res) => res.json())
+      .then(async (res) => {
+      // status check
+      if (res.status === 401 || res.status === 403) {
+        alert("Session expired. Please login again");
+
+        await logOut();
+
+        window.location.href = "/login";
+        return null;
+      }
+
+      return res.json();
+    })
       .then((data) => {
         setUsers(data.data);
       });
-  }, []);
+  });
 
   // Filter users by email
   const filteredUsers = users?.filter((user) =>
@@ -25,7 +38,19 @@ const User_Administration = () => {
       method: "PATCH",
       credentials:"include",
     })
-      .then((res) => res.json())
+      .then(async (res) => {
+      //  status check
+      if (res.status === 401 || res.status === 403) {
+        alert("Session expired. Please login again");
+
+        await logOut();
+
+        window.location.href = "/login";
+        return null;
+      }
+
+      return res.json();
+    })
       .then((data) => {
         if (data.success) {
           const updated = users?.map((user) =>
@@ -41,7 +66,19 @@ const User_Administration = () => {
       method: "PATCH",
       credentials:"include",
     })
-      .then((res) => res.json())
+      .then(async (res) => {
+      // status check
+      if (res.status === 401 || res.status === 403) {
+        alert("Session expired. Please login again");
+
+        await logOut();
+
+        window.location.href = "/login";
+        return null;
+      }
+
+      return res.json();
+    })
       .then((data) => {
         if (data.success) {
           const updated = users?.map((user) =>
@@ -61,7 +98,19 @@ const User_Administration = () => {
       credentials:"include",
       body: JSON.stringify({ role: newRole }),
     })
-      .then((res) => res.json())
+      .then(async (res) => {
+      //  status check
+      if (res.status === 401 || res.status === 403) {
+        alert("Session expired. Please login again");
+
+        await logOut();
+
+        window.location.href = "/login";
+        return null;
+      }
+
+      return res.json();
+    })
       .then((data) => {
         if (data.success) {
           // UI update

@@ -3,7 +3,7 @@ import { Navigate, useLocation } from "react-router";
 import { AuthContext } from "../Firebase/AuthContext";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  const { user, loading } = useContext(AuthContext);
+  const { user, logOut, loading } = useContext(AuthContext);
   const [userData, setUserData] = useState(null);
   const [roleLoading, setRoleLoading] = useState(true);
   const location = useLocation();
@@ -12,18 +12,15 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     const fetchUserRole = async () => {
       if (user?.email) {
         try {
-          const res = await fetch(
-            `http://localhost:5000/user/${user.email}`,{
-              credentials:"include",
-            }
-          );
+          const res = await fetch(`http://localhost:5000/user/${user.email}`);
+         
           const data = await res.json();
 
           if (data.success) {
             setUserData(data.data);
           }
         } catch (error) {
-          console.log(error);
+          alert(error);
         } finally {
           setRoleLoading(false);
         }
@@ -33,30 +30,20 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     };
 
     fetchUserRole();
-  }, [user]);
+  }, [user ,logOut]);
 
-  // ⏳ loading
+  //  loading
   if (loading || roleLoading) {
-    return <div>Loading...</div>;
+    return <div className="flex h-screen items-center justify-center"><span className="loading loading-spinner text-primary"></span></div>;
   }
 
-  // ❌ not logged in → send to login WITH current page info
+  //  not logged in → send to login WITH current page info
   if (!user) {
-    return (
-      <Navigate
-        to="/login"
-        state={{ from: location }}
-        replace
-      />
-    );
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // ❌ role mismatch
-  if (
-    allowedRoles &&
-    userData?.role &&
-    !allowedRoles.includes(userData.role)
-  ) {
+  //  role mismatch
+  if (allowedRoles && userData?.role && !allowedRoles.includes(userData.role)) {
     return <Navigate to="/unauthorized" replace />;
   }
 
