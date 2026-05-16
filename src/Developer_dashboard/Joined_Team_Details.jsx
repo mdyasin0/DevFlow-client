@@ -6,11 +6,12 @@ import { FcManager } from "react-icons/fc";
 import { GoStopwatch } from "react-icons/go";
 import { IoIosPeople } from "react-icons/io";
 import { IoCheckmarkDoneOutline } from "react-icons/io5";
+import ProjectDiscussion from "./ProjectDiscussion";
 
 const Joined_Team_Details = () => {
   const { id } = useParams();
   const [project, setProject] = useState(null);
-
+const [showChat, setShowChat] = useState(false);
   const { user, logOut } = useContext(AuthContext);
   const loginEmail = user?.email;
   const liveMember = project?.teammember?.find((m) => m.email === loginEmail);
@@ -86,6 +87,18 @@ const Joined_Team_Details = () => {
           <p className="text-(--text-secondary) flex items-center gap-1  mt-2">
             <IoIosPeople /> Members: {project.teammember.length}
           </p>
+                    <button
+            onClick={() => setShowChat(true)}
+            className="bg-green-600 px-4 py-2 rounded-lg ml-2"
+          >
+            Discuss on Project
+          </button>
+          {showChat && (
+            <ProjectDiscussion
+              projectId={project._id}
+              onClose={() => setShowChat(false)}
+            />
+          )}
         </div>
 
         {/* TABLE */}

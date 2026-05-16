@@ -232,7 +232,7 @@ const Navbar = () => {
                           >
                             <div className="flex justify-between items-start">
                               <div className="pr-4 sm:pr-6">
-                                <p className="text-xs sm:text-sm font-medium break-words">
+                                <p className="text-xs sm:text-sm font-medium wrap-break-words">
                                   {isExpanded
                                     ? n.message
                                     : n.message.length > 60
@@ -446,7 +446,7 @@ const Navbar = () => {
                               >
                                 <div className="flex justify-between items-start">
                                   <div className="pr-4 sm:pr-6">
-                                    <p className="text-xs sm:text-sm font-medium break-words">
+                                    <p className="text-xs sm:text-sm font-medium wrap-break-words">
                                       {isExpanded
                                         ? n.message
                                         : n.message.length > 60

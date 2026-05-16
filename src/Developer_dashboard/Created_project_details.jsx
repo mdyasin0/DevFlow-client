@@ -18,7 +18,8 @@ import { FcManager } from "react-icons/fc";
 import { IoIosPeople } from "react-icons/io";
 import { FaPenToSquare } from "react-icons/fa6";
 import { FaRegTrashAlt } from "react-icons/fa";
-
+import { VscIssueReopened } from "react-icons/vsc";
+import ProjectDiscussion from "./ProjectDiscussion";
 const Created_project_details = () => {
   const { id } = useParams();
   const [project, setProject] = useState(null);
@@ -30,6 +31,7 @@ const Created_project_details = () => {
   const [activeMember, setActiveMember] = useState(null);
   const [taskText, setTaskText] = useState("");
   const { logOut } = useContext(AuthContext);
+  const [showChat, setShowChat] = useState(false);
   const [taskModal, setTaskModal] = useState({
     open: false,
     type: "",
@@ -346,6 +348,19 @@ const Created_project_details = () => {
               <p className="flex items-center gap-2"><MdOutlineWatchLater /> Start: {new Date(project.created_time).toLocaleString()}</p>
               <p className="flex items-center gap-2"><IoIosPeople /> Total Members: {project.teammember?.length}</p>
             </div>
+            <button
+  onClick={() => setShowChat(true)}
+  className="bg-green-600 px-4 py-2 rounded-lg ml-2"
+>
+  Discuss on Project
+</button>
+{showChat && (
+  <ProjectDiscussion
+ 
+    projectId={project._id}
+    onClose={() => setShowChat(false)}
+  />
+)}
           </div>
 
           <button
