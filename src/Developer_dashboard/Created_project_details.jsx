@@ -32,6 +32,8 @@ const Created_project_details = () => {
   const [taskText, setTaskText] = useState("");
   const { logOut } = useContext(AuthContext);
   const [showChat, setShowChat] = useState(false);
+  const [memberSearch, setMemberSearch] = useState("");
+  const [taskSearch, setTaskSearch] = useState("");
   const [taskModal, setTaskModal] = useState({
     open: false,
     type: "",
@@ -324,7 +326,21 @@ const Created_project_details = () => {
     setEditData(null);
     fetchProject(); //  UI update
   };
+const tasks =
+  project?.teammember?.find(
+    (m) => m.email === taskModal.member?.email
+  )?.[taskModal.type] || [];
 
+const filteredTasks = tasks.filter((t) =>
+  t.text.toLowerCase().includes(taskSearch.toLowerCase())
+);
+const filteredMembers = project?.teammember?.filter((m) => {
+  const search = memberSearch.toLowerCase();
+  return (
+    m.name?.toLowerCase().includes(search) ||
+    m.email?.toLowerCase().includes(search)
+  );
+});
   if (!project)
     return (
       <div className="flex h-screen items-center justify-center">
@@ -344,23 +360,29 @@ const Created_project_details = () => {
             <p className="text-gray-300">{project.projectTitle}</p>
 
             <div className="mt-2 text-sm text-gray-400 space-y-1">
-              <p className="flex items-center gap-2"><FcManager /> Manager: {project.created_by}</p>
-              <p className="flex items-center gap-2"><MdOutlineWatchLater /> Start: {new Date(project.created_time).toLocaleString()}</p>
-              <p className="flex items-center gap-2"><IoIosPeople /> Total Members: {project.teammember?.length}</p>
+              <p className="flex items-center gap-2">
+                <FcManager /> Manager: {project.created_by}
+              </p>
+              <p className="flex items-center gap-2">
+                <MdOutlineWatchLater /> Start:{" "}
+                {new Date(project.created_time).toLocaleString()}
+              </p>
+              <p className="flex items-center gap-2">
+                <IoIosPeople /> Total Members: {project.teammember?.length}
+              </p>
             </div>
             <button
-  onClick={() => setShowChat(true)}
-  className="bg-green-600 px-4 py-2 rounded-lg ml-2"
->
-  Discuss on Project
-</button>
-{showChat && (
-  <ProjectDiscussion
- 
-    projectId={project._id}
-    onClose={() => setShowChat(false)}
-  />
-)}
+              onClick={() => setShowChat(true)}
+              className="bg-green-600 px-4 py-2 rounded-lg ml-2"
+            >
+              Discuss on Project
+            </button>
+            {showChat && (
+              <ProjectDiscussion
+                projectId={project._id}
+                onClose={() => setShowChat(false)}
+              />
+            )}
           </div>
 
           <button
@@ -445,9 +467,7 @@ const Created_project_details = () => {
               </PieChart>
             </div>
             <div className="bg-(--bg-secondary) p-6 rounded-xl border border-gray-700 mb-6">
-              <h2 className="text-yellow-400 text-lg mb-4">
-                 Team Performance
-              </h2>
+              <h2 className="text-yellow-400 text-lg mb-4">Team Performance</h2>
 
               <div className="w-full h-80">
                 <ResponsiveContainer width="100%" height="100%">
@@ -597,7 +617,13 @@ const Created_project_details = () => {
             </button>
           </div>
         )}
-
+<input
+  type="text"
+  placeholder="Search by name or email..."
+  value={memberSearch}
+  onChange={(e) => setMemberSearch(e.target.value)}
+  className="mb-4 p-2 w-full rounded bg-(--card) border border-(--border)"
+/>
         {/* TABLE */}
         <div className="overflow-x-auto">
           <table className="w-full text-sm border border-(--border)">
@@ -626,7 +652,7 @@ const Created_project_details = () => {
 
             {/* BODY */}
             <tbody>
-              {project.teammember?.map((m, i) => (
+              {filteredMembers?.map((m, i) => (
                 <tr
                   key={i}
                   className="border-t border-(--border) text-(--text)"
@@ -674,137 +700,138 @@ const Created_project_details = () => {
           </table>
         </div>
 
+    
         {/* TASK MODAL */}
-        {/* TASK MODAL */}
-        {taskModal.open && (
-          <div className="fixed inset-0 bg-black/70  flex justify-center items-center">
-            <div className="bg-(--card) text-(--text)  max-w-xl rounded-2xl  border border-(--border)     p-4 max-h-[60vh] overflow-y-auto space-y-3">
-              <h2 className="mb-4 text-(--primary) text-lg font-semibold">
-                {taskModal.type.toUpperCase()} TASKS
-              </h2>
+{taskModal.open && (
+  <div className="fixed inset-0 bg-black/70 flex justify-center items-center">
+    <div className="bg-(--card) text-(--text) max-w-xl rounded-2xl border border-(--border) p-4 max-h-[60vh] overflow-y-auto space-y-3">
+      
+      <h2 className="mb-4 text-(--primary) text-lg font-semibold">
+        {taskModal.type.toUpperCase()} TASKS
+      </h2>
 
-              {project?.teammember?.find(
-                (m) => m.email === taskModal.member?.email,
-              )?.[taskModal.type]?.length ? (
-                project.teammember
-                  .find((m) => m.email === taskModal.member?.email)
-                  [taskModal.type].map((t) => {
-                    const priorityColor =
-                      t.priority === "high"
+      {/* SEARCH */}
+      <input
+        type="text"
+        placeholder="Search task..."
+        value={taskSearch}
+        onChange={(e) => setTaskSearch(e.target.value)}
+        className="w-full p-2 mb-3 bg-(--bg-secondary) border border-(--border)"
+      />
+
+      {/* TASK LIST */}
+      {filteredTasks.length ? (
+        filteredTasks.map((t) => {
+          const priorityColor =
+            t.priority === "high"
+              ? "bg-red-500/10 text-red-500 border-red-500/30"
+              : t.priority === "medium"
+              ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/30"
+              : "bg-green-500/10 text-green-500 border-green-500/30";
+
+          const isLate =
+            t.submittedAt &&
+            new Date(t.submittedAt) > new Date(t.deadline);
+
+          return (
+            <div
+              key={t.id}
+              className="bg-(--bg-secondary) p-4 mb-3 rounded-xl border border-(--border)"
+            >
+              {/* TASK TEXT */}
+              <p
+                className="text-(--text) font-medium"
+                dangerouslySetInnerHTML={{ __html: t.text }}
+              />
+
+              {/* META INFO */}
+              <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                <span className="px-2 py-1 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                  Start: {new Date(t.createdAt).toLocaleString()}
+                </span>
+
+                <span className="px-2 py-1 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                  Deadline: {new Date(t.deadline).toLocaleString()}
+                </span>
+
+                {t.submittedAt && (
+                  <span className="px-2 py-1 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                    Done: {new Date(t.submittedAt).toLocaleString()}
+                  </span>
+                )}
+
+                <span className={`px-2 py-1 rounded border ${priorityColor}`}>
+                  {t.priority}
+                </span>
+
+                {t.submittedAt && (
+                  <span
+                    className={`px-2 py-1 rounded border ${
+                      isLate
                         ? "bg-red-500/10 text-red-500 border-red-500/30"
-                        : t.priority === "medium"
-                          ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/30"
-                          : "bg-green-500/10 text-green-500 border-green-500/30";
+                        : "bg-green-500/10 text-green-500 border-green-500/30"
+                    }`}
+                  >
+                    {isLate ? "Late" : "In Time"}
+                  </span>
+                )}
+              </div>
 
-                    const isLate =
-                      t.submittedAt &&
-                      new Date(t.submittedAt) > new Date(t.deadline);
+              {/* ACTION */}
+              <div className="flex gap-3 mt-3">
+                <button
+                  onClick={() =>
+                    startEdit(t, taskModal.type, taskModal.member)
+                  }
+                  className="text-(--primary)"
+                >
+                  <FaPenToSquare />
+                </button>
 
-                    return (
-                      <div
-                        key={t.id}
-                        className="bg-(--bg-secondary) p-4 mb-3 rounded-xl border border-(--border)"
-                      >
-                        {/* TASK TEXT */}
-                        <p
-                          className="text-(--text) font-medium"
-                          dangerouslySetInnerHTML={{ __html: t.text }}
-                        />
+                <button
+                  onClick={() =>
+                    handleDelete(
+                      taskModal.type,
+                      t.id,
+                      taskModal.member.email
+                    )
+                  }
+                  className="text-(--danger)"
+                >
+                  <FaRegTrashAlt />
+                </button>
 
-                        {/* META INFO */}
-                        <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                          {/* Start */}
-                          <span className="px-2 py-1 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                             Start: {new Date(t.createdAt).toLocaleString()}
-                          </span>
-
-                          {/* Deadline */}
-                          <span className="px-2 py-1 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                             Deadline: {new Date(t.deadline).toLocaleString()}
-                          </span>
-
-                          {/* Submitted */}
-                          {t.submittedAt && (
-                            <span className="px-2 py-1 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                               Done:{" "}
-                              {new Date(t.submittedAt).toLocaleString()}
-                            </span>
-                          )}
-
-                          {/* Priority */}
-                          <span
-                            className={`px-2 py-1 rounded border ${priorityColor}`}
-                          >
-                             {t.priority}
-                          </span>
-
-                          {/* Late / In Time */}
-                          {t.submittedAt && (
-                            <span
-                              className={`px-2 py-1 rounded border ${
-                                isLate
-                                  ? "bg-red-500/10 text-red-500 border-red-500/30"
-                                  : "bg-green-500/10 text-green-500 border-green-500/30"
-                              }`}
-                            >
-                              {isLate ? "Late " : "In Time "}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* ACTION */}
-                        <div className="flex gap-3 mt-3">
-                          <button
-                            onClick={() =>
-                              startEdit(t, taskModal.type, taskModal.member)
-                            }
-                            className="text-(--primary)"
-                          >
-                            <FaPenToSquare />
-                          </button>
-
-                          <button
-                            onClick={() =>
-                              handleDelete(
-                                taskModal.type,
-                                t.id,
-                                taskModal.member.email,
-                              )
-                            }
-                            className="text-(--danger)"
-                          >
-                           <FaRegTrashAlt />
-                          </button>
-
-                          {/* DONE ! reopen */}
-                          {taskModal.type === "done" && (
-                            <button
-                              onClick={() =>
-                                handleReopen(taskModal.member, t.id)
-                              }
-                              className="text-yellow-400 flex items-center gap-1"
-                            >
-                             <VscIssueReopened /> Reopen
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })
-              ) : (
-                <p className="text-(--text-secondary)">No tasks</p>
-              )}
-
-              {/* CLOSE BUTTON */}
-              <button
-                onClick={() => setTaskModal({ open: false })}
-                className="mt-4 bg-(--danger) text-white px-4 py-2 rounded"
-              >
-                Close
-              </button>
+                {taskModal.type === "done" && (
+                  <button
+                    onClick={() =>
+                      handleReopen(taskModal.member, t.id)
+                    }
+                    className="text-yellow-400 flex items-center gap-1"
+                  >
+                    <VscIssueReopened /> Reopen
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })
+      ) : (
+        <p className="text-(--text-secondary)">No tasks</p>
+      )}
+
+      {/* CLOSE BUTTON */}
+      <button
+        onClick={() => {
+          setTaskModal({ open: false });
+          setTaskSearch(""); // reset search
+        }}
+        className="mt-4 bg-(--danger) text-white px-4 py-2 rounded"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+)}
 
         {/* EDIT MODAL */}
         {editData && (
