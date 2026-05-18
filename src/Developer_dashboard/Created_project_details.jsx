@@ -34,6 +34,8 @@ const Created_project_details = () => {
   const [showChat, setShowChat] = useState(false);
   const [memberSearch, setMemberSearch] = useState("");
   const [taskSearch, setTaskSearch] = useState("");
+  const [files, setFiles] = useState([]);
+  const [editFiles, setEditFiles] = useState([]);
   const [taskModal, setTaskModal] = useState({
     open: false,
     type: "",
@@ -218,35 +220,65 @@ const Created_project_details = () => {
       alert(err);
     }
   };
+const uploadFilesToCloudinary = async () => {
+  const uploadedFiles = [];
 
-  // ADD TASK
-  const handleTaskSave = async () => {
-    const res = await fetch(`http://localhost:5000/add-task/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({
-        email: activeMember,
-        text: taskText,
-        deadline,
-        priority,
-      }),
-    });
-    if (res.status === 401 || res.status === 403) {
-      alert("Session expired. Please login again");
-      await logOut();
-      window.location.href = "/login";
-      return;
-    }
+  for (let file of files) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "devflow"); // Cloudinary preset
+
+    const res = await fetch(
+      "https://api.cloudinary.com/v1_1/dhdfdmc8k/auto/upload",
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
     const data = await res.json();
-    if (data.success) {
-      setTaskText("");
-      setDeadline("");
-      setPriority("medium");
-      setActiveMember(null);
-      fetchProject();
-    }
-  };
+
+    uploadedFiles.push({
+      url: data.secure_url,
+      type: file.type,
+      name: file.name,
+    });
+  }
+
+  return uploadedFiles;
+};
+  // ADD TASK
+ const handleTaskSave = async () => {
+  let uploadedFiles = [];
+
+  if (files.length > 0) {
+    uploadedFiles = await uploadFilesToCloudinary();
+  }
+
+  const res = await fetch(`http://localhost:5000/add-task/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({
+      email: activeMember,
+      text: taskText,
+      deadline,
+      priority,
+      attachments: uploadedFiles, // 🔥 NEW
+    }),
+  });
+
+  const data = await res.json();
+
+  if (data.success) {
+    setFiles([]);
+    setTaskText("");
+    setDeadline("");
+    setPriority("medium");
+    setActiveMember(null);
+    fetchProject();
+  }
+};
 
   // DELETE TASK
   const handleDelete = async (type, taskId, email) => {
@@ -305,27 +337,37 @@ const Created_project_details = () => {
   };
 
   // UPDATE TASK
-  const handleUpdate = async () => {
-    const res = await fetch(`http://localhost:5000/update-task/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({
-        email: editData.member.email,
-        type: editData.type,
-        taskId: editData.task.id,
-        text: editText,
-      }),
-    });
-    if (res.status === 401 || res.status === 403) {
-      alert("Session expired. Please login again");
-      await logOut();
-      window.location.href = "/login";
-      return;
-    }
-    setEditData(null);
-    fetchProject(); //  UI update
-  };
+ const handleUpdate = async () => {
+  let newFiles = [];
+
+  if (editFiles.length > 0) {
+    newFiles = await uploadEditFiles();
+  }
+
+  const res = await fetch(`http://localhost:5000/update-task/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({
+      email: editData.member.email,
+      type: editData.type,
+      taskId: editData.task.id,
+      text: editText,
+      newAttachments: newFiles, // 🔥 NEW
+    }),
+  });
+
+  if (res.status === 401 || res.status === 403) {
+    alert("Session expired. Please login again");
+    await logOut();
+    window.location.href = "/login";
+    return;
+  }
+
+  setEditData(null);
+  setEditFiles([]);
+  fetchProject();
+};
 const tasks =
   project?.teammember?.find(
     (m) => m.email === taskModal.member?.email
@@ -334,6 +376,33 @@ const tasks =
 const filteredTasks = tasks.filter((t) =>
   t.text.toLowerCase().includes(taskSearch.toLowerCase())
 );
+const uploadEditFiles = async () => {
+  const uploaded = [];
+
+  for (let file of editFiles) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "devflow");
+
+    const res = await fetch(
+      "https://api.cloudinary.com/v1_1/dhdfdmc8k/auto/upload",
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    const data = await res.json();
+
+    uploaded.push({
+      url: data.secure_url,
+      type: file.type,
+      name: file.name,
+    });
+  }
+
+  return uploaded;
+};
 const filteredMembers = project?.teammember?.filter((m) => {
   const search = memberSearch.toLowerCase();
   return (
@@ -743,7 +812,60 @@ const filteredMembers = project?.teammember?.filter((m) => {
                 className="text-(--text) font-medium"
                 dangerouslySetInnerHTML={{ __html: t.text }}
               />
+{/* ATTACHMENTS */}
+{t.attachments?.length > 0 && (
+  <div className="mt-3 space-y-2">
+    <p className="text-sm text-(--text-secondary)">Attachments:</p>
 
+    {t.attachments.map((file, index) => {
+      const isImage = file.type.startsWith("image");
+      const isVideo = file.type.startsWith("video");
+      const isAudio = file.type.startsWith("audio");
+
+      return (
+        <div key={index} className="border p-2 rounded bg-(--bg)">
+          
+          {/* IMAGE */}
+          {isImage && (
+            <img
+              src={file.url}
+              alt={file.name}
+              className="w-40 rounded mb-2"
+            />
+          )}
+
+          {/* VIDEO */}
+          {isVideo && (
+            <video controls className="w-48 mb-2">
+              <source src={file.url} />
+            </video>
+          )}
+
+          {/* AUDIO */}
+          {isAudio && (
+            <audio controls className="mb-2">
+              <source src={file.url} />
+            </audio>
+          )}
+
+          {/* FILE NAME + DOWNLOAD */}
+          <div className="flex justify-between items-center">
+            <span className="text-xs">{file.name}</span>
+
+            <a
+              href={file.url}
+              download={file.name}
+              target="_blank"
+              className="text-blue-400 text-xs underline"
+            >
+              Download
+            </a>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+)}
               {/* META INFO */}
               <div className="mt-3 flex flex-wrap gap-2 text-xs">
                 <span className="px-2 py-1 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
@@ -842,7 +964,31 @@ const filteredMembers = project?.teammember?.filter((m) => {
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
               />
+              {editData?.task?.attachments?.length > 0 && (
+  <div className="mt-3">
+    <p className="text-sm text-gray-400">Current Files:</p>
 
+    {editData.task.attachments.map((file, index) => (
+      <div key={index} className="flex justify-between text-xs mt-1">
+        <span>{file.name}</span>
+
+        <a
+          href={file.url}
+          target="_blank"
+          className="text-blue-400 underline"
+        >
+          View
+        </a>
+      </div>
+    ))}
+  </div>
+)}
+<input
+  type="file"
+  multiple
+  onChange={(e) => setEditFiles(e.target.files)}
+  className="w-full mt-3 text-white"
+/>
               <div className="flex gap-2 mt-3">
                 <button
                   onClick={handleUpdate}
@@ -871,6 +1017,12 @@ const filteredMembers = project?.teammember?.filter((m) => {
                 value={taskText}
                 onChange={(e) => setTaskText(e.target.value)}
               />
+              <input
+  type="file"
+  multiple
+  onChange={(e) => setFiles(e.target.files)}
+  className="w-full mt-2 text-white"
+/>
               {/* Deadline */}
               <input
                 type="datetime-local"

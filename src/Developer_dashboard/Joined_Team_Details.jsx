@@ -11,7 +11,7 @@ import ProjectDiscussion from "./ProjectDiscussion";
 const Joined_Team_Details = () => {
   const { id } = useParams();
   const [project, setProject] = useState(null);
-const [showChat, setShowChat] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const { user, logOut } = useContext(AuthContext);
   const loginEmail = user?.email;
   const liveMember = project?.teammember?.find((m) => m.email === loginEmail);
@@ -60,7 +60,14 @@ const [showChat, setShowChat] = useState(false);
   useEffect(() => {
     fetchProject();
   }, [id, fetchProject]);
-
+const handleDownload = (url, name) => {
+  const link = document.createElement("a");
+  link.href = url + "?fl_attachment=true";
+  link.download = name;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
   if (!project)
     return (
       <div className="flex h-screen items-center justify-center">
@@ -81,13 +88,14 @@ const [showChat, setShowChat] = useState(false);
           </p>
 
           <p className="text-(--text-secondary) flex items-center gap-1 ">
-            <GoStopwatch /> Start: {new Date(project.created_time).toLocaleString()}
+            <GoStopwatch /> Start:{" "}
+            {new Date(project.created_time).toLocaleString()}
           </p>
 
           <p className="text-(--text-secondary) flex items-center gap-1  mt-2">
             <IoIosPeople /> Members: {project.teammember.length}
           </p>
-                    <button
+          <button
             onClick={() => setShowChat(true)}
             className="bg-green-600 px-4 py-2 rounded-lg ml-2"
           >
@@ -177,7 +185,63 @@ const [showChat, setShowChat] = useState(false);
                         <p className="text-(--text) font-medium text-lg">
                           {t.text}
                         </p>
+                        {/* ATTACHMENTS */}
+                        {t.attachments?.length > 0 && (
+                          <div className="mt-3 space-y-2">
+                            <p className="text-sm text-(--text-secondary)">
+                              Attachments:
+                            </p>
 
+                            {t.attachments.map((file, index) => {
+                              const isImage = file.type.startsWith("image");
+                              const isVideo = file.type.startsWith("video");
+                              const isAudio = file.type.startsWith("audio");
+
+                              return (
+                                <div
+                                  key={index}
+                                  className="border p-2 rounded bg-(--bg)"
+                                >
+                                  {/* IMAGE */}
+                                  {isImage && (
+                                    <img
+                                      src={file.url}
+                                      alt={file.name}
+                                      className="w-40 rounded mb-2"
+                                    />
+                                  )}
+
+                                  {/* VIDEO */}
+                                  {isVideo && (
+                                    <video controls className="w-48 mb-2">
+                                      <source src={file.url} />
+                                    </video>
+                                  )}
+
+                                  {/* AUDIO */}
+                                  {isAudio && (
+                                    <audio controls className="mb-2">
+                                      <source src={file.url} />
+                                    </audio>
+                                  )}
+
+                                  {/* FILE NAME + DOWNLOAD */}
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-xs">{file.name}</span>
+
+                      <a
+  href={`${file.url}?fl_attachment=true`}
+  target="_blank"
+  className="text-blue-400 text-xs underline"
+>
+  Download
+</a>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                         {/* META */}
                         <div className="mt-3 flex flex-wrap items-center gap-2">
                           <span className="px-2 py-1 text-xs rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
@@ -185,20 +249,19 @@ const [showChat, setShowChat] = useState(false);
                           </span>
 
                           <span className="px-2 py-1 text-xs rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                             Deadline: {new Date(t.deadline).toLocaleString()}
+                            Deadline: {new Date(t.deadline).toLocaleString()}
                           </span>
 
                           {t.submittedAt && (
                             <span className="px-2 py-1 text-xs rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                               Done:{" "}
-                              {new Date(t.submittedAt).toLocaleString()}
+                              Done: {new Date(t.submittedAt).toLocaleString()}
                             </span>
                           )}
 
                           <span
                             className={`px-2 py-1 text-xs rounded-full border ${priorityColor}`}
                           >
-                             {t.priority}
+                            {t.priority}
                           </span>
 
                           {t.submittedAt && (
