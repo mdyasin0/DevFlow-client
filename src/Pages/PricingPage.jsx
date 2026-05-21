@@ -3,47 +3,53 @@ import { motion } from "framer-motion";
 export default function PricingPage() {
   const plans = [
     {
-      name: "Free",
+      name: "Free (Starter)",
       price: "$0",
-      desc: "For individuals & small teams",
-      features: [
-        "1 Project",
-        "Max 5 Team Members",
-        "Basic Task Management",
-        "Invite System",
-        "Basic Analytics",
-      ],
+      desc: "For beginners & testing the platform",
       highlight: false,
+      features: [
+        "1 Project only",
+        "Max 5 Team Members",
+        "20 Invitations",
+        "Task System: Todo / Running / Done",
+        "Basic Task Assignment",
+        "Task Limit: 50 per project",
+        "Task Character Limit: 500",
+        "No File Upload",
+        "No Discussion System",
+        "No Deadline Reminder",
+        "No Analytics / Charts",
+        "No Performance Tracking",
+        "No Task Search",
+      ],
       button: "Start Free",
     },
+
     {
-      name: "Pro",
+      name: "Premium",
       price: "$9",
-      desc: "For growing teams",
-      features: [
-        "Unlimited Projects",
-        "Up to 20 Members",
-        "Advanced Analytics",
-        "Full Email System",
-        "Real-time Updates",
-        "Notifications",
-      ],
+      desc: "For growing teams & professionals",
       highlight: true,
-      button: "Upgrade to Pro",
-    },
-    {
-      name: "Business",
-      price: "$29",
-      desc: "For startups & companies",
       features: [
         "Unlimited Projects",
-        "Unlimited Members",
-        "Full Admin Panel",
-        "Advanced Ranking System",
-        "AI Task Insights (Coming Soon)",
+        "Unlimited Team Members",
+        "Unlimited Invitations",
+        "Priority + Deadline Task System",
+        "Task Reopen System",
+        "Task Edit / Delete Control",
+        "Task Search 🔍",
+        "Project Discussion System 💬",
+        "File Attachment (Max 20MB) 📎",
+        "Member Remove / Control",
+        "Deadline Reminder (Email + Notification)",
+        "Task Status Analytics 📊",
+        "Performance Tracking (Late vs On-time)",
+        "Team Member Ranking System 🏅",
+        "Unlimited Tasks per Project",
+        "Unlimited Task Character Limit",
+        "Supports Image, PDF, Docs, Zip, Video",
       ],
-      highlight: false,
-      button: "Get Started",
+      button: "Upgrade to Premium",
     },
   ];
 
@@ -51,22 +57,21 @@ export default function PricingPage() {
     <div
       className="min-h-screen p-6"
       style={{
-        background: "linear-gradient(to bottom right, var(--bg), var(--bg-secondary))",
+        background:
+          "linear-gradient(to bottom right, var(--bg), var(--bg-secondary))",
         color: "var(--text)",
       }}
     >
       {/* Hero */}
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">
-          Simple, Transparent Pricing
-        </h1>
+     
         <p style={{ color: "var(--text-secondary)" }}>
-          Start free, scale as your team grows with DevFlow
+          Start free and upgrade when your team grows 🚀
         </p>
       </div>
 
       {/* Plans */}
-      <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+      <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
         {plans.map((plan, index) => (
           <motion.div
             key={index}
@@ -93,6 +98,7 @@ export default function PricingPage() {
             )}
 
             <h2 className="text-2xl font-semibold mt-4">{plan.name}</h2>
+
             <p
               className="text-sm mb-4"
               style={{ color: "var(--text-secondary)" }}
@@ -112,10 +118,7 @@ export default function PricingPage() {
 
             <ul className="space-y-2 mb-6">
               {plan.features.map((f, i) => (
-                <li
-                  key={i}
-                  style={{ color: "var(--text-secondary)" }}
-                >
+                <li key={i} style={{ color: "var(--text-secondary)" }}>
                   ✔ {f}
                 </li>
               ))}
@@ -146,23 +149,23 @@ export default function PricingPage() {
 
         <div className="space-y-4">
           <div>
-            <h3 className="font-semibold">Is DevFlow free?</h3>
+            <h3 className="font-semibold">Can I upgrade later?</h3>
             <p style={{ color: "var(--text-secondary)" }}>
-              Yes, with limitations.
+              Yes, anytime. Your data will be preserved.
             </p>
           </div>
 
           <div>
-            <h3 className="font-semibold">Can I upgrade later?</h3>
+            <h3 className="font-semibold">Is Free plan really free?</h3>
             <p style={{ color: "var(--text-secondary)" }}>
-              Yes, anytime.
+              Yes, but it has limited features to encourage upgrading.
             </p>
           </div>
 
           <div>
             <h3 className="font-semibold">Is my data secure?</h3>
             <p style={{ color: "var(--text-secondary)" }}>
-              Yes, we use secure authentication systems.
+              Yes, we use JWT authentication and secure APIs.
             </p>
           </div>
         </div>

@@ -1,11 +1,11 @@
-import React, { useContext, useState } from 'react';
-import { AuthContext } from '../Firebase/AuthContext';
+import React, { useContext, useState } from "react";
+import { AuthContext } from "../Firebase/AuthContext";
 
 const Project_form = () => {
   const [teamName, setTeamName] = useState("");
   const [projectTitle, setProjectTitle] = useState("");
-  const { user , logOut } = useContext(AuthContext);
-const [description, setDescription] = useState("");
+  const { user, logOut } = useContext(AuthContext);
+  const [description, setDescription] = useState("");
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -22,21 +22,43 @@ const [description, setDescription] = useState("");
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", 
+        credentials: "include",
         body: JSON.stringify(projectData),
       });
-   if (res.status === 401 || res.status === 403) {
-          alert("Session expired. Please login again");
-          await logOut();
-          window.location.href = "/login";
-          return;
-        }
+
       const data = await res.json();
 
+      // ✅ 1. AUTH সমস্যা → logout
+      if (res.status === 401) {
+        alert("Session expired. Please login again");
+        await logOut();
+        window.location.href = "/login";
+        return;
+      }
+
+      // ✅ 2. BLOCKED USER
+      if (data?.isBlocked) {
+        alert("You are blocked by admin");
+        await logOut();
+        window.location.href = "/login";
+        return;
+      }
+
+      // ✅ 3. LIMIT REACHED
+      if (data?.code === "LIMIT_REACHED") {
+        alert(data.message); // 🔥 upgrade message
+        return;
+      }
+
+      // ✅ 4. OTHER ERROR
+      if (!res.ok) {
+        alert(data.message || "Something went wrong");
+        return;
+      }
+
+      // ✅ SUCCESS
       if (data.success) {
-        alert("Project Created ");
-        setTeamName("");
-        setProjectTitle("");
+        alert("Project Created");
       }
     } catch (error) {
       alert(error);
@@ -67,13 +89,13 @@ const [description, setDescription] = useState("");
         className="w-full border border-(--border) p-2 rounded bg-(--bg) text-(--text)"
         required
       />
-<textarea
-  placeholder="Project Description"
-  value={description}
-  onChange={(e) => setDescription(e.target.value)}
-  className="w-full border border-(--border) p-2 rounded bg-(--bg) text-(--text)"
-  required
-/>
+      <textarea
+        placeholder="Project Description"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        className="w-full border border-(--border) p-2 rounded bg-(--bg) text-(--text)"
+        required
+      />
       <button
         type="submit"
         className="bg-(--primary) hover:bg-(--primary-hover) text-white w-full py-2 rounded"

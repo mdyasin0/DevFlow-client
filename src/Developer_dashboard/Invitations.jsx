@@ -1,15 +1,15 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../Firebase/AuthContext";
 import { socket } from "../Socket";
-import { useNavigate } from "react-router";
+
 
 const Invitations = () => {
   const [projects, setProjects] = useState([]);
   const { user, logOut } = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState("");
-const navigate = useNavigate();
-const [searchTerm, setSearchTerm] = useState("");
+  
+  const [searchTerm, setSearchTerm] = useState("");
   //  get user name
   useEffect(() => {
     if (!user?.email) return;
@@ -21,7 +21,7 @@ const [searchTerm, setSearchTerm] = useState("");
           setUserName(data.data.name);
         }
       });
-  }, [user?.email ]);
+  }, [user?.email]);
 
   //  fetch invitations
   useEffect(() => {
@@ -57,7 +57,7 @@ const [searchTerm, setSearchTerm] = useState("");
     };
 
     fetchData();
-  }, [user?.email ,logOut]);
+  }, [user?.email, logOut]);
   useEffect(() => {
     if (user?._id) {
       socket.emit("join", user._id);
@@ -81,8 +81,6 @@ const [searchTerm, setSearchTerm] = useState("");
   }, []);
   useEffect(() => {
     socket.on("newInvitation", async (data) => {
-    
-
       //  BEST WAY (simple & reliable)
       const res = await fetch(
         `http://localhost:5000/my-invitations/${user.email}`,
@@ -90,12 +88,12 @@ const [searchTerm, setSearchTerm] = useState("");
           credentials: "include",
         },
       );
-         if (res.status === 401 || res.status === 403) {
-          alert("Session expired. Please login again");
-          await logOut();
-          window.location.href = "/login";
-          return;
-        }
+      if (res.status === 401 || res.status === 403) {
+        alert("Session expired. Please login again");
+        await logOut();
+        window.location.href = "/login";
+        return;
+      }
       const result = await res.json();
 
       if (result.success) {
@@ -104,11 +102,12 @@ const [searchTerm, setSearchTerm] = useState("");
     });
 
     return () => socket.off("newInvitation");
-  }, [user?.email ,logOut]);
-  const filteredProjects = projects.filter((project) =>
-  project.teamName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  project.projectTitle.toLowerCase().includes(searchTerm.toLowerCase())
-);
+  }, [user?.email, logOut]);
+  const filteredProjects = projects.filter(
+    (project) =>
+      project.teamName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      project.projectTitle.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
   //  action handler
   const handleAction = async (projectId, status) => {
     const confirmAction = window.confirm(
@@ -131,14 +130,15 @@ const [searchTerm, setSearchTerm] = useState("");
           }),
         },
       );
-   if (res.status === 401 || res.status === 403) {
-          alert("Session expired. Please login again");
-          await logOut();
-            navigate("/login");
+     
+      const data = await res.json();
+      if (!res.ok) {
+        if (data?.code === "TEAM_LIMIT_REACHED") {
+          alert(data.message);
           return;
         }
-      const data = await res.json();
 
+      }
       if (data.success) {
         alert(data.message);
 
@@ -165,107 +165,112 @@ const [searchTerm, setSearchTerm] = useState("");
 
   if (loading || !user) {
     return (
-    <div className="flex h-screen items-center justify-center"><span className="loading loading-spinner text-primary"></span></div>
+      <div className="flex h-screen items-center justify-center">
+        <span className="loading loading-spinner text-primary"></span>
+      </div>
     );
   }
 
   return (
     <div className="p-6 bg-(--bg-secondary) min-h-full text-(--text)">
       {/* HEADER */}
-     
-      {filteredProjects.length === 0 ? ( <>  <p className="text-(--text-secondary)  justify-center items-center h-screen flex">No invitations found</p></>
-      
+
+      {filteredProjects.length === 0 ? (
+        <>
+          {" "}
+          <p className="text-(--text-secondary)  justify-center items-center h-screen flex">
+            No invitations found
+          </p>
+        </>
       ) : (
         <>
-             <h2 className="text-xl font-semibold mb-6 text-(--primary)">
-        Your Invitations
-      </h2>
- <div className="mb-4">
-  <input
-    type="text"
-    placeholder="Search by team name or project title..."
-    value={searchTerm}
-    onChange={(e) => setSearchTerm(e.target.value)}
-    className="w-full md:w-1/2 px-4 py-2 rounded-lg border border-(--border) bg-(--card) text-(--text)"
-  />
-</div>
+          <h2 className="text-xl font-semibold mb-6 text-(--primary)">
+            Your Invitations
+          </h2>
+          <div className="mb-4">
+            <input
+              type="text"
+              placeholder="Search by team name or project title..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full md:w-1/2 px-4 py-2 rounded-lg border border-(--border) bg-(--card) text-(--text)"
+            />
+          </div>
           <div className="overflow-x-auto rounded-xl border border-(--border) bg-(--card) shadow">
-      
-          <table className="w-full text-sm">
-            {/* TABLE HEAD */}
-            <thead className="bg-(--bg-secondary) text-(--text-secondary)">
-              <tr className="text-left">
-                <th className="px-4 py-3">#</th>
-                <th className="px-4 py-3">Team Name</th>
-                <th className="px-4 py-3">Project Name</th>
-                <th className="px-4 py-3">Start Time</th>
-                <th className="px-4 py-3 text-center">Action</th>
-              </tr>
-            </thead>
+            <table className="w-full text-sm">
+              {/* TABLE HEAD */}
+              <thead className="bg-(--bg-secondary) text-(--text-secondary)">
+                <tr className="text-left">
+                  <th className="px-4 py-3">#</th>
+                  <th className="px-4 py-3">Team Name</th>
+                  <th className="px-4 py-3">Project Name</th>
+                  <th className="px-4 py-3">Start Time</th>
+                  <th className="px-4 py-3 text-center">Action</th>
+                </tr>
+              </thead>
 
-            {/* TABLE BODY */}
-            <tbody>
-              {projects.map((project, index) => {
-                const invite = project.invite_email?.find(
-                  (i) => i.email === user.email,
-                );
+              {/* TABLE BODY */}
+              <tbody>
+                {projects.map((project, index) => {
+                  const invite = project.invite_email?.find(
+                    (i) => i.email === user.email,
+                  );
 
-                if (!invite) return null;
+                  if (!invite) return null;
 
-                return (
-                  <tr
-                    key={project._id}
-                    className="border-t border-(--border) hover:bg-(--bg-secondary) transition"
-                  >
-                    <td className="px-4 py-3">{index + 1}</td>
+                  return (
+                    <tr
+                      key={project._id}
+                      className="border-t border-(--border) hover:bg-(--bg-secondary) transition"
+                    >
+                      <td className="px-4 py-3">{index + 1}</td>
 
-                    <td className="px-4 py-3 font-medium">
-                      {project.teamName}
-                    </td>
+                      <td className="px-4 py-3 font-medium">
+                        {project.teamName}
+                      </td>
 
-                    <td className="px-4 py-3 text-(--text-secondary)">
-                      {project.projectTitle}
-                    </td>
+                      <td className="px-4 py-3 text-(--text-secondary)">
+                        {project.projectTitle}
+                      </td>
 
-                    <td className="px-4 py-3 text-(--text-secondary)">
-                      {new Date(project.created_time).toLocaleDateString()}
-                    </td>
+                      <td className="px-4 py-3 text-(--text-secondary)">
+                        {new Date(project.created_time).toLocaleDateString()}
+                      </td>
 
-                    <td className="px-4 py-3 text-center">
-                      {invite.status === "pending" ? (
-                        <select
-                          onChange={(e) =>
-                            handleAction(project._id, e.target.value)
-                          }
-                          defaultValue=""
-                          className="px-2 py-1 rounded-lg border border-(--border) bg-(--card) text-(--text)"
-                        >
-                          <option value="" disabled>
-                            Select
-                          </option>
-                          <option value="approved">Approve</option>
-                          <option value="rejected">Reject</option>
-                        </select>
-                      ) : (
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            invite.status === "approved"
-                              ? "bg-green-500/20 text-green-500"
-                              : "bg-red-500/20 text-red-500"
-                          }`}
-                        >
-                          {invite.status}
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                      <td className="px-4 py-3 text-center">
+                        {invite.status === "pending" ? (
+                          <select
+                            onChange={(e) =>
+                              handleAction(project._id, e.target.value)
+                            }
+                            defaultValue=""
+                            className="px-2 py-1 rounded-lg border border-(--border) bg-(--card) text-(--text)"
+                          >
+                            <option value="" disabled>
+                              Select
+                            </option>
+                            <option value="approved">Approve</option>
+                            <option value="rejected">Reject</option>
+                          </select>
+                        ) : (
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              invite.status === "approved"
+                                ? "bg-green-500/20 text-green-500"
+                                : "bg-red-500/20 text-red-500"
+                            }`}
+                          >
+                            {invite.status}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </>
-      
       )}
     </div>
   );

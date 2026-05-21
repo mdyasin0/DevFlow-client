@@ -175,13 +175,19 @@ const Created_project_details = () => {
       credentials: "include",
       body: JSON.stringify({ email: inviteEmail }),
     });
-    if (res.status === 401 || res.status === 403) {
-      alert("Session expired. Please login again");
-      await logOut();
-      window.location.href = "/login";
-      return;
-    }
+   
     const data = await res.json();
+    
+  if (data.code === "TEAM_LIMIT") {
+    alert(data.message);
+    return;
+  }
+
+  if (data.code === "INVITE_LIMIT") {
+    alert(data.message);
+    return;
+  }
+
     if (data.success) {
       setInviteEmail("");
       setShowInvite(false);
