@@ -14,6 +14,7 @@ const Joined_Team_Details = () => {
   const [showChat, setShowChat] = useState(false);
   const { user, logOut } = useContext(AuthContext);
   const loginEmail = user?.email;
+  
   const liveMember = project?.teammember?.find((m) => m.email === loginEmail);
   const [modal, setModal] = useState({
     open: false,
@@ -37,6 +38,7 @@ const Joined_Team_Details = () => {
   };
 
   const myMember = project?.teammember?.find((m) => m.email === loginEmail);
+  const isFreeManager = project?.manager?.plan?.type === "free";
   useEffect(() => {
     if (id) {
       socket.emit("joinProject", id);
@@ -60,14 +62,7 @@ const Joined_Team_Details = () => {
   useEffect(() => {
     fetchProject();
   }, [id, fetchProject]);
-const handleDownload = (url, name) => {
-  const link = document.createElement("a");
-  link.href = url + "?fl_attachment=true";
-  link.download = name;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
+ 
   if (!project)
     return (
       <div className="flex h-screen items-center justify-center">
@@ -95,18 +90,33 @@ const handleDownload = (url, name) => {
           <p className="text-(--text-secondary) flex items-center gap-1  mt-2">
             <IoIosPeople /> Members: {project.teammember.length}
           </p>
-          <button
-            onClick={() => setShowChat(true)}
-            className="bg-green-600 px-4 py-2 rounded-lg ml-2"
-          >
-            Discuss on Project
-          </button>
-          {showChat && (
+                  <button
+  onClick={() => {
+    if (isFreeManager) {
+      alert(" say manager to Upgrade plan to use project discussion chat 🚀");
+      return;
+    }
+    setShowChat(true);
+  }}
+  className="bg-green-600 px-4 py-2 rounded-lg ml-2"
+>
+  Discuss on Project
+</button>
+         
+          {showChat && isFreeManager ? (
+  <div className="p-4 bg-red-100 text-red-600 rounded">
+    say manager to Upgrade plan to use project discussion cha
+  </div>
+) : (
+showChat && (
             <ProjectDiscussion
               projectId={project._id}
               onClose={() => setShowChat(false)}
             />
-          )}
+  )
+)}
+    
+      
         </div>
 
         {/* TABLE */}
@@ -229,13 +239,13 @@ const handleDownload = (url, name) => {
                                   <div className="flex justify-between items-center">
                                     <span className="text-xs">{file.name}</span>
 
-                      <a
-  href={`${file.url}?fl_attachment=true`}
-  target="_blank"
-  className="text-blue-400 text-xs underline"
->
-  Download
-</a>
+                                    <a
+                                      href={`${file.url}?fl_attachment=true`}
+                                      target="_blank"
+                                      className="text-blue-400 text-xs underline"
+                                    >
+                                      Download
+                                    </a>
                                   </div>
                                 </div>
                               );

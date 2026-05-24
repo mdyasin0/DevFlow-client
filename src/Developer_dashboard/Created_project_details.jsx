@@ -35,6 +35,8 @@ const Created_project_details = () => {
   const [memberSearch, setMemberSearch] = useState("");
   const [taskSearch, setTaskSearch] = useState("");
   const [files, setFiles] = useState([]);
+  const { dbUser } = useContext(AuthContext);
+  const isFreeUser = !dbUser?.plan || dbUser?.plan?.type === "free";
   const [editFiles, setEditFiles] = useState([]);
   const [taskModal, setTaskModal] = useState({
     open: false,
@@ -175,18 +177,18 @@ const Created_project_details = () => {
       credentials: "include",
       body: JSON.stringify({ email: inviteEmail }),
     });
-   
-    const data = await res.json();
-    
-  if (data.code === "TEAM_LIMIT") {
-    alert(data.message);
-    return;
-  }
 
-  if (data.code === "INVITE_LIMIT") {
-    alert(data.message);
-    return;
-  }
+    const data = await res.json();
+
+    if (data.code === "TEAM_LIMIT") {
+      alert(data.message);
+      return;
+    }
+
+    if (data.code === "INVITE_LIMIT") {
+      alert(data.message);
+      return;
+    }
 
     if (data.success) {
       setInviteEmail("");
@@ -211,14 +213,13 @@ const Created_project_details = () => {
           }),
         },
       );
-      if (res.status === 401 || res.status === 403) {
-        alert("Session expired. Please login again");
-        await logOut();
-        window.location.href = "/login";
+
+      const data = await res.json();
+      // 👉 plan restriction
+      if (data.code === "PLAN_RESTRICTED") {
+        alert("Upgrade your plan to use this feature 🚀");
         return;
       }
-      const data = await res.json();
-
       if (data.success) {
         fetchProject(); // reload data
       }
@@ -226,65 +227,96 @@ const Created_project_details = () => {
       alert(err);
     }
   };
+const MAX_SIZE = 20 * 1024 * 1024; // 20MB
+
 const uploadFilesToCloudinary = async () => {
   const uploadedFiles = [];
 
   for (let file of files) {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", "devflow"); // Cloudinary preset
+    // 🔒 SIZE CHECK (before upload)
+    if (file.size > MAX_SIZE) {
+      alert(`${file.name} is larger than 20MB (Upload skipped) 🚫`);
+      continue; // skip this file
+    }
 
-    const res = await fetch(
-      "https://api.cloudinary.com/v1_1/dhdfdmc8k/auto/upload",
-      {
-        method: "POST",
-        body: formData,
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", "devflow");
+
+      const res = await fetch(
+        "https://api.cloudinary.com/v1_1/dhdfdmc8k/auto/upload",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await res.json();
+
+      // 🔒 check upload success
+      if (!data?.secure_url) {
+        alert(`${file.name} upload failed ❌`);
+        continue;
       }
-    );
 
-    const data = await res.json();
-
-    uploadedFiles.push({
-      url: data.secure_url,
-      type: file.type,
-      name: file.name,
-    });
+      uploadedFiles.push({
+        url: data.secure_url,
+        type: file.type,
+        name: file.name,
+      });
+    } catch (err) {
+      console.error("Upload error:", err);
+      alert(`${file.name} upload error ❌`);
+    }
   }
 
   return uploadedFiles;
 };
   // ADD TASK
- const handleTaskSave = async () => {
-  let uploadedFiles = [];
+  const handleTaskSave = async () => {
+    let uploadedFiles = [];
 
-  if (files.length > 0) {
-    uploadedFiles = await uploadFilesToCloudinary();
-  }
+    if (files.length > 0) {
+      uploadedFiles = await uploadFilesToCloudinary();
+    }
 
-  const res = await fetch(`http://localhost:5000/add-task/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({
-      email: activeMember,
-      text: taskText,
-      deadline,
-      priority,
-      attachments: uploadedFiles, // 🔥 NEW
-    }),
-  });
+    const res = await fetch(`http://localhost:5000/add-task/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        email: activeMember,
+        text: taskText,
+        deadline,
+        priority,
+        attachments: uploadedFiles, // 🔥 NEW
+      }),
+    });
 
-  const data = await res.json();
-
-  if (data.success) {
-    setFiles([]);
-    setTaskText("");
-    setDeadline("");
-    setPriority("medium");
-    setActiveMember(null);
-    fetchProject();
-  }
-};
+    const data = await res.json();
+    // 🔒 FILE UPLOAD BLOCK
+    if (data.code === "FILE_UPLOAD_RESTRICTED") {
+      alert("🚀 File upload is only available for Pro users");
+      return;
+    }
+    if (data.code === "CHAR_LIMIT_EXCEEDED") {
+      alert("Max 500 characters allowed in free plan 🚀");
+      return;
+    }
+    if (data.code === "TASK_LIMIT_EXCEEDED") {
+      alert("Free plan limit reached. Upgrade for more tasks 🚀");
+      return;
+    }
+    if (data.success) {
+      setFiles([]);
+      setTaskText("");
+      setDeadline("");
+      setPriority("medium");
+      setActiveMember(null);
+      fetchProject();
+    }
+  };
 
   // DELETE TASK
   const handleDelete = async (type, taskId, email) => {
@@ -298,10 +330,16 @@ const uploadFilesToCloudinary = async () => {
         taskId,
       }),
     });
+
+    const data = await res.json();
     if (res.status === 401 || res.status === 403) {
       alert("Session expired. Please login again");
       await logOut();
       window.location.href = "/login";
+      return;
+    }
+    if (data.code === "PLAN_RESTRICTED for delete") {
+      alert("Upgrade your plan to delete tasks 🚀");
       return;
     }
     fetchProject(); //  UI update
@@ -321,6 +359,13 @@ const uploadFilesToCloudinary = async () => {
         credentials: "include",
       },
     );
+        const data = await res.json();
+
+    // 🔒 PLAN RESTRICTED
+    if (data.code === "PLAN_RESTRICTED for remove member") {
+      alert(data.message); // ✅ backend message show
+      return;
+    }
     if (res.status === 401 || res.status === 403) {
       alert("Session expired. Please login again");
       await logOut();
@@ -343,79 +388,95 @@ const uploadFilesToCloudinary = async () => {
   };
 
   // UPDATE TASK
- const handleUpdate = async () => {
-  let newFiles = [];
+  const handleUpdate = async () => {
+    let newFiles = [];
 
-  if (editFiles.length > 0) {
-    newFiles = await uploadEditFiles();
-  }
+    if (editFiles.length > 0) {
+      newFiles = await uploadEditFiles();
+    }
 
-  const res = await fetch(`http://localhost:5000/update-task/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({
-      email: editData.member.email,
-      type: editData.type,
-      taskId: editData.task.id,
-      text: editText,
-      newAttachments: newFiles, // 🔥 NEW
-    }),
-  });
+    const res = await fetch(`http://localhost:5000/update-task/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        email: editData.member.email,
+        type: editData.type,
+        taskId: editData.task.id,
+        text: editText,
+        newAttachments: newFiles, // 🔥 NEW
+      }),
+    });
+const data = await res.json();
+ if (data.code === "FILE_UPLOAD_RESTRICTED for update") {
+  alert("🚀 File upload is only for Pro users");
+  return;
+}
 
-  if (res.status === 401 || res.status === 403) {
-    alert("Session expired. Please login again");
-    await logOut();
-    window.location.href = "/login";
-    return;
-  }
+    setEditData(null);
+    setEditFiles([]);
+    fetchProject();
+  };
+  const tasks =
+    project?.teammember?.find((m) => m.email === taskModal.member?.email)?.[
+      taskModal.type
+    ] || [];
 
-  setEditData(null);
-  setEditFiles([]);
-  fetchProject();
-};
-const tasks =
-  project?.teammember?.find(
-    (m) => m.email === taskModal.member?.email
-  )?.[taskModal.type] || [];
+  const filteredTasks = tasks.filter((t) =>
+    t.text.toLowerCase().includes(taskSearch.toLowerCase()),
+  );
 
-const filteredTasks = tasks.filter((t) =>
-  t.text.toLowerCase().includes(taskSearch.toLowerCase())
-);
+
 const uploadEditFiles = async () => {
   const uploaded = [];
 
   for (let file of editFiles) {
+    // 🔒 FILE SIZE CHECK
+    if (file.size > MAX_SIZE) {
+      alert(`${file.name} is larger than 20MB limit 🚫`);
+      continue; // skip this file
+    }
+
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", "devflow");
 
-    const res = await fetch(
-      "https://api.cloudinary.com/v1_1/dhdfdmc8k/auto/upload",
-      {
-        method: "POST",
-        body: formData,
+    try {
+      const res = await fetch(
+        "https://api.cloudinary.com/v1_1/dhdfdmc8k/auto/upload",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await res.json();
+
+      // 🔒 Cloudinary error check
+      if (!data.secure_url) {
+        console.log("Upload failed for:", file.name);
+        continue;
       }
-    );
 
-    const data = await res.json();
-
-    uploaded.push({
-      url: data.secure_url,
-      type: file.type,
-      name: file.name,
-    });
+      uploaded.push({
+        url: data.secure_url,
+        type: file.type,
+        name: file.name,
+      });
+    } catch (error) {
+      console.log("Upload error:", file.name, error.message);
+    }
   }
 
   return uploaded;
 };
-const filteredMembers = project?.teammember?.filter((m) => {
-  const search = memberSearch.toLowerCase();
-  return (
-    m.name?.toLowerCase().includes(search) ||
-    m.email?.toLowerCase().includes(search)
-  );
-});
+  const filteredMembers = project?.teammember?.filter((m) => {
+    const search = memberSearch.toLowerCase();
+    return (
+      m.name?.toLowerCase().includes(search) ||
+      m.email?.toLowerCase().includes(search)
+    );
+  });
   if (!project)
     return (
       <div className="flex h-screen items-center justify-center">
@@ -447,17 +508,30 @@ const filteredMembers = project?.teammember?.filter((m) => {
               </p>
             </div>
             <button
-              onClick={() => setShowChat(true)}
-              className="bg-green-600 px-4 py-2 rounded-lg ml-2"
-            >
-              Discuss on Project
-            </button>
-            {showChat && (
-              <ProjectDiscussion
-                projectId={project._id}
-                onClose={() => setShowChat(false)}
-              />
-            )}
+  onClick={() => {
+    if (isFreeUser) {
+      alert("Upgrade your plan to use project discussion chat 🚀");
+      return;
+    }
+    setShowChat(true);
+  }}
+  className="bg-green-600 px-4 py-2 rounded-lg ml-2"
+>
+  Discuss on Project
+</button>
+             
+          {showChat && isFreeUser ? (
+  <div className="p-4 bg-red-100 text-red-600 rounded">
+    Upgrade your plan to access project discussion
+  </div>
+) : (
+  showChat && (
+    <ProjectDiscussion
+      projectId={project._id}
+      onClose={() => setShowChat(false)}
+    />
+  )
+)}
           </div>
 
           <button
@@ -692,13 +766,13 @@ const filteredMembers = project?.teammember?.filter((m) => {
             </button>
           </div>
         )}
-<input
-  type="text"
-  placeholder="Search by name or email..."
-  value={memberSearch}
-  onChange={(e) => setMemberSearch(e.target.value)}
-  className="mb-4 p-2 w-full rounded bg-(--card) border border-(--border)"
-/>
+        <input
+          type="text"
+          placeholder="Search by name or email..."
+          value={memberSearch}
+          onChange={(e) => setMemberSearch(e.target.value)}
+          className="mb-4 p-2 w-full rounded bg-(--card) border border-(--border)"
+        />
         {/* TABLE */}
         <div className="overflow-x-auto">
           <table className="w-full text-sm border border-(--border)">
@@ -763,11 +837,17 @@ const filteredMembers = project?.teammember?.filter((m) => {
                     </button>
 
                     <button
-                      onClick={() => handleRemoveMember(m.email)}
-                      className="bg-(--danger) text-white px-3 py-1 rounded"
-                    >
-                      Remove
-                    </button>
+  onClick={() => {
+    if (isFreeUser) {
+      alert("Upgrade your plan to remove members 🚀");
+      return;
+    }
+    handleRemoveMember(m.email);
+  }}
+  className="bg-(--danger) text-white px-3 py-1 rounded"
+>
+  Remove
+</button>
                   </td>
                 </tr>
               ))}
@@ -775,191 +855,199 @@ const filteredMembers = project?.teammember?.filter((m) => {
           </table>
         </div>
 
-    
         {/* TASK MODAL */}
-{taskModal.open && (
-  <div className="fixed inset-0 bg-black/70 flex justify-center items-center">
-    <div className="bg-(--card) text-(--text) max-w-xl rounded-2xl border border-(--border) p-4 max-h-[60vh] overflow-y-auto space-y-3">
-      
-      <h2 className="mb-4 text-(--primary) text-lg font-semibold">
-        {taskModal.type.toUpperCase()} TASKS
-      </h2>
+        {taskModal.open && (
+          <div className="fixed inset-0 bg-black/70 flex justify-center items-center">
+            <div className="bg-(--card) text-(--text) max-w-xl rounded-2xl border border-(--border) p-4 max-h-[60vh] overflow-y-auto space-y-3">
+              <h2 className="mb-4 text-(--primary) text-lg font-semibold">
+                {taskModal.type.toUpperCase()} TASKS
+              </h2>
 
-      {/* SEARCH */}
-      <input
-        type="text"
-        placeholder="Search task..."
-        value={taskSearch}
-        onChange={(e) => setTaskSearch(e.target.value)}
-        className="w-full p-2 mb-3 bg-(--bg-secondary) border border-(--border)"
-      />
-
-      {/* TASK LIST */}
-      {filteredTasks.length ? (
-        filteredTasks.map((t) => {
-          const priorityColor =
-            t.priority === "high"
-              ? "bg-red-500/10 text-red-500 border-red-500/30"
-              : t.priority === "medium"
-              ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/30"
-              : "bg-green-500/10 text-green-500 border-green-500/30";
-
-          const isLate =
-            t.submittedAt &&
-            new Date(t.submittedAt) > new Date(t.deadline);
-
-          return (
-            <div
-              key={t.id}
-              className="bg-(--bg-secondary) p-4 mb-3 rounded-xl border border-(--border)"
-            >
-              {/* TASK TEXT */}
-              <p
-                className="text-(--text) font-medium"
-                dangerouslySetInnerHTML={{ __html: t.text }}
+              {/* SEARCH */}
+              <input
+                type="text"
+                placeholder="Search task..."
+                value={taskSearch}
+                onChange={(e) => setTaskSearch(e.target.value)}
+                className="w-full p-2 mb-3 bg-(--bg-secondary) border border-(--border)"
               />
-{/* ATTACHMENTS */}
-{t.attachments?.length > 0 && (
-  <div className="mt-3 space-y-2">
-    <p className="text-sm text-(--text-secondary)">Attachments:</p>
 
-    {t.attachments.map((file, index) => {
-      const isImage = file.type.startsWith("image");
-      const isVideo = file.type.startsWith("video");
-      const isAudio = file.type.startsWith("audio");
+              {/* TASK LIST */}
+              {filteredTasks.length ? (
+                filteredTasks.map((t) => {
+                  const priorityColor =
+                    t.priority === "high"
+                      ? "bg-red-500/10 text-red-500 border-red-500/30"
+                      : t.priority === "medium"
+                        ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/30"
+                        : "bg-green-500/10 text-green-500 border-green-500/30";
 
-      return (
-        <div key={index} className="border p-2 rounded bg-(--bg)">
-          
-          {/* IMAGE */}
-          {isImage && (
-            <img
-              src={file.url}
-              alt={file.name}
-              className="w-40 rounded mb-2"
-            />
-          )}
+                  const isLate =
+                    t.submittedAt &&
+                    new Date(t.submittedAt) > new Date(t.deadline);
 
-          {/* VIDEO */}
-          {isVideo && (
-            <video controls className="w-48 mb-2">
-              <source src={file.url} />
-            </video>
-          )}
+                  return (
+                    <div
+                      key={t.id}
+                      className="bg-(--bg-secondary) p-4 mb-3 rounded-xl border border-(--border)"
+                    >
+                      {/* TASK TEXT */}
+                      <p
+                        className="text-(--text) font-medium"
+                        dangerouslySetInnerHTML={{ __html: t.text }}
+                      />
+                      {/* ATTACHMENTS */}
+                      {t.attachments?.length > 0 && (
+                        <div className="mt-3 space-y-2">
+                          <p className="text-sm text-(--text-secondary)">
+                            Attachments:
+                          </p>
 
-          {/* AUDIO */}
-          {isAudio && (
-            <audio controls className="mb-2">
-              <source src={file.url} />
-            </audio>
-          )}
+                          {t.attachments.map((file, index) => {
+                            const isImage = file.type.startsWith("image");
+                            const isVideo = file.type.startsWith("video");
+                            const isAudio = file.type.startsWith("audio");
 
-          {/* FILE NAME + DOWNLOAD */}
-          <div className="flex justify-between items-center">
-            <span className="text-xs">{file.name}</span>
+                            return (
+                              <div
+                                key={index}
+                                className="border p-2 rounded bg-(--bg)"
+                              >
+                                {/* IMAGE */}
+                                {isImage && (
+                                  <img
+                                    src={file.url}
+                                    alt={file.name}
+                                    className="w-40 rounded mb-2"
+                                  />
+                                )}
 
-            <a
-              href={file.url}
-              download={file.name}
-              target="_blank"
-              className="text-blue-400 text-xs underline"
-            >
-              Download
-            </a>
-          </div>
-        </div>
-      );
-    })}
-  </div>
-)}
-              {/* META INFO */}
-              <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                <span className="px-2 py-1 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                  Start: {new Date(t.createdAt).toLocaleString()}
-                </span>
+                                {/* VIDEO */}
+                                {isVideo && (
+                                  <video controls className="w-48 mb-2">
+                                    <source src={file.url} />
+                                  </video>
+                                )}
 
-                <span className="px-2 py-1 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                  Deadline: {new Date(t.deadline).toLocaleString()}
-                </span>
+                                {/* AUDIO */}
+                                {isAudio && (
+                                  <audio controls className="mb-2">
+                                    <source src={file.url} />
+                                  </audio>
+                                )}
 
-                {t.submittedAt && (
-                  <span className="px-2 py-1 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                    Done: {new Date(t.submittedAt).toLocaleString()}
-                  </span>
-                )}
+                                {/* FILE NAME + DOWNLOAD */}
+                                <div className="flex justify-between items-center">
+                                  <span className="text-xs">{file.name}</span>
 
-                <span className={`px-2 py-1 rounded border ${priorityColor}`}>
-                  {t.priority}
-                </span>
+                                  <a
+                                    href={file.url}
+                                    download={file.name}
+                                    target="_blank"
+                                    className="text-blue-400 text-xs underline"
+                                  >
+                                    Download
+                                  </a>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                      {/* META INFO */}
+                      <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                        <span className="px-2 py-1 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                          Start: {new Date(t.createdAt).toLocaleString()}
+                        </span>
 
-                {t.submittedAt && (
-                  <span
-                    className={`px-2 py-1 rounded border ${
-                      isLate
-                        ? "bg-red-500/10 text-red-500 border-red-500/30"
-                        : "bg-green-500/10 text-green-500 border-green-500/30"
-                    }`}
-                  >
-                    {isLate ? "Late" : "In Time"}
-                  </span>
-                )}
-              </div>
+                        <span className="px-2 py-1 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                          Deadline: {new Date(t.deadline).toLocaleString()}
+                        </span>
 
-              {/* ACTION */}
-              <div className="flex gap-3 mt-3">
-                <button
-                  onClick={() =>
-                    startEdit(t, taskModal.type, taskModal.member)
-                  }
-                  className="text-(--primary)"
-                >
-                  <FaPenToSquare />
-                </button>
+                        {t.submittedAt && (
+                          <span className="px-2 py-1 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                            Done: {new Date(t.submittedAt).toLocaleString()}
+                          </span>
+                        )}
 
-                <button
-                  onClick={() =>
-                    handleDelete(
-                      taskModal.type,
-                      t.id,
-                      taskModal.member.email
-                    )
-                  }
-                  className="text-(--danger)"
-                >
-                  <FaRegTrashAlt />
-                </button>
+                        <span
+                          className={`px-2 py-1 rounded border ${priorityColor}`}
+                        >
+                          {t.priority}
+                        </span>
 
-                {taskModal.type === "done" && (
-                  <button
-                    onClick={() =>
-                      handleReopen(taskModal.member, t.id)
-                    }
-                    className="text-yellow-400 flex items-center gap-1"
-                  >
-                    <VscIssueReopened /> Reopen
-                  </button>
-                )}
-              </div>
+                        {t.submittedAt && (
+                          <span
+                            className={`px-2 py-1 rounded border ${
+                              isLate
+                                ? "bg-red-500/10 text-red-500 border-red-500/30"
+                                : "bg-green-500/10 text-green-500 border-green-500/30"
+                            }`}
+                          >
+                            {isLate ? "Late" : "In Time"}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* ACTION */}
+                      <div className="flex gap-3 mt-3">
+                        <button
+                          onClick={() =>
+                            startEdit(t, taskModal.type, taskModal.member)
+                          }
+                          className="text-(--primary)"
+                        >
+                          <FaPenToSquare />
+                        </button>
+
+                        {!isFreeUser && (
+                          <button
+                            onClick={() =>
+                              handleDelete(
+                                taskModal.type,
+                                t.id,
+                                taskModal.member.email,
+                              )
+                            }
+                            className="text-(--danger)"
+                          >
+                            <FaRegTrashAlt />
+                          </button>
+                        )}
+
+                        {taskModal.type === "done" &&
+                          dbUser?.plan?.type !== "free" &&
+                          dbUser?.plan && (
+                            <button
+                              onClick={() =>
+                                handleReopen(taskModal.member, t.id)
+                              }
+                              className="text-yellow-400 flex items-center gap-1"
+                            >
+                              <VscIssueReopened /> Reopen
+                            </button>
+                          )}
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-(--text-secondary)">No tasks</p>
+              )}
+
+              {/* CLOSE BUTTON */}
+              <button
+                onClick={() => {
+                  setTaskModal({ open: false });
+                  setTaskSearch(""); // reset search
+                }}
+                className="mt-4 bg-(--danger) text-white px-4 py-2 rounded"
+              >
+                Close
+              </button>
             </div>
-          );
-        })
-      ) : (
-        <p className="text-(--text-secondary)">No tasks</p>
-      )}
-
-      {/* CLOSE BUTTON */}
-      <button
-        onClick={() => {
-          setTaskModal({ open: false });
-          setTaskSearch(""); // reset search
-        }}
-        className="mt-4 bg-(--danger) text-white px-4 py-2 rounded"
-      >
-        Close
-      </button>
-    </div>
-  </div>
-)}
+          </div>
+        )}
 
         {/* EDIT MODAL */}
         {editData && (
@@ -970,31 +1058,44 @@ const filteredMembers = project?.teammember?.filter((m) => {
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
               />
-              {editData?.task?.attachments?.length > 0 && (
-  <div className="mt-3">
-    <p className="text-sm text-gray-400">Current Files:</p>
+             
+              {isFreeUser ? (
+                <p className="text-red-400 text-sm">
+                  File upload is available only for Pro users 🚀
+                </p>
+              ) : (
+                <>
+                 {editData?.task?.attachments?.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-sm text-gray-400">Current Files:</p>
 
-    {editData.task.attachments.map((file, index) => (
-      <div key={index} className="flex justify-between text-xs mt-1">
-        <span>{file.name}</span>
+                  {editData.task.attachments.map((file, index) => (
+                    <div
+                      key={index}
+                      className="flex justify-between text-xs mt-1"
+                    >
+                      <span>{file.name}</span>
 
-        <a
-          href={file.url}
-          target="_blank"
-          className="text-blue-400 underline"
-        >
-          View
-        </a>
-      </div>
-    ))}
-  </div>
-)}
-<input
-  type="file"
-  multiple
-  onChange={(e) => setEditFiles(e.target.files)}
-  className="w-full mt-3 text-white"
-/>
+                      <a
+                        href={file.url}
+                        target="_blank"
+                        className="text-blue-400 underline"
+                      >
+                        View
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+                  <input
+                    type="file"
+                    multiple
+                    onChange={(e) => setEditFiles(e.target.files)}
+                    className="w-full mt-3 text-white"
+                  />
+                </>
+              )}
               <div className="flex gap-2 mt-3">
                 <button
                   onClick={handleUpdate}
@@ -1019,16 +1120,33 @@ const filteredMembers = project?.teammember?.filter((m) => {
           <div className="fixed inset-0 bg-black/70 flex justify-center items-center">
             <div className="bg-(--card) p-5 w-105 rounded border border-(--border)">
               <textarea
+                maxLength={
+                  dbUser?.plan?.type === "free" || !dbUser?.plan
+                    ? 500
+                    : undefined
+                }
                 className="w-full p-2 bg-(--bg-secondary) text-(--text) border border-(--border)"
                 value={taskText}
                 onChange={(e) => setTaskText(e.target.value)}
               />
-              <input
-  type="file"
-  multiple
-  onChange={(e) => setFiles(e.target.files)}
-  className="w-full mt-2 text-white"
-/>
+              <p className="text-sm text-gray-400 mt-1">
+                {taskText.length} /{" "}
+                {!dbUser?.plan || dbUser?.plan?.type === "free" ? 500 : "∞"}
+              </p>
+
+              {isFreeUser ? (
+                <p className="text-red-400 text-sm">
+                  File upload is available only for Pro users 🚀
+                </p>
+              ) : (
+                <input
+                  type="file"
+                  multiple
+                  disabled={isFreeUser}
+                  onChange={(e) => setFiles(e.target.files)}
+                  className="w-full mt-2 text-white"
+                />
+              )}
               {/* Deadline */}
               <input
                 type="datetime-local"

@@ -78,23 +78,35 @@ const ProjectDiscussion = ({ projectId, onClose }) => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const sendMessage = async () => {
-    if (!text.trim()) return;
+ const sendMessage = async () => {
+  if (!text.trim()) return;
 
-    await fetch("http://localhost:5000/project-message", {
+  try {
+    const res = await fetch("http://localhost:5000/project-message", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
       body: JSON.stringify({
         projectId,
         message: text,
-        senderEmail: user.email,
         senderName: user.displayName,
       }),
     });
 
-    setText("");
-  };
+    const data = await res.json();
+
+    if ( data.code === "PLAN_RESTRICTED for msaage send") {
+      alert("Upgrade your plan to use chat 🚀");
+      return;
+    }
+
+    if (data.success) {
+      setText("");
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const handleDelete = async (id) => {
     await fetch(`http://localhost:5000/project-message/${id}`, {
