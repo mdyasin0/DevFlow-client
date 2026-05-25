@@ -22,6 +22,9 @@ import Inactive_Users from "../Admin_Dashboard/Inactive_Users";
 import PricingPage from "../Pages/PricingPage";
 import Unauthorized from "../Pages/Unauthorized";
 import ProtectedRoute from "../components/ProtectedRoute";
+import NotFoundPage from "../Pages/NotFoundPage";
+import SuccessPage from "../Pages/SuccessPage";
+import CancelPage from "../Pages/CancelPage";
 
 const router = createBrowserRouter([
   {
@@ -186,7 +189,18 @@ const router = createBrowserRouter([
         ],
       },
     ],
-  },
+  },{
+    path:"/success",
+    element:<SuccessPage/>,
+  },{
+    path:"/cancel",
+    element:<CancelPage/>,
+  }
+  ,
+  {
+    path:"*",
+    element:<NotFoundPage/>,
+  }
 ]);
 
 export default router;

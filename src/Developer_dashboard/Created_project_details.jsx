@@ -72,6 +72,8 @@ const Created_project_details = () => {
     const data = await res.json();
     if (data.success) setProject(data.data);
   };
+  const managerPlan = project?.manager?.plan?.type;
+const isPremium = managerPlan === "premium";
   const getTotalTasks = (project) => {
     let todo = 0;
     let running = 0;
@@ -227,52 +229,52 @@ const Created_project_details = () => {
       alert(err);
     }
   };
-const MAX_SIZE = 20 * 1024 * 1024; // 20MB
+  const MAX_SIZE = 20 * 1024 * 1024; // 20MB
 
-const uploadFilesToCloudinary = async () => {
-  const uploadedFiles = [];
+  const uploadFilesToCloudinary = async () => {
+    const uploadedFiles = [];
 
-  for (let file of files) {
-    // 🔒 SIZE CHECK (before upload)
-    if (file.size > MAX_SIZE) {
-      alert(`${file.name} is larger than 20MB (Upload skipped) 🚫`);
-      continue; // skip this file
-    }
-
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("upload_preset", "devflow");
-
-      const res = await fetch(
-        "https://api.cloudinary.com/v1_1/dhdfdmc8k/auto/upload",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      const data = await res.json();
-
-      // 🔒 check upload success
-      if (!data?.secure_url) {
-        alert(`${file.name} upload failed ❌`);
-        continue;
+    for (let file of files) {
+      // 🔒 SIZE CHECK (before upload)
+      if (file.size > MAX_SIZE) {
+        alert(`${file.name} is larger than 20MB (Upload skipped) 🚫`);
+        continue; // skip this file
       }
 
-      uploadedFiles.push({
-        url: data.secure_url,
-        type: file.type,
-        name: file.name,
-      });
-    } catch (err) {
-      console.error("Upload error:", err);
-      alert(`${file.name} upload error ❌`);
-    }
-  }
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", "devflow");
 
-  return uploadedFiles;
-};
+        const res = await fetch(
+          "https://api.cloudinary.com/v1_1/dhdfdmc8k/auto/upload",
+          {
+            method: "POST",
+            body: formData,
+          },
+        );
+
+        const data = await res.json();
+
+        // 🔒 check upload success
+        if (!data?.secure_url) {
+          alert(`${file.name} upload failed ❌`);
+          continue;
+        }
+
+        uploadedFiles.push({
+          url: data.secure_url,
+          type: file.type,
+          name: file.name,
+        });
+      } catch (err) {
+        console.error("Upload error:", err);
+        alert(`${file.name} upload error ❌`);
+      }
+    }
+
+    return uploadedFiles;
+  };
   // ADD TASK
   const handleTaskSave = async () => {
     let uploadedFiles = [];
@@ -359,7 +361,7 @@ const uploadFilesToCloudinary = async () => {
         credentials: "include",
       },
     );
-        const data = await res.json();
+    const data = await res.json();
 
     // 🔒 PLAN RESTRICTED
     if (data.code === "PLAN_RESTRICTED for remove member") {
@@ -407,11 +409,11 @@ const uploadFilesToCloudinary = async () => {
         newAttachments: newFiles, // 🔥 NEW
       }),
     });
-const data = await res.json();
- if (data.code === "FILE_UPLOAD_RESTRICTED for update") {
-  alert("🚀 File upload is only for Pro users");
-  return;
-}
+    const data = await res.json();
+    if (data.code === "FILE_UPLOAD_RESTRICTED for update") {
+      alert("🚀 File upload is only for Pro users");
+      return;
+    }
 
     setEditData(null);
     setEditFiles([]);
@@ -426,50 +428,49 @@ const data = await res.json();
     t.text.toLowerCase().includes(taskSearch.toLowerCase()),
   );
 
+  const uploadEditFiles = async () => {
+    const uploaded = [];
 
-const uploadEditFiles = async () => {
-  const uploaded = [];
-
-  for (let file of editFiles) {
-    // 🔒 FILE SIZE CHECK
-    if (file.size > MAX_SIZE) {
-      alert(`${file.name} is larger than 20MB limit 🚫`);
-      continue; // skip this file
-    }
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", "devflow");
-
-    try {
-      const res = await fetch(
-        "https://api.cloudinary.com/v1_1/dhdfdmc8k/auto/upload",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      const data = await res.json();
-
-      // 🔒 Cloudinary error check
-      if (!data.secure_url) {
-        console.log("Upload failed for:", file.name);
-        continue;
+    for (let file of editFiles) {
+      // 🔒 FILE SIZE CHECK
+      if (file.size > MAX_SIZE) {
+        alert(`${file.name} is larger than 20MB limit 🚫`);
+        continue; // skip this file
       }
 
-      uploaded.push({
-        url: data.secure_url,
-        type: file.type,
-        name: file.name,
-      });
-    } catch (error) {
-      console.log("Upload error:", file.name, error.message);
-    }
-  }
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", "devflow");
 
-  return uploaded;
-};
+      try {
+        const res = await fetch(
+          "https://api.cloudinary.com/v1_1/dhdfdmc8k/auto/upload",
+          {
+            method: "POST",
+            body: formData,
+          },
+        );
+
+        const data = await res.json();
+
+        // 🔒 Cloudinary error check
+        if (!data.secure_url) {
+          console.log("Upload failed for:", file.name);
+          continue;
+        }
+
+        uploaded.push({
+          url: data.secure_url,
+          type: file.type,
+          name: file.name,
+        });
+      } catch (error) {
+        console.log("Upload error:", file.name, error.message);
+      }
+    }
+
+    return uploaded;
+  };
   const filteredMembers = project?.teammember?.filter((m) => {
     const search = memberSearch.toLowerCase();
     return (
@@ -508,30 +509,30 @@ const uploadEditFiles = async () => {
               </p>
             </div>
             <button
-  onClick={() => {
-    if (isFreeUser) {
-      alert("Upgrade your plan to use project discussion chat 🚀");
-      return;
-    }
-    setShowChat(true);
-  }}
-  className="bg-green-600 px-4 py-2 rounded-lg ml-2"
->
-  Discuss on Project
-</button>
-             
-          {showChat && isFreeUser ? (
-  <div className="p-4 bg-red-100 text-red-600 rounded">
-    Upgrade your plan to access project discussion
-  </div>
-) : (
-  showChat && (
-    <ProjectDiscussion
-      projectId={project._id}
-      onClose={() => setShowChat(false)}
-    />
-  )
-)}
+              onClick={() => {
+                if (isFreeUser) {
+                  alert("Upgrade your plan to use project discussion chat 🚀");
+                  return;
+                }
+                setShowChat(true);
+              }}
+              className="bg-green-600 px-4 py-2 rounded-lg ml-2"
+            >
+              Discuss on Project
+            </button>
+
+            {showChat && isFreeUser ? (
+              <div className="p-4 bg-red-100 text-red-600 rounded">
+                Upgrade your plan to access project discussion
+              </div>
+            ) : (
+              showChat && (
+                <ProjectDiscussion
+                  projectId={project._id}
+                  onClose={() => setShowChat(false)}
+                />
+              )
+            )}
           </div>
 
           <button
@@ -568,8 +569,8 @@ const uploadEditFiles = async () => {
             </button>
           </div>
         )}
-
-        <div className="bg-(--bg-secondary) p-6 rounded-xl border border-gray-700 mb-6">
+{isPremium?(
+    <div className="bg-(--bg-secondary) p-6 rounded-xl border border-gray-700 mb-6">
           <h2 className="text-blue-400 text-lg mb-4"> Project Progress</h2>
 
           <div className="grid md:grid-cols-2 gap-6">
@@ -652,7 +653,22 @@ const uploadEditFiles = async () => {
             </div>
           </div>
         </div>
-        {/* see alll invite modal */}
+): (
+  // 🔒 FREE USER UI
+  <div className="bg-(--bg-secondary) p-6 rounded-xl border border-gray-700 mb-6 text-center">
+    <h2 className="text-red-400 text-lg mb-2">🔒 Premium Analytics</h2>
+
+    <p className="text-gray-400 mb-4">
+      Only premium project managers can access performance analytics.
+    </p>
+
+    <button className="bg-blue-500 px-4 py-2 rounded text-white">
+      Upgrade Plan
+    </button>
+  </div>
+)}
+      
+        {/* see all invite modal */}
 
         {showAllInvites && (
           <div className="fixed inset-0 bg-black/70 flex justify-center items-center">
@@ -837,17 +853,17 @@ const uploadEditFiles = async () => {
                     </button>
 
                     <button
-  onClick={() => {
-    if (isFreeUser) {
-      alert("Upgrade your plan to remove members 🚀");
-      return;
-    }
-    handleRemoveMember(m.email);
-  }}
-  className="bg-(--danger) text-white px-3 py-1 rounded"
->
-  Remove
-</button>
+                      onClick={() => {
+                        if (isFreeUser) {
+                          alert("Upgrade your plan to remove members 🚀");
+                          return;
+                        }
+                        handleRemoveMember(m.email);
+                      }}
+                      className="bg-(--danger) text-white px-3 py-1 rounded"
+                    >
+                      Remove
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -1058,35 +1074,35 @@ const uploadEditFiles = async () => {
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
               />
-             
+
               {isFreeUser ? (
                 <p className="text-red-400 text-sm">
                   File upload is available only for Pro users 🚀
                 </p>
               ) : (
                 <>
-                 {editData?.task?.attachments?.length > 0 && (
-                <div className="mt-3">
-                  <p className="text-sm text-gray-400">Current Files:</p>
+                  {editData?.task?.attachments?.length > 0 && (
+                    <div className="mt-3">
+                      <p className="text-sm text-gray-400">Current Files:</p>
 
-                  {editData.task.attachments.map((file, index) => (
-                    <div
-                      key={index}
-                      className="flex justify-between text-xs mt-1"
-                    >
-                      <span>{file.name}</span>
+                      {editData.task.attachments.map((file, index) => (
+                        <div
+                          key={index}
+                          className="flex justify-between text-xs mt-1"
+                        >
+                          <span>{file.name}</span>
 
-                      <a
-                        href={file.url}
-                        target="_blank"
-                        className="text-blue-400 underline"
-                      >
-                        View
-                      </a>
+                          <a
+                            href={file.url}
+                            target="_blank"
+                            className="text-blue-400 underline"
+                          >
+                            View
+                          </a>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              )}
+                  )}
 
                   <input
                     type="file"
