@@ -17,7 +17,7 @@ const [searchTerm, setSearchTerm] = useState("");
       setLoading(true);
       try {
         const res = await fetch(
-          `http://localhost:5000/my-projects/${email}`,{
+          `https://devflow-server-777f.onrender.com/my-projects/${email}`,{
              credentials: "include",
           }
         );

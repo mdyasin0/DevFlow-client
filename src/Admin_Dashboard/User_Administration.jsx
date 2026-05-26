@@ -7,7 +7,7 @@ const User_Administration = () => {
 const { logOut } = useContext(AuthContext);
   // Load users
   useEffect(() => {
-    fetch("http://localhost:5000/users" ,{
+    fetch("https://devflow-server-777f.onrender.com/users" ,{
       credentials:"include"
     })
       .then(async (res) => {
@@ -34,7 +34,7 @@ const { logOut } = useContext(AuthContext);
   );
 
   const handleBlock = (id) => {
-    fetch(`http://localhost:5000/users/block/${id}`, {
+    fetch(`https://devflow-server-777f.onrender.com/users/block/${id}`, {
       method: "PATCH",
       credentials:"include",
     })
@@ -62,7 +62,7 @@ const { logOut } = useContext(AuthContext);
   };
 
   const handleUnblock = (id) => {
-    fetch(`http://localhost:5000/users/unblock/${id}`, {
+    fetch(`https://devflow-server-777f.onrender.com/users/unblock/${id}`, {
       method: "PATCH",
       credentials:"include",
     })
@@ -90,7 +90,7 @@ const { logOut } = useContext(AuthContext);
   };
 
   const handleRoleChange = (id, newRole) => {
-    fetch(`http://localhost:5000/users/role/${id}`, {
+    fetch(`https://devflow-server-777f.onrender.com/users/role/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",

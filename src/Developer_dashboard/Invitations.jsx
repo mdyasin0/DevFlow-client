@@ -14,7 +14,7 @@ const Invitations = () => {
   useEffect(() => {
     if (!user?.email) return;
 
-    fetch(`http://localhost:5000/user/${user.email}`)
+    fetch(`https://devflow-server-777f.onrender.com/user/${user.email}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
@@ -32,7 +32,7 @@ const Invitations = () => {
         setLoading(true);
 
         const res = await fetch(
-          `http://localhost:5000/my-invitations/${user.email}`,
+          `https://devflow-server-777f.onrender.com/my-invitations/${user.email}`,
           {
             credentials: "include",
           },
@@ -83,7 +83,7 @@ const Invitations = () => {
     socket.on("newInvitation", async (data) => {
       //  BEST WAY (simple & reliable)
       const res = await fetch(
-        `http://localhost:5000/my-invitations/${user.email}`,
+        `https://devflow-server-777f.onrender.com/my-invitations/${user.email}`,
         {
           credentials: "include",
         },
@@ -118,7 +118,7 @@ const Invitations = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:5000/invite-status/${projectId}`,
+        `https://devflow-server-777f.onrender.com/invite-status/${projectId}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },

@@ -42,7 +42,7 @@ const {  logOut} = useContext(AuthContext);
   }, [quill]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/approved_users" ,{
+    fetch("https://devflow-server-777f.onrender.com/approved_users" ,{
       credentials:"include",
     })
      .then(async (res) => {
@@ -117,7 +117,7 @@ const {  logOut} = useContext(AuthContext);
     return;
   }
 
-  const res = await fetch("http://localhost:5000/email/send-inactive", {
+  const res = await fetch("https://devflow-server-777f.onrender.com/email/send-inactive", {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },

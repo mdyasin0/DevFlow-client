@@ -17,7 +17,7 @@ const Project_form = () => {
     };
 
     try {
-      const res = await fetch("http://localhost:5000/projects", {
+      const res = await fetch("https://devflow-server-777f.onrender.com/projects", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

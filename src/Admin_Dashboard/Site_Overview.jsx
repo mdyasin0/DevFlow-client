@@ -7,7 +7,7 @@ const Site_Overview = () => {
 const { logOut} = useContext(AuthContext);
   useEffect(() => {
     // Fetch users
-    fetch("http://localhost:5000/users" ,{
+    fetch("https://devflow-server-777f.onrender.com/users" ,{
       credentials:"include",
     })
       .then(async (res) => {
@@ -26,7 +26,7 @@ const { logOut} = useContext(AuthContext);
       .then((data) => setUsers(data.data));
 
     // Fetch projects
-    fetch("http://localhost:5000/projects",{
+    fetch("https://devflow-server-777f.onrender.com/projects",{
       credentials:"include",
     })
       .then(async (res) => {

@@ -60,7 +60,7 @@ const Created_project_details = () => {
   }, []);
   //  FETCH PROJECT (reuseable)
   const fetchProject = async () => {
-    const res = await fetch(`http://localhost:5000/project/${id}`, {
+    const res = await fetch(`https://devflow-server-777f.onrender.com/project/${id}`, {
       credentials: "include",
     });
     if (res.status === 401 || res.status === 403) {
@@ -173,7 +173,7 @@ const isPremium = managerPlan === "premium";
   }, [id, fetchProject]);
   // INVITE
   const handleInvite = async () => {
-    const res = await fetch(`http://localhost:5000/invite/${id}`, {
+    const res = await fetch(`https://devflow-server-777f.onrender.com/invite/${id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -202,7 +202,7 @@ const isPremium = managerPlan === "premium";
   const handleReopen = async (member, taskId) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/reopen-task/${project._id}`,
+        `https://devflow-server-777f.onrender.com/reopen-task/${project._id}`,
         {
           method: "PATCH",
           credentials: "include",
@@ -283,7 +283,7 @@ const isPremium = managerPlan === "premium";
       uploadedFiles = await uploadFilesToCloudinary();
     }
 
-    const res = await fetch(`http://localhost:5000/add-task/${id}`, {
+    const res = await fetch(`https://devflow-server-777f.onrender.com/add-task/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -322,7 +322,7 @@ const isPremium = managerPlan === "premium";
 
   // DELETE TASK
   const handleDelete = async (type, taskId, email) => {
-    const res = await fetch(`http://localhost:5000/delete-task/${id}`, {
+    const res = await fetch(`https://devflow-server-777f.onrender.com/delete-task/${id}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -355,7 +355,7 @@ const isPremium = managerPlan === "premium";
   // remove member
   const handleRemoveMember = async (email) => {
     const res = await fetch(
-      `http://localhost:5000/remove-member/${id}/${encodeURIComponent(email)}`,
+      `https://devflow-server-777f.onrender.com/remove-member/${id}/${encodeURIComponent(email)}`,
       {
         method: "DELETE",
         credentials: "include",
@@ -379,7 +379,7 @@ const isPremium = managerPlan === "premium";
   // remove invite
   const handleRemoveInvite = async (email) => {
     await fetch(
-      `http://localhost:5000/remove-invite/${id}/${encodeURIComponent(email)}`,
+      `https://devflow-server-777f.onrender.com/remove-invite/${id}/${encodeURIComponent(email)}`,
       {
         method: "DELETE",
         credentials: "include",
@@ -397,7 +397,7 @@ const isPremium = managerPlan === "premium";
       newFiles = await uploadEditFiles();
     }
 
-    const res = await fetch(`http://localhost:5000/update-task/${id}`, {
+    const res = await fetch(`https://devflow-server-777f.onrender.com/update-task/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       credentials: "include",

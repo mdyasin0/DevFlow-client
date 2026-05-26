@@ -1,10 +1,11 @@
 import React from "react";
+import { NavLink } from "react-router";
 
 const Footer = () => {
   return (
-    <footer className="bg-(--bg) border-t border-(--border) ">
+    <footer className="bg-(--bg) border-t border-(--border)">
 
-      <div className="max-w-7xl mx-auto px-4 py-12 grid gap-10 md:grid-cols-4">
+      <div className="max-w-7xl mx-auto px-4 py-12 grid gap-10 md:grid-cols-3">
 
         {/* Brand */}
         <div>
@@ -13,7 +14,7 @@ const Footer = () => {
           </h2>
 
           <p className="text-sm mt-3 leading-relaxed text-(--text-secondary)">
-            AI-powered collaboration platform to manage projects, tasks,
+            collaboration platform to manage projects, tasks,
             and teams in one unified workspace.
           </p>
         </div>
@@ -25,50 +26,54 @@ const Footer = () => {
           </h3>
 
           <ul className="space-y-2 text-sm">
-            {["Features", "Pricing", "Updates"].map((item, i) => (
-              <li
-                key={i}
-                className="text-(--text-secondary) hover:text-(--primary) cursor-pointer"
+        
+
+            <li>
+              <NavLink
+                to="/pricingpage"
+                className="text-(--text-secondary) hover:text-(--primary)"
               >
-                {item}
-              </li>
-            ))}
+                Pricing
+              </NavLink>
+            </li>
+
+          
           </ul>
         </div>
 
-        {/* Company */}
+        {/* Legal */}
         <div>
           <h3 className="font-semibold mb-3 text-(--text)">
-            Company
+            Legal
           </h3>
 
           <ul className="space-y-2 text-sm">
-            {["About", "Careers", "Contact"].map((item, i) => (
-              <li
-                key={i}
-                className="text-(--text-secondary) hover:text-(--primary) cursor-pointer"
+            <li>
+              <NavLink
+                to="/rolesregulations"
+                className="text-(--text-secondary) hover:text-(--primary)"
               >
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
+                Roles & Regulations
+              </NavLink>
+            </li>
 
-        {/* Social */}
-        <div>
-          <h3 className="font-semibold mb-3 text-(--text)">
-            Social
-          </h3>
-
-          <ul className="space-y-2 text-sm">
-            {["Twitter", "LinkedIn", "GitHub"].map((item, i) => (
-              <li
-                key={i}
-                className="text-(--text-secondary) hover:text-(--primary) cursor-pointer"
+            <li>
+              <NavLink
+                to="/privacypolicy"
+                className="text-(--text-secondary) hover:text-(--primary)"
               >
-                {item}
-              </li>
-            ))}
+                Privacy Policy
+              </NavLink>
+            </li>
+
+            <li>
+              <NavLink
+                to="/docs"
+                className="text-(--text-secondary) hover:text-(--primary)"
+              >
+                Docs
+              </NavLink>
+            </li>
           </ul>
         </div>
 

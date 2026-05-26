@@ -26,7 +26,7 @@ const [roleLoading, setRoleLoading] = useState(true);
 
 const getJwtToken = async (email) => {
   try {
-    const res = await fetch("http://localhost:5000/jwt", {
+    const res = await fetch("https://devflow-server-777f.onrender.com/jwt", {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -44,7 +44,7 @@ const getJwtToken = async (email) => {
   // 🔹 Logout
   const logOut = () => {
     setLoading(true);
-   fetch("http://localhost:5000/logout", {
+   fetch("https://devflow-server-777f.onrender.com/logout", {
     method: "POST",
     credentials: "include",
   });
@@ -59,7 +59,7 @@ useEffect(() => {
 
       try {
         const res = await fetch(
-          `http://localhost:5000/user/${user.email}`
+          `https://devflow-server-777f.onrender.com/user/${user.email}`
         );
         
         const data = await res.json();

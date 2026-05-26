@@ -76,7 +76,7 @@ const Register = () => {
       await createUser(email, password);
       await updateUserProfile(name, photoURL);
 
-      await fetch("http://localhost:5000/users", {
+      await fetch("https://devflow-server-777f.onrender.com/users", {
         method: "POST",
         credentials:"include",
         headers: { "Content-Type": "application/json" },
@@ -111,7 +111,7 @@ const Register = () => {
         const user = res.user;
 
  
-        await fetch("http://localhost:5000/users", {
+        await fetch("https://devflow-server-777f.onrender.com/users", {
           method: "POST",
           credentials:"include",
           headers: { "Content-Type": "application/json" },

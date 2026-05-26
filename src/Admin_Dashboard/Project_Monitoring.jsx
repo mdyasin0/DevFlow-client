@@ -10,7 +10,7 @@ const Project_Monitoring = () => {
   const { logOut,user} = useContext(AuthContext);
   const navigate = useNavigate();
   useEffect(() => {
-    fetch("http://localhost:5000/projects",{
+    fetch("https://devflow-server-777f.onrender.com/projects",{
       credentials:"include",
     })
       .then(async (res) => {
@@ -45,7 +45,7 @@ const Project_Monitoring = () => {
 const handleStatusChange = async (id, status) => {
   try {
     const res = await fetch(
-      `http://localhost:5000/projects/${id}/status`,
+      `https://devflow-server-777f.onrender.com/projects/${id}/status`,
       {
         method: "PATCH",
         credentials:"include",
@@ -105,7 +105,7 @@ useEffect(() => {
 }, []);
 useEffect(() => {
   if (user?.email) {
-    fetch(`http://localhost:5000/users/${user.email}`,{
+    fetch(`https://devflow-server-777f.onrender.com/users/${user.email}`,{
       credentials:"include",
     })
       .then(async (res) => {

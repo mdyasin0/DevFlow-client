@@ -17,7 +17,7 @@ const Created_project = () => {
   const handleUpdate = async () => {
     try {
       const res = await fetch(
-        `http://localhost:5000/projects/${selectedProject._id}`,
+        `https://devflow-server-777f.onrender.com/projects/${selectedProject._id}`,
         {
           method: "PUT",
           headers: {
@@ -61,7 +61,7 @@ const Created_project = () => {
     if (!confirmDelete) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/projects/${id}`, {
+      const res = await fetch(`https://devflow-server-777f.onrender.com/projects/${id}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -83,7 +83,7 @@ const Created_project = () => {
   };
   useEffect(() => {
     if (user?.email) {
-      fetch(`http://localhost:5000/projects/${user.email}`, {
+      fetch(`https://devflow-server-777f.onrender.com/projects/${user.email}`, {
         credentials: "include",
       })
         .then(async (res) => {
@@ -126,7 +126,7 @@ const Created_project = () => {
       
 
       //  RE-FETCH projects again
-      const res = await fetch(`http://localhost:5000/projects/${user.email}`, {
+      const res = await fetch(`https://devflow-server-777f.onrender.com/projects/${user.email}`, {
         credentials: "include",
       });
       if (res.status === 401 || res.status === 403) {

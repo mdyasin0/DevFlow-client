@@ -69,7 +69,7 @@ const Profile = () => {
       await updateUserProfile(name, imageUrl);
 
       // MongoDB update
-      const res = await fetch(`http://localhost:5000/users/${user.email}`, {
+      const res = await fetch(`https://devflow-server-777f.onrender.com/users/${user.email}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

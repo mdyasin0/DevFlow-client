@@ -23,7 +23,7 @@ const Joined_Team_Details = () => {
   });
 
   const fetchProject = async () => {
-    const res = await fetch(`http://localhost:5000/project/${id}`, {
+    const res = await fetch(`https://devflow-server-777f.onrender.com/project/${id}`, {
       credentials: "include",
     });
     if (res.status === 401 || res.status === 403) {
@@ -293,7 +293,7 @@ showChat && (
                             <button
                               onClick={async () => {
                                 const res = await fetch(
-                                  `http://localhost:5000/move-task/${id}`,
+                                  `https://devflow-server-777f.onrender.com/move-task/${id}`,
                                   {
                                     method: "PATCH",
                                     headers: {
@@ -326,7 +326,7 @@ showChat && (
                             <button
                               onClick={async () => {
                                 const res = await fetch(
-                                  `http://localhost:5000/move-task/${id}`,
+                                  `https://devflow-server-777f.onrender.com/move-task/${id}`,
                                   {
                                     method: "PATCH",
                                     headers: {

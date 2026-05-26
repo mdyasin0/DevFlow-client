@@ -12,7 +12,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     const fetchUserRole = async () => {
       if (user?.email) {
         try {
-          const res = await fetch(`http://localhost:5000/user/${user.email}`);
+          const res = await fetch(`https://devflow-server-777f.onrender.com/user/${user.email}`);
          
           const data = await res.json();
 

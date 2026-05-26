@@ -25,6 +25,9 @@ import ProtectedRoute from "../components/ProtectedRoute";
 import NotFoundPage from "../Pages/NotFoundPage";
 import SuccessPage from "../Pages/SuccessPage";
 import CancelPage from "../Pages/CancelPage";
+import DocumentationPage from "../Pages/DocumentationPage";
+import PrivacyPolicy from "../Pages/PrivacyPolicy";
+import RolesRegulations from "../Pages/RolesRegulations";
 
 const router = createBrowserRouter([
   {
@@ -188,6 +191,16 @@ const router = createBrowserRouter([
           },
         ],
       },
+      {
+        path:"/docs",
+        element:<DocumentationPage/>,
+      },{
+        path:"/privacypolicy",
+        element:<PrivacyPolicy/>,
+      },{
+        path:"/rolesregulations",
+        element:<RolesRegulations/>,
+      }
     ],
   },{
     path:"/success",

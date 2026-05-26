@@ -9,7 +9,7 @@ import { Link, NavLink, useNavigate } from "react-router";
 import { FaEllipsisV } from "react-icons/fa";
 import { Socket } from "socket.io-client";
 import { socket } from "../Socket";
-import { div } from "framer-motion/client";
+
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
@@ -25,7 +25,7 @@ const Navbar = () => {
   useEffect(() => {
     if (!user?.email) return;
 
-    fetch(`http://localhost:5000/users/${user.email}`)
+    fetch(`https://devflow-server-777f.onrender.com/users/${user.email}`)
       .then((res) => {
         res.data;
       })
@@ -51,7 +51,7 @@ const Navbar = () => {
   useEffect(() => {
     if (!user?.email) return;
 
-    fetch(`http://localhost:5000/notifications?email=${user.email}`, {
+    fetch(`https://devflow-server-777f.onrender.com/notifications?email=${user.email}`, {
       credentials: "include",
     })
       .then((res) => res.json())
@@ -64,7 +64,7 @@ const Navbar = () => {
   // delete notification
   const deleteNotification = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/notifications/${id}`, {
+      const res = await fetch(`https://devflow-server-777f.onrender.com/notifications/${id}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -87,7 +87,7 @@ const Navbar = () => {
   const toggleRead = async (id) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/notifications/${id}/toggle-read`,
+        `https://devflow-server-777f.onrender.com/notifications/${id}/toggle-read`,
         {
           method: "PATCH",
           credentials: "include",
@@ -155,9 +155,16 @@ const Navbar = () => {
         <div className="hidden md:flex items-center gap-4 lg:gap-6 text-sm text-(--text-secondary)">
           <NavLink to="/pricingpage" className="font-medium text-(--text)">
             price
-          </NavLink>
-          <a className="hover:text-(--primary)">Docs</a>
+    
 
+          </NavLink>
+          
+      <NavLink
+              to="/docs"
+              className="font-medium text-(--text)"
+            >
+              Docs
+            </NavLink>
           {role === "developer" && (
             <NavLink
               to="/developer_dashboard"
@@ -368,7 +375,12 @@ const Navbar = () => {
                 price
               </NavLink>
 
-              <a className="hover:text-(--primary)">Docs</a>
+               <NavLink
+              to="/docs"
+              className="font-medium text-(--text)"
+            >
+              Docs
+            </NavLink>
 
               {role === "developer" && (
                 <NavLink
