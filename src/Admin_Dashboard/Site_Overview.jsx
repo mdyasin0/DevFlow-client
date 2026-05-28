@@ -5,45 +5,61 @@ const Site_Overview = () => {
   const [users, setUsers] = useState([]);
   const [projects, setProjects] = useState([]);
 const { logOut} = useContext(AuthContext);
-  useEffect(() => {
-    // Fetch users
-    fetch("https://devflow-server-777f.onrender.com/users" ,{
-      credentials:"include",
-    })
-      .then(async (res) => {
-      //  status check
-      if (res.status === 401 || res.status === 403) {
+ useEffect(() => {
+  // Fetch users
+  fetch("http://localhost:5000/users", {
+    credentials: "include",
+  })
+    .then(async (res) => {
+      if (res.status === 401) {
         alert("Session expired. Please login again");
-
         await logOut();
-
         window.location.href = "/login";
-        return null;
+        return;
       }
 
-      return res.json();
-    })
-      .then((data) => setUsers(data.data));
+      const data = await res.json(); // ✅ আগে data আনো
 
-    // Fetch projects
-    fetch("https://devflow-server-777f.onrender.com/projects",{
-      credentials:"include",
-    })
-      .then(async (res) => {
-      // status check
-      if (res.status === 401 || res.status === 403) {
-        alert("Session expired. Please login again");
-
+      if (data?.isBlocked) {
+        alert("You are blocked by admin");
         await logOut();
-
         window.location.href = "/login";
-        return null;
+        return;
       }
 
-      return res.json();
+      return data;
     })
-      .then((data) => setProjects(data.data));
-  });
+    .then((data) => {
+      if (data) setUsers(data.data);
+    });
+
+  // Fetch projects
+  fetch("http://localhost:5000/projects", {
+    credentials: "include",
+  })
+    .then(async (res) => {
+      if (res.status === 401) {
+        alert("Session expired. Please login again");
+        await logOut();
+        window.location.href = "/login";
+        return;
+      }
+
+      const data = await res.json(); // ✅ same fix
+
+      if (data?.isBlocked) {
+        alert("You are blocked by admin");
+        await logOut();
+        window.location.href = "/login";
+        return;
+      }
+
+      return data;
+    })
+    .then((data) => {
+      if (data) setProjects(data.data);
+    });
+}, []);
 
   // CURRENT TIME
   const now = new Date();

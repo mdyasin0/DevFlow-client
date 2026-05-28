@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { FaEye, FaEyeSlash, FaGoogle } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { AuthContext } from "../Firebase/AuthContext";
@@ -11,12 +11,12 @@ const Register = () => {
   const [showPass, setShowPass] = useState(false);
 
   const [loading, setLoading] = useState(false); // register loading
-  const [googleLoading, setGoogleLoading] = useState(false);
+  const [googleLoading] = useState(false);
   const [uploading, setUploading] = useState(false); //  image upload state
   const [photoURL, setPhotoURL] = useState(""); // store uploaded image
 
-  
-
+  const navigate = useNavigate();
+const from = location.state?.from?.pathname || "/";
   //  IMAGE UPLOAD
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -50,94 +50,74 @@ const Register = () => {
   };
 
   // REGISTER
-  const handleRegister = async (e) => {
-    e.preventDefault();
+ const handleRegister = async (e) => {
+  e.preventDefault();
 
-    if (loading || uploading) return; //  block if uploading
+  if (loading || uploading) return;
 
-    if (!photoURL) {
-      Swal.fire({
-        icon: "warning",
-        title: "Please wait",
-        text: "Image is still uploading...",
-      });
-      return;
-    }
+  if (!photoURL) {
+    Swal.fire({
+      icon: "warning",
+      title: "Please wait",
+      text: "Image is still uploading...",
+    });
+    return;
+  }
 
-    setLoading(true);
+  setLoading(true);
 
-    const form = e.target;
+  const form = e.target;
+  const name = form.name.value;
+  const email = form.email.value;
+  const password = form.password.value;
 
-    const name = form.name.value;
-    const email = form.email.value;
-    const password = form.password.value;
+  try {
+    // 🔥 Firebase user create
+    await createUser(email, password);
 
-    try {
-      await createUser(email, password);
-      await updateUserProfile(name, photoURL);
+    // 🔥 Firebase profile update (IMPORTANT)
+    await updateUserProfile(name, photoURL);
 
-      await fetch("https://devflow-server-777f.onrender.com/users", {
-        method: "POST",
-        credentials:"include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email }),
-      });
-
-      Swal.fire({
-        icon: "success",
-        title: "Account Created!",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-    } catch (err) {
-      Swal.fire({
-        icon: "error",
-        title: "Failed",
-        text: err.message,
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    Swal.fire({
+      icon: "success",
+      title: "Account Created!",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+navigate("/login");
+  } catch (err) {
+    Swal.fire({
+      icon: "error",
+      title: "Failed",
+      text: err.message,
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   //  GOOGLE LOGIN
-  const handleGoogle = () => {
-    if (googleLoading) return;
-    setGoogleLoading(true);
+  const handleGoogle = async () => {
+  try {
+    await googleLogin();
 
-    googleLogin()
-      .then(async (res) => {
+    Swal.fire({
+      icon: "success",
+      title: "Logged in with Google!",
+      timer: 2000,
+      showConfirmButton: false,
+    });
 
-        const user = res.user;
+    navigate(from, { replace: true });
 
- 
-        await fetch("https://devflow-server-777f.onrender.com/users", {
-          method: "POST",
-          credentials:"include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: user.displayName,
-            email: user.email,
-            
-          }),
-        });
-
-        Swal.fire({
-          icon: "success",
-          title: "Logged in!",
-          timer: 2000,
-          showConfirmButton: false,
-        });
-      })
-      .catch((err) => {
-        Swal.fire({
-          icon: "error",
-          title: "Google Login Failed",
-          text: err.message,
-        });
-      })
-      .finally(() => setGoogleLoading(false));
-  };
+  } catch (err) {
+    Swal.fire({
+      icon: "error",
+      title: "Google Login Failed",
+      text: err.message,
+    });
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-(--bg)">

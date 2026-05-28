@@ -1,11 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { FaUsers, FaTasks, FaChartLine, FaShieldAlt } from "react-icons/fa";
-
+import { NavLink } from "react-router";
+import { IoIosCloseCircle } from "react-icons/io";
 const Home = () => {
+  const [isOpen, setIsOpen] = useState(false);
   return (
     <div className="bg-(--bg) text-(--text) min-h-screen">
-
       {/* HERO */}
       <section className="max-w-7xl mx-auto px-4 py-24 grid md:grid-cols-2 gap-12 items-center">
         <div>
@@ -15,17 +16,51 @@ const Home = () => {
           </h1>
 
           <p className="mt-5 text-(--text-secondary)">
-            A complete team collaboration platform with project management, task tracking,
-            analytics, and role-based control — all in one place.
+            A complete team collaboration platform with project management, task
+            tracking, analytics, and role-based control — all in one place.
           </p>
 
           <div className="mt-8 flex gap-4">
-            <button className="px-6 py-3 bg-(--primary) text-white rounded-xl shadow hover:bg-(--primary-hover) transition">
+            <NavLink
+              to="/login"
+              className="px-6 py-3 bg-(--primary) text-white rounded-xl shadow hover:bg-(--primary-hover) transition"
+            >
               Get Started
-            </button>
-            <button className="px-6 py-3 border border-(--border) rounded-xl hover:bg-(--bg-secondary) transition">
-              View Demo
-            </button>
+            </NavLink>
+            
+           <button
+  onClick={() => setIsOpen(true)}
+  className="px-6 py-3 border border-(--border) cursor-pointer rounded-xl hover:bg-(--bg-secondary) transition"
+>
+  View Demo
+</button>
+{
+  isOpen && (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+      <div className="bg-(--card) p-10 rounded-xl w-[90%] md:w-175 relative">
+
+        {/* Close Button */}
+        <button
+          onClick={() => setIsOpen(false)}
+          className="absolute top-1 right-1 text-xl font-bold"
+        >
+         <IoIosCloseCircle />
+        </button>
+
+        {/* YouTube Video */}
+        <div className="aspect-video">
+          <iframe
+            className="w-full h-full rounded-lg"
+            src="https://www.youtube.com/embed/oPPZ1kqg8Ao"
+            title="Demo Video"
+            allowFullScreen
+          ></iframe>
+        </div>
+
+      </div>
+    </div>
+  )
+}
           </div>
         </div>
 
@@ -60,9 +95,7 @@ const Home = () => {
 
       {/* FEATURES */}
       <section className="max-w-7xl mx-auto px-4 py-20">
-        <h2 className="text-3xl font-bold text-center mb-12">
-          Core Features
-        </h2>
+        <h2 className="text-3xl font-bold text-center mb-12">Core Features</h2>
 
         <div className="grid md:grid-cols-4 gap-6">
           {[
@@ -88,9 +121,7 @@ const Home = () => {
       {/* HOW IT WORKS */}
       <section className="bg-(--bg-secondary) py-20">
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">
-            How It Works
-          </h2>
+          <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
 
           <div className="grid md:grid-cols-3 gap-8 text-center">
             {[
@@ -115,11 +146,10 @@ const Home = () => {
       {/* ANALYTICS */}
       <section className="max-w-7xl mx-auto px-4 py-20 grid md:grid-cols-2 gap-10 items-center">
         <div>
-          <h2 className="text-3xl font-bold">
-            Analytics & Performance
-          </h2>
+          <h2 className="text-3xl font-bold">Analytics & Performance</h2>
           <p className="mt-4 text-(--text-secondary)">
-            Track task completion, team performance, and productivity insights using charts.
+            Track task completion, team performance, and productivity insights
+            using charts.
           </p>
         </div>
 
@@ -133,18 +163,14 @@ const Home = () => {
       </section>
 
       {/* CTA */}
-      <section className="bg-(--primary) text-white text-center py-20">
-        <h2 className="text-3xl font-bold">
-          Start Managing Your Team Today
-        </h2>
-        <p className="mt-4">
-          Boost productivity and simplify workflows.
-        </p>
-        <button className="mt-6 px-6 py-3 bg-white text-(--primary) rounded-xl font-semibold hover:opacity-90 transition">
-          Get Started
-        </button>
+      <section className="bg-(--primary) space-y-5 text-white text-center py-20">
+        <h2 className="text-3xl font-bold">Start Managing Your Team Today</h2>
+        <p className="">Boost productivity and simplify workflows.</p>
+        
+        <NavLink to="/login" className=" px-6 py-3  bg-white text-(--primary) rounded-xl font-semibold hover:opacity-90 transition">
+Get Started
+        </NavLink>
       </section>
-
     </div>
   );
 };

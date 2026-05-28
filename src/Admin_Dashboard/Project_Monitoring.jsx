@@ -8,36 +8,43 @@ const Project_Monitoring = () => {
   const [filter, setFilter] = useState("all");
   const [selectedDescription, setSelectedDescription] = useState(null);
   const { logOut,user} = useContext(AuthContext);
+  const [search, setSearch] = useState("");
   const navigate = useNavigate();
-  useEffect(() => {
-    fetch("https://devflow-server-777f.onrender.com/projects",{
-      credentials:"include",
-    })
-      .then(async (res) => {
-      // status check
-      if (res.status === 401 || res.status === 403) {
+useEffect(() => {
+  fetch("http://localhost:5000/projects", {
+    credentials: "include",
+  })
+    .then(async (res) => {
+       // ✅ 1. AUTH সমস্যা → logout
+      if (res.status === 401) {
         alert("Session expired. Please login again");
-
         await logOut();
-
         window.location.href = "/login";
-        return null;
+        return;
       }
 
-      return res.json();
+
+      const data = await res.json();
+
+  // ✅ 2. BLOCKED USER
+      if (data?.isBlocked) {
+        alert("You are blocked by admin");
+        await logOut();
+        window.location.href = "/login";
+        return;
+      }
+
+      return data;
     })
-      .then((data) => {
-        if (data.success) {
-          setProjects(data.data);
-        }
-      });
-  }, [logOut]);
+    .then((data) => {
+      if (data && data.success) {
+        setProjects(data.data);
+      }
+    });
+}, [logOut]);
 
   // filter
-  const filteredProjects =
-    filter === "all"
-      ? projects
-      : projects.filter((p) => p.status === filter);
+
 
   // count
   const countByStatus = (status) =>
@@ -45,7 +52,7 @@ const Project_Monitoring = () => {
 const handleStatusChange = async (id, status) => {
   try {
     const res = await fetch(
-      `https://devflow-server-777f.onrender.com/projects/${id}/status`,
+      `http://localhost:5000/projects/${id}/status`,
       {
         method: "PATCH",
         credentials:"include",
@@ -57,13 +64,25 @@ const handleStatusChange = async (id, status) => {
            updatedBy: user.email,}),
       }
     );
-   if (res.status === 401 || res.status === 403) {
-          alert("Session expired. Please login again");
-          await logOut();
-         navigate("/login", { replace: true });
-          return;
-        }
+        // ✅ 1. AUTH সমস্যা → logout
+      if (res.status === 401) {
+        alert("Session expired. Please login again");
+        await logOut();
+        navigate("/login", { replace: true });
+        return;
+      }
+
+       
     const data = await res.json();
+        
+      // ✅ 2. BLOCKED USER
+      if (data?.isBlocked) {
+        alert("You are blocked by admin");
+        await logOut();
+        navigate("/login", { replace: true });
+        return;
+      }
+
 
     if (data.success) {
       // UI update
@@ -105,29 +124,39 @@ useEffect(() => {
 }, []);
 useEffect(() => {
   if (user?.email) {
-    fetch(`https://devflow-server-777f.onrender.com/users/${user.email}`,{
-      credentials:"include",
+    fetch(`http://localhost:5000/users/${user.email}`, {
+      credentials: "include",
     })
       .then(async (res) => {
-      //  status check
-      if (res.status === 401 || res.status === 403) {
-        alert("Session expired. Please login again");
 
-        await logOut();
+        // ✅ 1. AUTH সমস্যা → logout
+        if (res.status === 401) {
+          alert("Session expired. Please login again");
+          await logOut();
+          window.location.href = "/login";
+          return;
+        }
 
-        window.location.href = "/login";
-        return null;
-      }
+        // 👉 আগে JSON parse করো
+        const data = await res.json();
 
-      return res.json();
-    })
+        // ✅ 2. BLOCKED USER
+        if (data?.isBlocked) {
+          alert("You are blocked by admin");
+          await logOut();
+          window.location.href = "/login";
+          return;
+        }
+
+        return data;
+      })
       .then((data) => {
-        if (data.success) {
-          socket.emit("join", data.data._id); 
+        if (data?.success) {
+          socket.emit("join", data.data._id);
         }
       });
   }
-}, [user?.email , logOut]);
+}, [user?.email, logOut]);
 useEffect(() => {
   socket.connect();
 
@@ -139,6 +168,15 @@ useEffect(() => {
     socket.disconnect();
   };
 }, []);
+const filteredProjects = projects
+  // 👉 1. Button filter (status)
+  .filter((p) => (filter === "all" ? true : p.status === filter))
+
+  // 👉 2. Search filter (team বা title)
+  .filter((p) =>
+    p.teamName.toLowerCase().includes(search.toLowerCase()) ||
+    p.projectTitle.toLowerCase().includes(search.toLowerCase())
+  );
   return (
    <div className="p-6 min-h-screen bg-(--bg) text-(--text)">
 
@@ -169,38 +207,67 @@ useEffect(() => {
   </div>
 
   {/* ===== FILTER ===== */}
-  <div className="mb-4 flex flex-wrap gap-2">
+ <div className="mb-4 flex flex-wrap gap-2">
 
-    <button
-      onClick={() => setFilter("all")}
-      className="px-3 py-1 rounded bg-(--bg-secondary) text-(--text) border border-(--border) hover:opacity-80"
-    >
-      All
-    </button>
+  <button
+    onClick={() => setFilter("all")}
+    className={`px-3 py-1 rounded border transition
+      ${
+        filter === "all"
+          ? "bg-(--primary) text-white border-(--primary)"
+          : "bg-(--bg-secondary) text-(--text) border-(--border) hover:opacity-80"
+      }`}
+  >
+    All
+  </button>
 
-    <button
-      onClick={() => setFilter("pending")}
-      className="px-3 py-1 rounded bg-(--warning) text-white hover:opacity-90"
-    >
-      Pending
-    </button>
+  <button
+    onClick={() => setFilter("pending")}
+    className={`px-3 py-1 rounded border transition
+      ${
+        filter === "pending"
+          ? "bg-(--warning) text-white border-(--warning)"
+          : "bg-(--bg-secondary) text-(--text) border-(--border) hover:opacity-80"
+      }`}
+  >
+    Pending
+  </button>
 
-    <button
-      onClick={() => setFilter("approved")}
-      className="px-3 py-1 rounded bg-(--success) text-white hover:opacity-90"
-    >
-      Approved
-    </button>
+  <button
+    onClick={() => setFilter("approved")}
+    className={`px-3 py-1 rounded border transition
+      ${
+        filter === "approved"
+          ? "bg-(--success) text-white border-(--success)"
+          : "bg-(--bg-secondary) text-(--text) border-(--border) hover:opacity-80"
+      }`}
+  >
+    Approved
+  </button>
 
-    <button
-      onClick={() => setFilter("rejected")}
-      className="px-3 py-1 rounded bg-(--danger) text-white hover:opacity-90"
-    >
-      Rejected
-    </button>
+  <button
+    onClick={() => setFilter("rejected")}
+    className={`px-3 py-1 rounded border transition
+      ${
+        filter === "rejected"
+          ? "bg-(--danger) text-white border-(--danger)"
+          : "bg-(--bg-secondary) text-(--text) border-(--border) hover:opacity-80"
+      }`}
+  >
+    Rejected
+  </button>
 
-  </div>
-
+</div>
+{/* ===== SEARCH ===== */}
+<div className="mb-4">
+  <input
+    type="text"
+    placeholder="Search by team or project name..."
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+    className="w-full md:w-1/3 px-3 py-2 rounded border border-(--border) bg-(--bg) text-(--text) focus:outline-none"
+  />
+</div>
   {/* ===== TABLE ===== */}
   <div className="overflow-x-auto">
     <table className="w-full rounded shadow bg-(--card) border border-(--border)">

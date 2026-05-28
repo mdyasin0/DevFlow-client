@@ -10,7 +10,6 @@ import { FaEllipsisV } from "react-icons/fa";
 import { Socket } from "socket.io-client";
 import { socket } from "../Socket";
 
-
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [dropdown, setDropdown] = useState(false);
@@ -19,22 +18,10 @@ const Navbar = () => {
   const [activeMenu, setActiveMenu] = useState(null);
   const [expanded, setExpanded] = useState(null);
   const { theme, toggleTheme } = useContext(ThemeContext);
-  const { user, logOut, role } = useContext(AuthContext);
-  const navigate = useNavigate();
-  const [dbUser, setDbUser] = useState(null);
-  useEffect(() => {
-    if (!user?.email) return;
+  const { user, logOut, dbUser, authReady } = useContext(AuthContext);
 
-    fetch(`https://devflow-server-777f.onrender.com/users/${user.email}`)
-      .then((res) => {
-        res.data;
-      })
-      .then((data) => {
-        if (data?.success) {
-          setDbUser(data.data); //  MongoDB user
-        }
-      });
-  }, [user?.email]);
+  const navigate = useNavigate();
+
   useEffect(() => {
     if (dbUser?._id) {
       socket.emit("join", dbUser._id);
@@ -51,7 +38,7 @@ const Navbar = () => {
   useEffect(() => {
     if (!user?.email) return;
 
-    fetch(`https://devflow-server-777f.onrender.com/notifications?email=${user.email}`, {
+    fetch(`http://localhost:5000/notifications?email=${user.email}`, {
       credentials: "include",
     })
       .then((res) => res.json())
@@ -64,18 +51,25 @@ const Navbar = () => {
   // delete notification
   const deleteNotification = async (id) => {
     try {
-      const res = await fetch(`https://devflow-server-777f.onrender.com/notifications/${id}`, {
+      const res = await fetch(`http://localhost:5000/notifications/${id}`, {
         method: "DELETE",
         credentials: "include",
       });
-      if (res.status === 401 || res.status === 403) {
+      // ✅ 1. AUTH সমস্যা → logout
+      if (res.status === 401) {
         alert("Session expired. Please login again");
         await logOut();
         window.location.href = "/login";
         return;
       }
       const data = await res.json();
-
+      // ✅ 2. BLOCKED USER
+      if (data?.isBlocked) {
+        alert("You are blocked by admin");
+        await logOut();
+        window.location.href = "/login";
+        return;
+      }
       if (data.success) {
         setNotifications((prev) => prev.filter((n) => n._id !== id));
       }
@@ -87,20 +81,28 @@ const Navbar = () => {
   const toggleRead = async (id) => {
     try {
       const res = await fetch(
-        `https://devflow-server-777f.onrender.com/notifications/${id}/toggle-read`,
+        `http://localhost:5000/notifications/${id}/toggle-read`,
         {
           method: "PATCH",
           credentials: "include",
         },
       );
-      if (res.status === 401 || res.status === 403) {
+      // ✅ 1. AUTH সমস্যা → logout
+      if (res.status === 401) {
         alert("Session expired. Please login again");
         await logOut();
-        navigate("/login");
+        window.location.href = "/login";
         return;
       }
-      const data = await res.json();
 
+      const data = await res.json();
+      // ✅ 2. BLOCKED USER
+      if (data?.isBlocked) {
+        alert("You are blocked by admin");
+        await logOut();
+        window.location.href = "/login";
+        return;
+      }
       if (data.success) {
         setNotifications((prev) =>
           prev.map((n) => (n._id === id ? { ...n, read: !n.read } : n)),
@@ -141,6 +143,18 @@ const Navbar = () => {
     if (hours < 24) return `${hours} hour ago`;
     return `${days} days ago`;
   };
+
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setActiveMenu(null);
+    };
+
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
   return (
     <nav className="w-full sticky top-0 z-50 backdrop-blur border-b bg-(--bg) border-(--border) text-(--text)">
       <div className="max-w-7xl mx-auto relative px-3 sm:px-4 md:px-6 py-3 flex items-center justify-between">
@@ -155,32 +169,35 @@ const Navbar = () => {
         <div className="hidden md:flex items-center gap-4 lg:gap-6 text-sm text-(--text-secondary)">
           <NavLink to="/pricingpage" className="font-medium text-(--text)">
             price
-    
-
           </NavLink>
-          
-      <NavLink
-              to="/docs"
-              className="font-medium text-(--text)"
-            >
-              Docs
-            </NavLink>
-          {role === "developer" && (
-            <NavLink
-              to="/developer_dashboard"
-              className="font-medium text-(--text)"
-            >
-              Dashboard
-            </NavLink>
+
+          <NavLink to="/docs" className="font-medium text-(--text)">
+            Docs
+          </NavLink>
+          {authReady ? (
+            <span className="loading loading-infinity loading-xl"></span>
+          ) : (
+            dbUser?.role === "developer" && (
+              <NavLink
+                to="/developer_dashboard"
+                className="font-medium text-(--text)"
+              >
+                Dashboard
+              </NavLink>
+            )
           )}
 
-          {role === "admin" && (
-            <NavLink
-              to="/admin_dashboard_layout"
-              className="font-medium text-(--text)"
-            >
-              admin_Dashboard
-            </NavLink>
+          {authReady ? (
+            <span className="loading loading-infinity loading-xl"></span>
+          ) : (
+            dbUser?.role === "admin" && (
+              <NavLink
+                to="/admin_dashboard_layout"
+                className="font-medium text-(--text)"
+              >
+                Dashboard
+              </NavLink>
+            )
           )}
         </div>
 
@@ -266,15 +283,23 @@ const Navbar = () => {
                               {/* 3 DOT */}
                               <div
                                 className="cursor-pointer"
-                                onMouseEnter={() => setActiveMenu(n._id)}
-                                onMouseLeave={() => setActiveMenu(null)}
+                                onClick={(e) => {
+                                  e.stopPropagation(); // important
+                                  setActiveMenu(
+                                    activeMenu === n._id ? null : n._id,
+                                  );
+                                }}
                               >
                                 <FaEllipsisV className="text-gray-400 text-sm" />
 
                                 {activeMenu === n._id && (
                                   <div className="absolute right-2 top-8 bg-white dark:bg-gray-800 shadow-lg rounded-md text-sm w-36 sm:w-40 overflow-hidden z-50">
                                     <button
-                                      onClick={() => toggleRead(n._id)}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        toggleRead(n._id);
+                                        setActiveMenu(null); // close menu
+                                      }}
                                       className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
                                     >
                                       {n.read
@@ -283,7 +308,11 @@ const Navbar = () => {
                                     </button>
 
                                     <button
-                                      onClick={() => deleteNotification(n._id)}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        deleteNotification(n._id);
+                                        setActiveMenu(null); // close menu
+                                      }}
                                       className="w-full text-left px-3 py-2 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700"
                                     >
                                       Delete
@@ -375,29 +404,33 @@ const Navbar = () => {
                 price
               </NavLink>
 
-               <NavLink
-              to="/docs"
-              className="font-medium text-(--text)"
-            >
-              Docs
-            </NavLink>
+              <NavLink to="/docs" className="font-medium text-(--text)">
+                Docs
+              </NavLink>
 
-              {role === "developer" && (
-                <NavLink
-                  to="/developer_dashboard"
-                  className="font-medium text-(--text)"
-                >
-                  Dashboard
-                </NavLink>
+              {authReady ? (
+                <span className="loading loading-infinity loading-xl"></span>
+              ) : (
+                dbUser?.role === "developer" && (
+                  <NavLink
+                    to="/developer_dashboard"
+                    className="font-medium text-(--text)"
+                  >
+                    Dashboard
+                  </NavLink>
+                )
               )}
-
-              {role === "admin" && (
-                <NavLink
-                  to="/admin_dashboard_layout"
-                  className="font-medium text-(--text)"
-                >
-                  admin_Dashboard
-                </NavLink>
+              {authReady ? (
+                <span className="loading loading-infinity loading-xl"></span>
+              ) : (
+                dbUser?.role === "admin" && (
+                  <NavLink
+                    to="/admin_dashboard_layout"
+                    className="font-medium text-(--text)"
+                  >
+                    admin Dashboard
+                  </NavLink>
+                )
               )}
             </div>
 
@@ -485,15 +518,23 @@ const Navbar = () => {
                                   {/* 3 DOT */}
                                   <div
                                     className="cursor-pointer"
-                                    onMouseEnter={() => setActiveMenu(n._id)}
-                                    onMouseLeave={() => setActiveMenu(null)}
+                                    onClick={(e) => {
+                                      e.stopPropagation(); // important
+                                      setActiveMenu(
+                                        activeMenu === n._id ? null : n._id,
+                                      );
+                                    }}
                                   >
                                     <FaEllipsisV className="text-gray-400 text-sm" />
 
                                     {activeMenu === n._id && (
                                       <div className="absolute right-2 top-8 bg-white dark:bg-gray-800 shadow-lg rounded-md text-sm w-36 sm:w-40 overflow-hidden z-50">
                                         <button
-                                          onClick={() => toggleRead(n._id)}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleRead(n._id);
+                                            setActiveMenu(null); // close menu
+                                          }}
                                           className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
                                         >
                                           {n.read
@@ -502,9 +543,11 @@ const Navbar = () => {
                                         </button>
 
                                         <button
-                                          onClick={() =>
-                                            deleteNotification(n._id)
-                                          }
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            deleteNotification(n._id);
+                                            setActiveMenu(null); // close menu
+                                          }}
                                           className="w-full text-left px-3 py-2 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700"
                                         >
                                           Delete

@@ -33,6 +33,7 @@ const Login = () => {
       showConfirmButton: false,
     });
    //  login success → return to previous page
+  
       navigate(from, { replace: true });
   } catch (err) {
     Swal.fire({
@@ -43,41 +44,26 @@ const Login = () => {
   }
 };
 
-const handleGoogle = () => {
-  googleLogin()
-    .then(async (res) => {
-      const user = res.user;
+const handleGoogle = async () => {
+  try {
+    await googleLogin();
 
-    
-
-      
-
-     await fetch("https://devflow-server-777f.onrender.com/users", {
-        method: "POST",
-       
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: user.displayName,
-          email: user.email,
-          
-        }),
-      });
-
-      Swal.fire({
-        icon: "success",
-        title: "Logged in with Google!",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-        navigate(from, { replace: true });
-    })
-    .catch((err) => {
-      Swal.fire({
-        icon: "error",
-        title: "Google Login Failed",
-        text: err.message,
-      });
+    Swal.fire({
+      icon: "success",
+      title: "Logged in with Google!",
+      timer: 2000,
+      showConfirmButton: false,
     });
+
+    navigate(from, { replace: true });
+
+  } catch (err) {
+    Swal.fire({
+      icon: "error",
+      title: "Google Login Failed",
+      text: err.message,
+    });
+  }
 };
   return (
     <div className="min-h-screen flex items-center justify-center bg-(--bg)">

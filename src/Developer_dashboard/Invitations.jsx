@@ -14,7 +14,9 @@ const Invitations = () => {
   useEffect(() => {
     if (!user?.email) return;
 
-    fetch(`https://devflow-server-777f.onrender.com/user/${user.email}`)
+    fetch(`http://localhost:5000/user/${user.email}`,{
+      credentials:"include"
+    })
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
@@ -32,19 +34,26 @@ const Invitations = () => {
         setLoading(true);
 
         const res = await fetch(
-          `https://devflow-server-777f.onrender.com/my-invitations/${user.email}`,
+          `http://localhost:5000/my-invitations/${user.email}`,
           {
             credentials: "include",
           },
         );
-        if (res.status === 401 || res.status === 403) {
-          alert("Session expired. Please login again");
-          await logOut();
-          window.location.href = "/login";
-          return;
-        }
+            // ✅ 1. AUTH সমস্যা → logout
+      if (res.status === 401) {
+        alert("Session expired. Please login again");
+        await logOut();
+        window.location.href = "/login";
+        return;
+      }
         const data = await res.json();
-
+  // ✅ 2. BLOCKED USER
+      if (data?.isBlocked) {
+        alert("You are blocked by admin");
+        await logOut();
+        window.location.href = "/login";
+        return;
+      }
         if (data.success) {
           setProjects(data.data);
         }
@@ -79,30 +88,48 @@ const Invitations = () => {
 
     return () => socket.off("projectUpdated");
   }, []);
-  useEffect(() => {
-    socket.on("newInvitation", async (data) => {
-      //  BEST WAY (simple & reliable)
+ useEffect(() => {
+  const handler = async (data) => {
+    try {
       const res = await fetch(
-        `https://devflow-server-777f.onrender.com/my-invitations/${user.email}`,
+        `http://localhost:5000/my-invitations/${user.email}`,
         {
           credentials: "include",
-        },
+        }
       );
-      if (res.status === 401 || res.status === 403) {
+
+      // ✅ AUTH সমস্যা
+      if (res.status === 401) {
         alert("Session expired. Please login again");
         await logOut();
         window.location.href = "/login";
         return;
       }
+
       const result = await res.json();
+
+      // ✅ BLOCKED USER
+      if (data?.isBlocked) {
+        alert("You are blocked by admin");
+        await logOut();
+        window.location.href = "/login";
+        return;
+      }
 
       if (result.success) {
         setProjects(result.data);
       }
-    });
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-    return () => socket.off("newInvitation");
-  }, [user?.email, logOut]);
+  socket.on("newInvitation", handler);
+
+  return () => {
+    socket.off("newInvitation", handler); // 🔥 IMPORTANT
+  };
+}, [user?.email ,logOut] );
   const filteredProjects = projects.filter(
     (project) =>
       project.teamName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -118,7 +145,7 @@ const Invitations = () => {
 
     try {
       const res = await fetch(
-        `https://devflow-server-777f.onrender.com/invite-status/${projectId}`,
+        `http://localhost:5000/invite-status/${projectId}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },

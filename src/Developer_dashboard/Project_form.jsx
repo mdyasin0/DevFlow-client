@@ -1,13 +1,28 @@
 import React, { useContext, useState } from "react";
 import { AuthContext } from "../Firebase/AuthContext";
 
-const Project_form = () => {
+const Project_form = ({setform }) => {
   const [teamName, setTeamName] = useState("");
   const [projectTitle, setProjectTitle] = useState("");
-  const { user, logOut } = useContext(AuthContext);
   const [description, setDescription] = useState("");
+
+  const [isCreated, setIsCreated] = useState(false);
+  const [loading, setLoading] = useState(false); // ✅ new
+
+  const { user, logOut } = useContext(AuthContext);
+
+  const resetForm = () => {
+    setTeamName("");
+    setProjectTitle("");
+    setDescription("");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (loading) return; // ✅ prevent double click
+
+    setLoading(true);
 
     const projectData = {
       teamName,
@@ -17,7 +32,7 @@ const Project_form = () => {
     };
 
     try {
-      const res = await fetch("https://devflow-server-777f.onrender.com/projects", {
+      const res = await fetch("http://localhost:5000/projects", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -28,7 +43,6 @@ const Project_form = () => {
 
       const data = await res.json();
 
-      // ✅ 1. AUTH সমস্যা → logout
       if (res.status === 401) {
         alert("Session expired. Please login again");
         await logOut();
@@ -36,7 +50,6 @@ const Project_form = () => {
         return;
       }
 
-      // ✅ 2. BLOCKED USER
       if (data?.isBlocked) {
         alert("You are blocked by admin");
         await logOut();
@@ -44,26 +57,34 @@ const Project_form = () => {
         return;
       }
 
-      // ✅ 3. LIMIT REACHED
       if (data?.code === "LIMIT_REACHED") {
-        alert(data.message); // 🔥 upgrade message
+        alert(data.message);
         return;
       }
 
-      // ✅ 4. OTHER ERROR
       if (!res.ok) {
         alert(data.message || "Something went wrong");
         return;
       }
 
-      // ✅ SUCCESS
       if (data.success) {
-        alert("Project Created");
+        alert(
+          "Your project created successfully. You can start work when admin approves the project."
+        );
+
+        resetForm();       // ✅ clear inputs
+        setIsCreated(true); // ✅ hide form
+          setform(false);
       }
     } catch (error) {
-      alert(error);
+      alert(error.message || "Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
+
+  // ✅ hide form after create
+  if (isCreated) return null;
 
   return (
     <form
@@ -89,6 +110,7 @@ const Project_form = () => {
         className="w-full border border-(--border) p-2 rounded bg-(--bg) text-(--text)"
         required
       />
+
       <textarea
         placeholder="Project Description"
         value={description}
@@ -96,11 +118,13 @@ const Project_form = () => {
         className="w-full border border-(--border) p-2 rounded bg-(--bg) text-(--text)"
         required
       />
+
       <button
         type="submit"
-        className="bg-(--primary) hover:bg-(--primary-hover) text-white w-full py-2 rounded"
+        disabled={loading}   // ✅ disable button
+        className="bg-(--primary) hover:bg-(--primary-hover) disabled:opacity-50 text-white w-full py-2 rounded"
       >
-        Submit
+        {loading ? "Creating..." : "Submit"}
       </button>
     </form>
   );

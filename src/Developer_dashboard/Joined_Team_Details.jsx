@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { AuthContext } from "../Firebase/AuthContext";
 import { socket } from "../Socket";
@@ -14,7 +14,7 @@ const Joined_Team_Details = () => {
   const [showChat, setShowChat] = useState(false);
   const { user, logOut } = useContext(AuthContext);
   const loginEmail = user?.email;
-  
+
   const liveMember = project?.teammember?.find((m) => m.email === loginEmail);
   const [modal, setModal] = useState({
     open: false,
@@ -22,20 +22,32 @@ const Joined_Team_Details = () => {
     type: "",
   });
 
-  const fetchProject = async () => {
-    const res = await fetch(`https://devflow-server-777f.onrender.com/project/${id}`, {
-      credentials: "include",
-    });
-    if (res.status === 401 || res.status === 403) {
+  const fetchProject = useCallback(async () => {
+    const res = await fetch(
+      `http://localhost:5000/project/${id}`,
+      {
+        credentials: "include",
+      },
+    );
+
+    // ✅ 1. AUTH সমস্যা → logout
+    if (res.status === 401) {
       alert("Session expired. Please login again");
       await logOut();
       window.location.href = "/login";
       return;
     }
-    const data = await res.json();
 
+    const data = await res.json();
+    // ✅ 2. BLOCKED USER
+    if (data?.isBlocked) {
+      alert("You are blocked by admin");
+      await logOut();
+      window.location.href = "/login";
+      return;
+    }
     if (data.success) setProject(data.data);
-  };
+  }, [id, logOut]);
 
   const myMember = project?.teammember?.find((m) => m.email === loginEmail);
   const isFreeManager = project?.manager?.plan?.type === "free";
@@ -62,7 +74,7 @@ const Joined_Team_Details = () => {
   useEffect(() => {
     fetchProject();
   }, [id, fetchProject]);
- 
+
   if (!project)
     return (
       <div className="flex h-screen items-center justify-center">
@@ -90,33 +102,33 @@ const Joined_Team_Details = () => {
           <p className="text-(--text-secondary) flex items-center gap-1  mt-2">
             <IoIosPeople /> Members: {project.teammember.length}
           </p>
-                  <button
-  onClick={() => {
-    if (isFreeManager) {
-      alert(" say manager to Upgrade plan to use project discussion chat 🚀");
-      return;
-    }
-    setShowChat(true);
-  }}
-  className="bg-green-600 px-4 py-2 rounded-lg ml-2"
->
-  Discuss on Project
-</button>
-         
+          <button
+            onClick={() => {
+              if (isFreeManager) {
+                alert(
+                  " say manager to Upgrade plan to use project discussion chat 🚀",
+                );
+                return;
+              }
+              setShowChat(true);
+            }}
+            className="bg-green-600 px-4 py-2 rounded-lg ml-2"
+          >
+            Discuss on Project
+          </button>
+
           {showChat && isFreeManager ? (
-  <div className="p-4 bg-red-100 text-red-600 rounded">
-    say manager to Upgrade plan to use project discussion cha
-  </div>
-) : (
-showChat && (
-            <ProjectDiscussion
-              projectId={project._id}
-              onClose={() => setShowChat(false)}
-            />
-  )
-)}
-    
-      
+            <div className="p-4 bg-red-100 text-red-600 rounded">
+              say manager to Upgrade plan to use project discussion cha
+            </div>
+          ) : (
+            showChat && (
+              <ProjectDiscussion
+                projectId={project._id}
+                onClose={() => setShowChat(false)}
+              />
+            )
+          )}
         </div>
 
         {/* TABLE */}
@@ -293,7 +305,7 @@ showChat && (
                             <button
                               onClick={async () => {
                                 const res = await fetch(
-                                  `https://devflow-server-777f.onrender.com/move-task/${id}`,
+                                  `http://localhost:5000/move-task/${id}`,
                                   {
                                     method: "PATCH",
                                     headers: {
@@ -308,8 +320,17 @@ showChat && (
                                     }),
                                   },
                                 );
-                                if (res.status === 401 || res.status === 403) {
+                                // ✅ 1. AUTH সমস্যা → logout
+                                if (res.status === 401) {
                                   alert("Session expired. Please login again");
+                                  await logOut();
+                                  window.location.href = "/login";
+                                  return;
+                                }
+                                const data = await res.json();
+                                // ✅ 2. BLOCKED USER
+                                if (data?.isBlocked) {
+                                  alert("You are blocked by admin");
                                   await logOut();
                                   window.location.href = "/login";
                                   return;
@@ -326,7 +347,7 @@ showChat && (
                             <button
                               onClick={async () => {
                                 const res = await fetch(
-                                  `https://devflow-server-777f.onrender.com/move-task/${id}`,
+                                  `http://localhost:5000/move-task/${id}`,
                                   {
                                     method: "PATCH",
                                     headers: {
@@ -341,8 +362,17 @@ showChat && (
                                     }),
                                   },
                                 );
-                                if (res.status === 401 || res.status === 403) {
+                                // ✅ 1. AUTH সমস্যা → logout
+                                if (res.status === 401) {
                                   alert("Session expired. Please login again");
+                                  await logOut();
+                                  window.location.href = "/login";
+                                  return;
+                                }
+                                const data = await res.json();
+                                // ✅ 2. BLOCKED USER
+                                if (data?.isBlocked) {
+                                  alert("You are blocked by admin");
                                   await logOut();
                                   window.location.href = "/login";
                                   return;

@@ -7,120 +7,148 @@ const User_Administration = () => {
 const { logOut } = useContext(AuthContext);
   // Load users
   useEffect(() => {
-    fetch("https://devflow-server-777f.onrender.com/users" ,{
-      credentials:"include"
-    })
-      .then(async (res) => {
-      // status check
-      if (res.status === 401 || res.status === 403) {
+  fetch("http://localhost:5000/users", {
+    credentials: "include",
+  })
+    .then(async (res) => {
+      
+      // ✅ 1. AUTH সমস্যা → logout
+      if (res.status === 401) {
         alert("Session expired. Please login again");
-
         await logOut();
-
         window.location.href = "/login";
-        return null;
+        return;
       }
 
-      return res.json();
+      const data = await res.json(); // 👉 আগে data আনো
+
+      // ✅ 2. BLOCKED USER
+      if (data?.isBlocked) {
+        alert("You are blocked by admin");
+        await logOut();
+        window.location.href = "/login";
+        return;
+      }
+
+      return data;
     })
-      .then((data) => {
+    .then((data) => {
+      if (data) {
         setUsers(data.data);
-      });
-  });
+      }
+    });
+});
 
   // Filter users by email
   const filteredUsers = users?.filter((user) =>
     user.email.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const handleBlock = (id) => {
-    fetch(`https://devflow-server-777f.onrender.com/users/block/${id}`, {
-      method: "PATCH",
-      credentials:"include",
-    })
-      .then(async (res) => {
-      //  status check
-      if (res.status === 401 || res.status === 403) {
-        alert("Session expired. Please login again");
-
-        await logOut();
-
-        window.location.href = "/login";
-        return null;
+const handleBlock = async (id) => {
+  try {
+    const res = await fetch(
+      `http://localhost:5000/users/block/${id}`,
+      {
+        method: "PATCH",
+        credentials: "include",
       }
+    );
 
-      return res.json();
-    })
-      .then((data) => {
-        if (data.success) {
-          const updated = users?.map((user) =>
-            user._id === id ? { ...user, isBlocked: true } : user,
-          );
-          setUsers(updated);
-        }
-      });
-  };
+    if (res.status === 401) {
+      alert("Session expired. Please login again");
+      await logOut();
+      window.location.href = "/login";
+      return;
+    }
 
-  const handleUnblock = (id) => {
-    fetch(`https://devflow-server-777f.onrender.com/users/unblock/${id}`, {
-      method: "PATCH",
-      credentials:"include",
-    })
-      .then(async (res) => {
-      // status check
-      if (res.status === 401 || res.status === 403) {
-        alert("Session expired. Please login again");
+    const data = await res.json();
 
-        await logOut();
+    if (data?.success) {
+      const updated = users?.map((user) =>
+        user._id === id ? { ...user, isBlocked: true } : user
+      );
+      setUsers(updated);
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Something went wrong!");
+  }
+};
 
-        window.location.href = "/login";
-        return null;
+ const handleUnblock = async (id) => {
+  try {
+    const res = await fetch(
+      `http://localhost:5000/users/unblock/${id}`,
+      {
+        method: "PATCH",
+        credentials: "include",
       }
+    );
 
-      return res.json();
-    })
-      .then((data) => {
-        if (data.success) {
-          const updated = users?.map((user) =>
-            user._id === id ? { ...user, isBlocked: false } : user,
-          );
-          setUsers(updated);
-        }
-      });
-  };
+    // ✅ 1. AUTH সমস্যা → logout
+    if (res.status === 401) {
+      alert("Session expired. Please login again");
+      await logOut();
+      window.location.href = "/login";
+      return;
+    }
+
+    const data = await res.json();
+
+    // ✅ 2. Success check
+    if (data.success) {
+      alert("User unblocked successfully");
+
+      const updated = users?.map((user) =>
+        user._id === id ? { ...user, isBlocked: false } : user
+      );
+      setUsers(updated);
+    } else {
+      alert(data.message || "Failed to unblock user");
+    }
+
+  } catch (error) {
+    console.error(error);
+    alert("Something went wrong. Please try again");
+  }
+};
 
   const handleRoleChange = (id, newRole) => {
-    fetch(`https://devflow-server-777f.onrender.com/users/role/${id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials:"include",
-      body: JSON.stringify({ role: newRole }),
-    })
-      .then(async (res) => {
-      //  status check
-      if (res.status === 401 || res.status === 403) {
+  fetch(`http://localhost:5000/users/role/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({ role: newRole }),
+  })
+    .then(async (res) => {
+      if (res.status === 401) {
         alert("Session expired. Please login again");
-
         await logOut();
-
         window.location.href = "/login";
-        return null;
+        throw new Error("Unauthorized");
+      }
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || "Something went wrong");
       }
 
       return res.json();
     })
-      .then((data) => {
-        if (data.success) {
-          // UI update
-          const updatedUsers = users?.map((user) =>
-            user._id === id ? { ...user, role: newRole } : user,
-          );
-          setUsers(updatedUsers);
-        }
-      });
-  };
+    .then((data) => {
+      if (data?.success) {
+        const updatedUsers = users?.map((user) =>
+          user._id === id ? { ...user, role: newRole } : user
+        );
+        setUsers(updatedUsers);
+      }
+    })
+    .catch((err) => {
+      console.error(err.message);
+    });
+};
 
   return (
    <div className="p-6 bg-(--bg) text-(--text) min-h-screen">

@@ -17,7 +17,7 @@ const Created_project = () => {
   const handleUpdate = async () => {
     try {
       const res = await fetch(
-        `https://devflow-server-777f.onrender.com/projects/${selectedProject._id}`,
+        `http://localhost:5000/projects/${selectedProject._id}`,
         {
           method: "PUT",
           headers: {
@@ -31,13 +31,22 @@ const Created_project = () => {
           }),
         },
       );
-      if (res.status === 401 || res.status === 403) {
+            // ✅ 1. AUTH সমস্যা → logout
+      if (res.status === 401) {
         alert("Session expired. Please login again");
         await logOut();
         window.location.href = "/login";
         return;
       }
       const data = await res.json();
+ 
+      // ✅ 2. BLOCKED USER
+      if (data?.isBlocked) {
+        alert("You are blocked by admin");
+        await logOut();
+        window.location.href = "/login";
+        return;
+      }
 
       if (data.success) {
         setProjects((prev) =>
@@ -55,24 +64,36 @@ const Created_project = () => {
   };
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete this project?",
+      "If you delete this project, everything related to it will be permanently deleted and cannot be recovered. Are you sure?",
     );
 
     if (!confirmDelete) return;
 
     try {
-      const res = await fetch(`https://devflow-server-777f.onrender.com/projects/${id}`, {
+      const res = await fetch(`http://localhost:5000/projects/${id}`, {
         method: "DELETE",
         credentials: "include",
       });
-      if (res.status === 401 || res.status === 403) {
+         // ✅ 1. AUTH সমস্যা → logout
+      if (res.status === 401) {
         alert("Session expired. Please login again");
         await logOut();
         window.location.href = "/login";
         return;
       }
       const data = await res.json();
-
+     // ✅ 2. BLOCKED USER
+      if (data?.isBlocked) {
+        alert("You are blocked by admin");
+        await logOut();
+        window.location.href = "/login";
+        return;
+      }
+      // ❌ FREE USER (ANY 403 reason)
+if (data.code === "Project only premium user can delete") {
+  alert(data.message);
+  return;
+}
       if (data.success) {
         setProjects((prev) => prev.filter((p) => p._id !== id));
         alert("Project deleted successfully ");
@@ -81,34 +102,43 @@ const Created_project = () => {
       alert(error);
     }
   };
-  useEffect(() => {
-    if (user?.email) {
-      fetch(`https://devflow-server-777f.onrender.com/projects/${user.email}`, {
-        credentials: "include",
+ useEffect(() => {
+  if (user?.email) {
+    fetch(`http://localhost:5000/projects/${user.email}`, {
+      credentials: "include",
+    })
+      .then(async (res) => {
+
+        // ✅ 1. AUTH সমস্যা → logout
+        if (res.status === 401) {
+          alert("Session expired. Please login again");
+          await logOut();
+          window.location.href = "/login";
+          return;
+        }
+
+        const data = await res.json(); // 👈 আগে data নিতে হবে
+
+        // ✅ 2. BLOCKED USER
+        if (data?.isBlocked) {
+          alert("You are blocked by admin");
+          await logOut();
+          window.location.href = "/login";
+          return;
+        }
+
+        return data;
       })
-        .then(async (res) => {
-          // status check
-          if (res.status === 401 || res.status === 403) {
-            alert("Session expired. Please login again");
-
-            await logOut();
-
-            window.location.href = "/login";
-            return null;
-          }
-
-          return res.json();
-        })
-        .then((data) => {
-          if (data.success) {
-            setProjects(data.data);
-          } else {
-            setProjects([]);
-          }
-        })
-        .catch(() => setProjects([]));
-    }
-  }, [user, logOut]);
+      .then((data) => {
+        if (data?.success) {
+          setProjects(data.data);
+        } else {
+          setProjects([]);
+        }
+      })
+      .catch(() => setProjects([]));
+  }
+}, [user, logOut]);
 
   useEffect(() => {
     if (!user?._id) return;
@@ -121,31 +151,44 @@ const Created_project = () => {
       socket.disconnect();
     };
   }, [user]);
-  useEffect(() => {
-    const handler = async (data) => {
-      
+ useEffect(() => {
+  const handler = async (data) => {
 
-      //  RE-FETCH projects again
-      const res = await fetch(`https://devflow-server-777f.onrender.com/projects/${user.email}`, {
+    // ✅ 1. BLOCKED USER আগে check করো
+    if (data?.isBlocked) {
+      alert("You are blocked by admin");
+      await logOut();
+      window.location.href = "/login";
+      return;
+    }
+
+    // ✅ 2. তারপর API call
+    const res = await fetch(
+      `http://localhost:5000/projects/${user.email}`,
+      {
         credentials: "include",
-      });
-      if (res.status === 401 || res.status === 403) {
+      }
+    );
+
+       // ✅ 1. AUTH সমস্যা → logout
+      if (res.status === 401) {
         alert("Session expired. Please login again");
         await logOut();
         window.location.href = "/login";
         return;
       }
-      const result = await res.json();
 
-      if (result.success) {
-        setProjects(result.data);
-      }
-    };
+    const result = await res.json();
 
-    socket.on("project_status_updated", handler);
+    if (result.success) {
+      setProjects(result.data);
+    }
+  };
 
-    return () => socket.off("project_status_updated", handler);
-  }, [user, logOut]);
+  socket.on("project_status_updated", handler);
+
+  return () => socket.off("project_status_updated", handler);
+}, [user, logOut]);
   const hasProjects = projects.length > 0;
 
   if (!user?.email) return null;

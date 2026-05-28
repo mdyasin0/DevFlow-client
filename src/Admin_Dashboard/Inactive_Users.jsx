@@ -40,29 +40,39 @@ const {  logOut} = useContext(AuthContext);
 
     return () => quill.off("text-change", handler);
   }, [quill]);
+useEffect(() => {
+  const fetchUsers = async () => {
+    const res = await fetch(
+      "http://localhost:5000/approved_users",
+      {
+        credentials: "include",
+      }
+    );
 
-  useEffect(() => {
-    fetch("https://devflow-server-777f.onrender.com/approved_users" ,{
-      credentials:"include",
-    })
-     .then(async (res) => {
-      // status check
-      if (res.status === 401 || res.status === 403) {
+       // ✅ 1. AUTH সমস্যা → logout
+      if (res.status === 401) {
         alert("Session expired. Please login again");
-
         await logOut();
-
         window.location.href = "/login";
-        return null;
+        return;
+      }
+const data = await res.json();
+      // ✅ 2. BLOCKED USER
+      if (data?.isBlocked) {
+        alert("You are blocked by admin");
+        await logOut();
+        window.location.href = "/login";
+        return;
       }
 
-      return res.json();
-    })
-      .then((data) => {
-        if (data.success) setUsers(data.data);
-      });
-  });
 
+    if (data.success) {
+      setUsers(data.data);
+    }
+  };
+
+  fetchUsers();
+});
   const isActive = (date) => {
     const last = new Date(date);
     const now = new Date();
@@ -117,7 +127,7 @@ const {  logOut} = useContext(AuthContext);
     return;
   }
 
-  const res = await fetch("https://devflow-server-777f.onrender.com/email/send-inactive", {
+  const res = await fetch("http://localhost:5000/email/send-inactive", {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
@@ -128,18 +138,23 @@ const {  logOut} = useContext(AuthContext);
     }),
   });
 
-  //   auth check add 
-  if (res.status === 401 || res.status === 403) {
-    alert("Session expired. Please login again");
+        // ✅ 1. AUTH সমস্যা → logout
+      if (res.status === 401) {
+        alert("Session expired. Please login again");
+        await logOut();
+        window.location.href = "/login";
+        return;
+      }
 
-    await logOut();
-
-    window.location.href = "/login";
-    return;
-  }
 
   const data = await res.json();
-
+   // ✅ 2. BLOCKED USER
+      if (data?.isBlocked) {
+        alert("You are blocked by admin");
+        await logOut();
+        window.location.href = "/login";
+        return;
+      } 
   if (data.success) {
     alert("Email sent ");
   } else {

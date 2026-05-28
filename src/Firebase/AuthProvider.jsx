@@ -20,66 +20,74 @@ const provider = new GoogleAuthProvider();
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
+const [tokenLoading, setTokenLoading] = useState(true);
 const [dbUser, setDbUser] = useState(null);
 const [roleLoading, setRoleLoading] = useState(true);
 
 const getJwtToken = async (email) => {
+  const res = await fetch("http://localhost:5000/jwt", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ email }),
+  });
+
+  const data = await res.json();
+
+  if (!data.success) throw new Error("JWT failed");
+
+  return true; // 👈 important
+};
+  // 🔹 Logout
+  const logOut = async () => {
+  setLoading(true);
+
   try {
-    const res = await fetch("https://devflow-server-777f.onrender.com/jwt", {
+    await fetch("http://localhost:5000/logout", {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-      credentials: "include", //  MUST
-      body: JSON.stringify({ email }),
+      credentials: "include",
     });
 
-    const data = await res.json();
-    return data;
-  } catch (error) {
-    alert( error);
-  }
-}; 
-  // 🔹 Logout
-  const logOut = () => {
-    setLoading(true);
-   fetch("https://devflow-server-777f.onrender.com/logout", {
-    method: "POST",
-    credentials: "include",
-  });
+    await signOut(auth);
+
+    setUser(null);
+    setDbUser(null);
+    setTokenLoading(false);
+    setRoleLoading(false);
+
     socket.disconnect();
-    return signOut(auth);
-  };
+  } finally {
+    setLoading(false);
+  }
+};
 
-useEffect(() => {
-  const fetchUserRole = async () => {
-    if (user?.email) {
-      setRoleLoading(true);
+const fetchUserRole = async (email) => {
+  if (!email) return;
 
-      try {
-        const res = await fetch(
-          `https://devflow-server-777f.onrender.com/user/${user.email}`
-        );
-        
-        const data = await res.json();
+  setRoleLoading(true);
 
-        if (data.success) {
-          setDbUser(data.data);
-        }
-      } catch (err) {
-        alert(err);
-      } finally {
-        setRoleLoading(false);
+  try {
+    const res = await fetch(
+      `http://localhost:5000/user/${email}`,
+      {
+        method: "GET",
+        credentials: "include",
       }
-    } else {
-      setDbUser(null);
-      setRoleLoading(false);
-    }
-  };
+    );
 
-  fetchUserRole();
-}, [user]);
+    const data = await res.json();
+
+    if (data.success) {
+      setDbUser(data.data);
+    } else {
+      console.warn(data.message);
+    }
+  } catch (err) {
+    console.error(err.message);
+  } finally {
+    setRoleLoading(false);
+  }
+};
 useEffect(() => {
   if (!dbUser?._id) return;
 
@@ -144,26 +152,54 @@ useEffect(() => {
   const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
     setUser(currentUser);
 
-    if (currentUser?.email) {
-      //  JWT CREATE
-      await getJwtToken(currentUser.email);
-    } else {
-      //  if  logout  token remove
-    
-      
+    if (!currentUser?.email) {
+      setDbUser(null);
+      setTokenLoading(false);
+      setRoleLoading(false);
+      setLoading(false);
+      return;
     }
 
+    setTokenLoading(true);
+    setRoleLoading(true);
+    setLoading(true);
+
+    try {
+      await getJwtToken(currentUser.email);
+        await fetchUserRole(currentUser.email);
+    } catch (err) {
+      console.error(err);
+    }
+
+    setTokenLoading(false);
     setLoading(false);
   });
 
   return () => unsubscribe();
 }, []);
-
+useEffect(() => {
+  if (user?.email && !tokenLoading) {
+    fetch("http://localhost:5000/users", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        name: user.displayName,
+        email: user.email,
+      }),
+    });
+  }
+}, [user?.email, tokenLoading]);
+const authReady = loading || tokenLoading || roleLoading;
   const authInfo = {
     user,
     loading,
+     tokenLoading,
     createUser,
     signInUser,
+    authReady,
     googleLogin,
     logOut,
     updateUserProfile, //  added here

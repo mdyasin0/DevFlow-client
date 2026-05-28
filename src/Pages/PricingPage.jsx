@@ -13,7 +13,7 @@ const handleUpgradePremium = async () => {
 
     // 🔥 STEP 1: Check plan first
     const checkRes = await fetch(
-      `https://devflow-server-777f.onrender.com/plan/check/${email}`
+      `http://localhost:5000/plan/check/${email}`
     );
 
     const checkData = await checkRes.json();
@@ -31,7 +31,7 @@ const handleUpgradePremium = async () => {
 
     // 🔥 STEP 3: Continue normal process
     const res = await fetch(
-      `https://devflow-server-777f.onrender.com/plan/upgrade-premium/${email}`,
+      `http://localhost:5000/plan/upgrade-premium/${email}`,
       {
         method: "POST",
         headers: {
@@ -62,7 +62,7 @@ const handleUpgradePremium = async () => {
 
     // 🔥 STEP 1: Check current plan
     const resCheck = await fetch(
-      `https://devflow-server-777f.onrender.com/plan/check/${email}`
+      `http://localhost:5000/plan/check/${email}`
     );
 
     const dataCheck = await resCheck.json();
@@ -84,7 +84,7 @@ const handleUpgradePremium = async () => {
 
     // 🔥 STEP 2: Call backend
     const res = await fetch(
-      `https://devflow-server-777f.onrender.com/plan/start-free/${email}`,
+      `http://localhost:5000/plan/start-free/${email}`,
       {
         method: "POST",
         headers: {
@@ -169,6 +169,12 @@ const handleUpgradePremium = async () => {
     <FaTimesCircle className="text-red-500" /> No File Upload
   </li>
   <li className="flex items-center gap-2">
+    <FaTimesCircle className="text-red-500" /> No Project Delete
+  </li>
+  <li className="flex items-center gap-2">
+    <FaTimesCircle className="text-red-500" /> No invite  Delete
+  </li>
+  <li className="flex items-center gap-2">
     <FaTimesCircle className="text-red-500" /> No Discussion System
   </li>
   <li className="flex items-center gap-2">
@@ -235,6 +241,12 @@ const handleUpgradePremium = async () => {
   </li>
   <li className="flex items-center gap-2">
     <FaCheckCircle className="text-green-500" /> Task Delete
+  </li>
+  <li className="flex items-center gap-2">
+    <FaCheckCircle className="text-green-500" /> Project Delete
+  </li>
+  <li className="flex items-center gap-2">
+    <FaCheckCircle className="text-green-500" /> invite Delete
   </li>
   <li className="flex items-center gap-2">
     <FaCheckCircle className="text-green-500" /> Project Discussion System

@@ -54,7 +54,7 @@ const Developer_projects = () => {
 
             <p className="mt-4 text-sm text-(--text-secondary)">
               Read more in{" "}
-              <NavLink to="/" className="text-(--primary) font-semibold hover:underline">
+              <NavLink to="/docs" className="text-(--primary) font-semibold hover:underline">
                 documentation
               </NavLink>
             </p>
@@ -74,7 +74,7 @@ const Developer_projects = () => {
               <IoCloseCircleOutline />
             </button>
 
-            <Project_form user={user} />
+            <Project_form user={user} setform={setform}/>
           </div>
         </div>
       )}

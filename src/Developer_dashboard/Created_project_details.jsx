@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useState } from "react";
-import { useParams } from "react-router";
+import React, { useCallback, useContext, useEffect, useState } from "react";
+import { NavLink, useParams } from "react-router";
 import { useMemo } from "react";
 import {
   BarChart,
@@ -59,19 +59,41 @@ const Created_project_details = () => {
     return () => socket.off("projectUpdated");
   }, []);
   //  FETCH PROJECT (reuseable)
-  const fetchProject = async () => {
-    const res = await fetch(`https://devflow-server-777f.onrender.com/project/${id}`, {
-      credentials: "include",
-    });
-    if (res.status === 401 || res.status === 403) {
-      alert("Session expired. Please login again");
-      await logOut();
-      window.location.href = "/login";
-      return;
-    }
+const fetchProject = useCallback(async () => {
+  try {
+    const res = await fetch(
+      `http://localhost:5000/project/${id}`,
+      {
+        credentials: "include",
+      }
+    );
+
+    // ✅ 1. AUTH সমস্যা → logout
+      if (res.status === 401) {
+        alert("Session expired. Please login again");
+        await logOut();
+        window.location.href = "/login";
+        return;
+      }
+
+
     const data = await res.json();
-    if (data.success) setProject(data.data);
-  };
+  
+      // ✅ 2. BLOCKED USER
+      if (data?.isBlocked) {
+        alert("You are blocked by admin");
+        await logOut();
+        window.location.href = "/login";
+        return;
+      }
+
+    if (data.success) {
+      setProject(data.data);
+    }
+  } catch  {
+    alert("Something went wrong");
+  }
+}, [id, logOut]); 
   const managerPlan = project?.manager?.plan?.type;
 const isPremium = managerPlan === "premium";
   const getTotalTasks = (project) => {
@@ -169,11 +191,12 @@ const isPremium = managerPlan === "premium";
     };
   }, [id]);
   useEffect(() => {
-    fetchProject();
+     fetchProject();
   }, [id, fetchProject]);
   // INVITE
   const handleInvite = async () => {
-    const res = await fetch(`https://devflow-server-777f.onrender.com/invite/${id}`, {
+  try {
+    const res = await fetch(`http://localhost:5000/invite/${id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -182,27 +205,36 @@ const isPremium = managerPlan === "premium";
 
     const data = await res.json();
 
-    if (data.code === "TEAM_LIMIT") {
+    // ❌ Backend error handling
+    if (!res.ok) {
+      alert(data.message || "Something went wrong");
+      return;
+    }
+
+    // ⚠️ Custom business logic errors
+    if (data.code === "TEAM_LIMIT" || data.code === "INVITE_LIMIT") {
       alert(data.message);
       return;
     }
 
-    if (data.code === "INVITE_LIMIT") {
-      alert(data.message);
-      return;
-    }
-
+    // ✅ Success
     if (data.success) {
+      alert("Invitation sent successfully!");
       setInviteEmail("");
       setShowInvite(false);
-      fetchProject(); //  UI update
+      fetchProject();
     }
-  };
+
+  } catch (error) {
+    console.error(error);
+    alert("Network error! Please try again.");
+  }
+};
   // reopen move done to running
   const handleReopen = async (member, taskId) => {
     try {
       const res = await fetch(
-        `https://devflow-server-777f.onrender.com/reopen-task/${project._id}`,
+        `http://localhost:5000/reopen-task/${project._id}`,
         {
           method: "PATCH",
           credentials: "include",
@@ -283,7 +315,7 @@ const isPremium = managerPlan === "premium";
       uploadedFiles = await uploadFilesToCloudinary();
     }
 
-    const res = await fetch(`https://devflow-server-777f.onrender.com/add-task/${id}`, {
+    const res = await fetch(`http://localhost:5000/add-task/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -322,7 +354,7 @@ const isPremium = managerPlan === "premium";
 
   // DELETE TASK
   const handleDelete = async (type, taskId, email) => {
-    const res = await fetch(`https://devflow-server-777f.onrender.com/delete-task/${id}`, {
+    const res = await fetch(`http://localhost:5000/delete-task/${id}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -334,12 +366,22 @@ const isPremium = managerPlan === "premium";
     });
 
     const data = await res.json();
-    if (res.status === 401 || res.status === 403) {
-      alert("Session expired. Please login again");
-      await logOut();
-      window.location.href = "/login";
-      return;
-    }
+       // ✅ 1. AUTH সমস্যা → logout
+      if (res.status === 401) {
+        alert("Session expired. Please login again");
+        await logOut();
+        window.location.href = "/login";
+        return;
+      }
+            
+      // ✅ 2. BLOCKED USER
+      if (data?.isBlocked) {
+        alert("You are blocked by admin");
+        await logOut();
+        window.location.href = "/login";
+        return;
+      }
+
     if (data.code === "PLAN_RESTRICTED for delete") {
       alert("Upgrade your plan to delete tasks 🚀");
       return;
@@ -353,41 +395,96 @@ const isPremium = managerPlan === "premium";
     setEditText(task.text.replace(/<br\/>/g, "\n"));
   };
   // remove member
-  const handleRemoveMember = async (email) => {
+ const handleRemoveMember = async (email) => {
+  const res = await fetch(
+    `http://localhost:5000/remove-member/${id}/${encodeURIComponent(email)}`,
+    {
+      method: "DELETE",
+      credentials: "include",
+    }
+  );
+
+  let data;
+  try {
+    data = await res.json();
+  } catch {
+    alert("Server error");
+    return;
+  }
+
+  if (res.status === 401) {
+    alert("Session expired. Please login again");
+    await logOut();
+    window.location.href = "/login";
+    return;
+  }
+
+  if (data?.isBlocked) {
+    alert("You are blocked by admin");
+    await logOut();
+    window.location.href = "/login";
+    return;
+  }
+
+  if (data?.code === "PLAN_RESTRICTED for remove member") {
+    alert(data.message);
+    return;
+  }
+
+  if (!res.ok) {
+    alert(data?.message || "Failed to remove member");
+    return;
+  }
+
+  fetchProject();
+};
+  // remove invite
+const handleRemoveInvite = async (email) => {
+  try {
     const res = await fetch(
-      `https://devflow-server-777f.onrender.com/remove-member/${id}/${encodeURIComponent(email)}`,
+      `http://localhost:5000/remove-invite/${id}/${encodeURIComponent(email)}`,
       {
         method: "DELETE",
         credentials: "include",
-      },
+      }
     );
+
     const data = await res.json();
 
-    // 🔒 PLAN RESTRICTED
-    if (data.code === "PLAN_RESTRICTED for remove member") {
-      alert(data.message); // ✅ backend message show
-      return;
-    }
-    if (res.status === 401 || res.status === 403) {
-      alert("Session expired. Please login again");
-      await logOut();
-      window.location.href = "/login";
-      return;
-    }
-    fetchProject(); // UI refresh
-  };
-  // remove invite
-  const handleRemoveInvite = async (email) => {
-    await fetch(
-      `https://devflow-server-777f.onrender.com/remove-invite/${id}/${encodeURIComponent(email)}`,
-      {
-        method: "DELETE",
-        credentials: "include",
-      },
-    );
+   if (res.status === 401) {
+        alert("Session expired. Please login again");
+        await logOut();
+        window.location.href = "/login";
+        return;
+      }
 
+      if (data?.isBlocked) {
+        alert("You are blocked by admin");
+        await logOut();
+        window.location.href = "/login";
+        return;
+      }
+
+       if (data?.code === "NO permission to delete invaitations") {
+        alert(data.message);
+        return;
+      }
+      if (data?.code === "LIMIT_REACHED") {
+        alert(data.message);
+        return;
+      }
+      if (!res.ok) {
+      alert(data.message || "Something went wrong");
+      return;
+    }
+ alert("Invite removed successfully");
     fetchProject();
-  };
+    
+  } catch (error) {
+    
+    alert(error);
+  }
+};
 
   // UPDATE TASK
   const handleUpdate = async () => {
@@ -397,7 +494,7 @@ const isPremium = managerPlan === "premium";
       newFiles = await uploadEditFiles();
     }
 
-    const res = await fetch(`https://devflow-server-777f.onrender.com/update-task/${id}`, {
+    const res = await fetch(`http://localhost:5000/update-task/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -455,7 +552,7 @@ const isPremium = managerPlan === "premium";
 
         // 🔒 Cloudinary error check
         if (!data.secure_url) {
-          console.log("Upload failed for:", file.name);
+         alert("Upload failed for:", file.name);
           continue;
         }
 
@@ -463,9 +560,10 @@ const isPremium = managerPlan === "premium";
           url: data.secure_url,
           type: file.type,
           name: file.name,
+
         });
       } catch (error) {
-        console.log("Upload error:", file.name, error.message);
+        alert("Upload error:", file.name, error.message);
       }
     }
 
@@ -662,9 +760,10 @@ const isPremium = managerPlan === "premium";
       Only premium project managers can access performance analytics.
     </p>
 
-    <button className="bg-blue-500 px-4 py-2 rounded text-white">
-      Upgrade Plan
-    </button>
+    
+    <NavLink to="/pricingpage" className="bg-blue-500 px-4 py-2 rounded text-white">
+Upgrade Plan
+    </NavLink>
   </div>
 )}
       
@@ -764,24 +863,7 @@ const isPremium = managerPlan === "premium";
             </div>
           </div>
         )}
-        {/* INVITE */}
-        {showInvite && (
-          <div className="flex gap-2 mb-6">
-            <input
-              className="flex-1 p-2 rounded bg-(--card) border border-(--border) text-(--text) placeholder:text-(--text-secondary)"
-              placeholder="Enter email"
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-            />
-
-            <button
-              onClick={handleInvite}
-              className="bg-(--success) hover:opacity-90 text-white px-4 py-2 rounded"
-            >
-              Send
-            </button>
-          </div>
-        )}
+       
         <input
           type="text"
           placeholder="Search by name or email..."

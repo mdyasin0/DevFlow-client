@@ -1,49 +1,40 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { Navigate, useLocation } from "react-router";
 import { AuthContext } from "../Firebase/AuthContext";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  const { user, logOut, loading } = useContext(AuthContext);
-  const [userData, setUserData] = useState(null);
-  const [roleLoading, setRoleLoading] = useState(true);
+  const { user, dbUser, loading, roleLoading ,tokenLoading } = useContext(AuthContext);
   const location = useLocation();
 
-  useEffect(() => {
-    const fetchUserRole = async () => {
-      if (user?.email) {
-        try {
-          const res = await fetch(`https://devflow-server-777f.onrender.com/user/${user.email}`);
-         
-          const data = await res.json();
-
-          if (data.success) {
-            setUserData(data.data);
-          }
-        } catch (error) {
-          alert(error);
-        } finally {
-          setRoleLoading(false);
-        }
-      } else {
-        setRoleLoading(false);
-      }
-    };
-
-    fetchUserRole();
-  }, [user ,logOut]);
-
-  //  loading
+  // 🔥 global loading
   if (loading || roleLoading) {
-    return <div className="flex h-screen items-center justify-center"><span className="loading loading-spinner text-primary"></span></div>;
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <span className="loading loading-spinner text-primary"></span>
+      </div>
+    );
   }
 
-  //  not logged in → send to login WITH current page info
+  // not logged in
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  //  role mismatch
-  if (allowedRoles && userData?.role && !allowedRoles.includes(userData.role)) {
+  // account setup fallback
+  if (!dbUser?._id && !tokenLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        Setting up account...
+      </div>
+    );
+  }
+
+  // role check
+  if (
+    allowedRoles &&
+    dbUser?.role &&
+    !allowedRoles.includes(dbUser.role)
+  ) {
     return <Navigate to="/unauthorized" replace />;
   }
 
