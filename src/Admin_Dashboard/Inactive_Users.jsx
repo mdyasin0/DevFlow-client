@@ -10,7 +10,7 @@ const {  logOut} = useContext(AuthContext);
   const [recipientType, setRecipientType] = useState("allInactive");
   const [rangeValue, setRangeValue] = useState("");
   const [rangeType, setRangeType] = useState("days");
-
+const [sending, setSending] = useState(false);
   const [selectedEmails, setSelectedEmails] = useState([]);
 
   //  QUILL
@@ -121,44 +121,65 @@ const data = await res.json();
     }
   };
 
- const sendEmail = async () => {
+const sendEmail = async () => {
+  if (sending) return;
+
   if (selectedEmails.length === 0) {
     alert("No recipients selected ");
     return;
   }
 
-  const res = await fetch("http://localhost:5000/email/send-inactive", {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      emails: selectedEmails,
-      subject,
-      message,
-    }),
-  });
+  setSending(true); // 🔒 LOCK
 
-        // ✅ 1. AUTH সমস্যা → logout
-      if (res.status === 401) {
-        alert("Session expired. Please login again");
-        await logOut();
-        window.location.href = "/login";
-        return;
+  try {
+    const res = await fetch(
+      "http://localhost:5000/email/send-inactive",
+      {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          emails: selectedEmails,
+          subject,
+          message,
+        }),
       }
+    );
 
+    if (res.status === 401) {
+      alert("Session expired. Please login again");
+      await logOut();
+      window.location.href = "/login";
+      return;
+    }
 
-  const data = await res.json();
-   // ✅ 2. BLOCKED USER
-      if (data?.isBlocked) {
-        alert("You are blocked by admin");
-        await logOut();
-        window.location.href = "/login";
-        return;
-      } 
-  if (data.success) {
-    alert("Email sent ");
-  } else {
-    alert(data.message || "Something went wrong");
+    const data = await res.json();
+
+    if (data?.isBlocked) {
+      alert("You are blocked by admin");
+      await logOut();
+      window.location.href = "/login";
+      return;
+    }
+
+    if (data.success) {
+      alert("Email sent ");
+
+      // optional reset
+      setSubject("");
+      setMessage("");
+      setSelectedEmails([]);
+      if (quill) quill.setText("");
+
+    } else {
+      alert(data.message || "Something went wrong");
+    }
+
+  } catch (err) {
+    console.error(err);
+    alert("Request failed");
+  } finally {
+    setSending(false); // 🔓 ALWAYS UNLOCK (IMPORTANT)
   }
 };
 
@@ -301,13 +322,14 @@ const data = await res.json();
       <div ref={quillRef} />
     </div>
 
-    <button
-      onClick={sendEmail}
-      className="w-full py-2 rounded font-semibold text-white"
-      style={{ background: "var(--success)" }}
-    >
-      Send Email
-    </button>
+   <button
+  onClick={sendEmail}
+  disabled={sending}
+  className="w-full py-2 rounded font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
+  style={{ background: "var(--success)" }}
+>
+  {sending ? "Sending..." : "Send Email"}
+</button>
 
   </div>
 

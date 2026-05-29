@@ -113,7 +113,7 @@ const handleBlock = async (id) => {
   }
 };
 
-  const handleRoleChange = (id, newRole) => {
+ const handleRoleChange = (id, newRole) => {
   fetch(`http://localhost:5000/users/role/${id}`, {
     method: "PATCH",
     headers: {
@@ -123,6 +123,8 @@ const handleBlock = async (id) => {
     body: JSON.stringify({ role: newRole }),
   })
     .then(async (res) => {
+      const data = await res.json(); // ✅ always parse JSON first
+
       if (res.status === 401) {
         alert("Session expired. Please login again");
         await logOut();
@@ -131,11 +133,12 @@ const handleBlock = async (id) => {
       }
 
       if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText || "Something went wrong");
+        // backend error message show
+        alert(data?.message || "Something went wrong");
+        throw new Error(data?.message || "Error");
       }
 
-      return res.json();
+      return data;
     })
     .then((data) => {
       if (data?.success) {
@@ -143,6 +146,12 @@ const handleBlock = async (id) => {
           user._id === id ? { ...user, role: newRole } : user
         );
         setUsers(updatedUsers);
+
+        // optional success message
+        alert(data?.message || "Role updated successfully");
+      } else {
+        // backend validation message (manager/team member)
+        alert(data?.message);
       }
     })
     .catch((err) => {

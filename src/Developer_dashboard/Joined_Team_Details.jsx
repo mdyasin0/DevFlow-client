@@ -14,7 +14,7 @@ const Joined_Team_Details = () => {
   const [showChat, setShowChat] = useState(false);
   const { user, logOut } = useContext(AuthContext);
   const loginEmail = user?.email;
-
+const [taskSearch, setTaskSearch] = useState("");
   const liveMember = project?.teammember?.find((m) => m.email === loginEmail);
   const [modal, setModal] = useState({
     open: false,
@@ -74,7 +74,10 @@ const Joined_Team_Details = () => {
   useEffect(() => {
     fetchProject();
   }, [id, fetchProject]);
-
+const filteredTasks =
+  modal.member?.[modal.type]?.filter((t) =>
+    t.text.toLowerCase().includes(taskSearch.toLowerCase())
+  ) || [];
   if (!project)
     return (
       <div className="flex h-screen items-center justify-center">
@@ -181,12 +184,22 @@ const Joined_Team_Details = () => {
                 <h2 className="text-(--primary) font-semibold text-lg">
                   {modal.type.toUpperCase()} TASKS
                 </h2>
-              </div>
+                
+            </div>
+            <div className="max-w-lg px-2">
+              <input
+  type="text"
+  placeholder="Search task..."
+  value={taskSearch}
+  onChange={(e) => setTaskSearch(e.target.value)}
+  className=" w-full p-2 m-3 bg-(--bg-secondary) border border-(--border) rounded"
+/>
+        </div>  
 
               {/* CONTENT */}
               <div className="p-4 max-h-[60vh] max-w-xl overflow-y-auto space-y-3">
                 {modal.member?.[modal.type]?.length > 0 ? (
-                  liveMember?.[modal.type]?.map((t) => {
+                 filteredTasks.map((t) => {
                     const priorityColor =
                       t.priority === "high"
                         ? "bg-red-500/10 text-red-500 border-red-500/30"
@@ -404,7 +417,10 @@ const Joined_Team_Details = () => {
               {/* FOOTER */}
               <div className="p-4 border-t border-(--border) flex justify-end">
                 <button
-                  onClick={() => setModal({ open: false })}
+                  onClick={() => {
+  setModal({ open: false });
+  setTaskSearch("");
+}}
                   className="bg-(--danger) hover:opacity-90 px-4 py-2 rounded text-sm text-white"
                 >
                   Close

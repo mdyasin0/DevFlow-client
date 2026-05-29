@@ -59,16 +59,13 @@ const Created_project_details = () => {
     return () => socket.off("projectUpdated");
   }, []);
   //  FETCH PROJECT (reuseable)
-const fetchProject = useCallback(async () => {
-  try {
-    const res = await fetch(
-      `http://localhost:5000/project/${id}`,
-      {
+  const fetchProject = useCallback(async () => {
+    try {
+      const res = await fetch(`http://localhost:5000/project/${id}`, {
         credentials: "include",
-      }
-    );
+      });
 
-    // ✅ 1. AUTH সমস্যা → logout
+      // ✅ 1. AUTH সমস্যা → logout
       if (res.status === 401) {
         alert("Session expired. Please login again");
         await logOut();
@@ -76,9 +73,8 @@ const fetchProject = useCallback(async () => {
         return;
       }
 
+      const data = await res.json();
 
-    const data = await res.json();
-  
       // ✅ 2. BLOCKED USER
       if (data?.isBlocked) {
         alert("You are blocked by admin");
@@ -87,15 +83,15 @@ const fetchProject = useCallback(async () => {
         return;
       }
 
-    if (data.success) {
-      setProject(data.data);
+      if (data.success) {
+        setProject(data.data);
+      }
+    } catch {
+      alert("Something went wrong");
     }
-  } catch  {
-    alert("Something went wrong");
-  }
-}, [id, logOut]); 
+  }, [id, logOut]);
   const managerPlan = project?.manager?.plan?.type;
-const isPremium = managerPlan === "premium";
+  const isPremium = managerPlan === "premium";
   const getTotalTasks = (project) => {
     let todo = 0;
     let running = 0;
@@ -191,45 +187,44 @@ const isPremium = managerPlan === "premium";
     };
   }, [id]);
   useEffect(() => {
-     fetchProject();
+    fetchProject();
   }, [id, fetchProject]);
   // INVITE
   const handleInvite = async () => {
-  try {
-    const res = await fetch(`http://localhost:5000/invite/${id}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ email: inviteEmail }),
-    });
+    try {
+      const res = await fetch(`http://localhost:5000/invite/${id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email: inviteEmail }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    // ❌ Backend error handling
-    if (!res.ok) {
-      alert(data.message || "Something went wrong");
-      return;
+      // ❌ Backend error handling
+      if (!res.ok) {
+        alert(data.message || "Something went wrong");
+        return;
+      }
+
+      // ⚠️ Custom business logic errors
+      if (data.code === "TEAM_LIMIT" || data.code === "INVITE_LIMIT") {
+        alert(data.message);
+        return;
+      }
+
+      // ✅ Success
+      if (data.success) {
+        alert("Invitation sent successfully!");
+        setInviteEmail("");
+        setShowInvite(false);
+        fetchProject();
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Network error! Please try again.");
     }
-
-    // ⚠️ Custom business logic errors
-    if (data.code === "TEAM_LIMIT" || data.code === "INVITE_LIMIT") {
-      alert(data.message);
-      return;
-    }
-
-    // ✅ Success
-    if (data.success) {
-      alert("Invitation sent successfully!");
-      setInviteEmail("");
-      setShowInvite(false);
-      fetchProject();
-    }
-
-  } catch (error) {
-    console.error(error);
-    alert("Network error! Please try again.");
-  }
-};
+  };
   // reopen move done to running
   const handleReopen = async (member, taskId) => {
     try {
@@ -366,21 +361,21 @@ const isPremium = managerPlan === "premium";
     });
 
     const data = await res.json();
-       // ✅ 1. AUTH সমস্যা → logout
-      if (res.status === 401) {
-        alert("Session expired. Please login again");
-        await logOut();
-        window.location.href = "/login";
-        return;
-      }
-            
-      // ✅ 2. BLOCKED USER
-      if (data?.isBlocked) {
-        alert("You are blocked by admin");
-        await logOut();
-        window.location.href = "/login";
-        return;
-      }
+    // ✅ 1. AUTH সমস্যা → logout
+    if (res.status === 401) {
+      alert("Session expired. Please login again");
+      await logOut();
+      window.location.href = "/login";
+      return;
+    }
+
+    // ✅ 2. BLOCKED USER
+    if (data?.isBlocked) {
+      alert("You are blocked by admin");
+      await logOut();
+      window.location.href = "/login";
+      return;
+    }
 
     if (data.code === "PLAN_RESTRICTED for delete") {
       alert("Upgrade your plan to delete tasks 🚀");
@@ -395,63 +390,63 @@ const isPremium = managerPlan === "premium";
     setEditText(task.text.replace(/<br\/>/g, "\n"));
   };
   // remove member
- const handleRemoveMember = async (email) => {
-  const res = await fetch(
-    `http://localhost:5000/remove-member/${id}/${encodeURIComponent(email)}`,
-    {
-      method: "DELETE",
-      credentials: "include",
-    }
-  );
-
-  let data;
-  try {
-    data = await res.json();
-  } catch {
-    alert("Server error");
-    return;
-  }
-
-  if (res.status === 401) {
-    alert("Session expired. Please login again");
-    await logOut();
-    window.location.href = "/login";
-    return;
-  }
-
-  if (data?.isBlocked) {
-    alert("You are blocked by admin");
-    await logOut();
-    window.location.href = "/login";
-    return;
-  }
-
-  if (data?.code === "PLAN_RESTRICTED for remove member") {
-    alert(data.message);
-    return;
-  }
-
-  if (!res.ok) {
-    alert(data?.message || "Failed to remove member");
-    return;
-  }
-
-  fetchProject();
-};
-  // remove invite
-const handleRemoveInvite = async (email) => {
-  try {
+  const handleRemoveMember = async (email) => {
     const res = await fetch(
-      `http://localhost:5000/remove-invite/${id}/${encodeURIComponent(email)}`,
+      `http://localhost:5000/remove-member/${id}/${encodeURIComponent(email)}`,
       {
         method: "DELETE",
         credentials: "include",
-      }
+      },
     );
 
-    const data = await res.json();
+    let data;
+    try {
+      data = await res.json();
+    } catch {
+      alert("Server error");
+      return;
+    }
 
-   if (res.status === 401) {
+    if (res.status === 401) {
+      alert("Session expired. Please login again");
+      await logOut();
+      window.location.href = "/login";
+      return;
+    }
+
+    if (data?.isBlocked) {
+      alert("You are blocked by admin");
+      await logOut();
+      window.location.href = "/login";
+      return;
+    }
+
+    if (data?.code === "PLAN_RESTRICTED for remove member") {
+      alert(data.message);
+      return;
+    }
+
+    if (!res.ok) {
+      alert(data?.message || "Failed to remove member");
+      return;
+    }
+
+    fetchProject();
+  };
+  // remove invite
+  const handleRemoveInvite = async (email) => {
+    try {
+      const res = await fetch(
+        `http://localhost:5000/remove-invite/${id}/${encodeURIComponent(email)}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        },
+      );
+
+      const data = await res.json();
+
+      if (res.status === 401) {
         alert("Session expired. Please login again");
         await logOut();
         window.location.href = "/login";
@@ -465,7 +460,7 @@ const handleRemoveInvite = async (email) => {
         return;
       }
 
-       if (data?.code === "NO permission to delete invaitations") {
+      if (data?.code === "NO permission to delete invaitations") {
         alert(data.message);
         return;
       }
@@ -474,17 +469,15 @@ const handleRemoveInvite = async (email) => {
         return;
       }
       if (!res.ok) {
-      alert(data.message || "Something went wrong");
-      return;
+        alert(data.message || "Something went wrong");
+        return;
+      }
+      alert("Invite removed successfully");
+      fetchProject();
+    } catch (error) {
+      alert(error);
     }
- alert("Invite removed successfully");
-    fetchProject();
-    
-  } catch (error) {
-    
-    alert(error);
-  }
-};
+  };
 
   // UPDATE TASK
   const handleUpdate = async () => {
@@ -552,7 +545,7 @@ const handleRemoveInvite = async (email) => {
 
         // 🔒 Cloudinary error check
         if (!data.secure_url) {
-         alert("Upload failed for:", file.name);
+          alert("Upload failed for:", file.name);
           continue;
         }
 
@@ -560,7 +553,6 @@ const handleRemoveInvite = async (email) => {
           url: data.secure_url,
           type: file.type,
           name: file.name,
-
         });
       } catch (error) {
         alert("Upload error:", file.name, error.message);
@@ -667,106 +659,112 @@ const handleRemoveInvite = async (email) => {
             </button>
           </div>
         )}
-{isPremium?(
-    <div className="bg-(--bg-secondary) p-6 rounded-xl border border-gray-700 mb-6">
-          <h2 className="text-blue-400 text-lg mb-4"> Project Progress</h2>
+        {isPremium ? (
+          <div className="bg-(--bg-secondary) p-6 rounded-xl border border-gray-700 mb-6">
+            <h2 className="text-blue-400 text-lg mb-4"> Project Progress</h2>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* EXISTING CHART */}
-            <div className="flex flex-col items-center">
-              <h3 className="mb-2 text-sm text-gray-400">Task Distribution</h3>
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* EXISTING CHART */}
+              <div className="flex flex-col items-center">
+                <h3 className="mb-2 text-sm text-gray-400">
+                  Task Distribution
+                </h3>
 
-              <PieChart width={300} height={260}>
-                <Pie
-                  data={chartData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={90}
-                  dataKey="value"
-                >
-                  <Cell fill="var(--warning)" />
-                  <Cell fill="var(--primary)" />
-                  <Cell fill="var(--success)" />
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </div>
-
-            {/* NEW PERFORMANCE CHART */}
-            <div className="flex flex-col items-center">
-              <h3 className="mb-2 text-sm text-gray-400">Performance</h3>
-
-              <PieChart width={300} height={260}>
-                <Pie
-                  data={performanceData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={90}
-                  dataKey="value"
-                >
-                  <Cell fill="#22c55e" /> {/* On Time */}
-                  <Cell fill="#ef4444" /> {/* Late */}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </div>
-            <div className="bg-(--bg-secondary) p-6 rounded-xl border border-gray-700 mb-6">
-              <h2 className="text-yellow-400 text-lg mb-4">Team Performance</h2>
-
-              <div className="w-full h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={rankingData}>
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-
-                    <Bar dataKey="OnTime" fill="#22c55e" />
-                    <Bar dataKey="Late" fill="#ef4444" />
-                  </BarChart>
-                </ResponsiveContainer>
+                <PieChart width={300} height={260}>
+                  <Pie
+                    data={chartData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={90}
+                    dataKey="value"
+                  >
+                    <Cell fill="var(--warning)" />
+                    <Cell fill="var(--primary)" />
+                    <Cell fill="var(--success)" />
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
               </div>
 
-              {/* TOP 3 RANK */}
-              <div className="mt-4 text-sm space-y-2">
-                {rankingData.map((m, i) => (
-                  <p
-                    key={m.name}
-                    className="flex justify-between items-center bg-(--bg-secondary) p-2 rounded border border-(--border)"
-                  >
-                    <span>
-                      {i + 1}. {m.name}
-                    </span>
+              {/* NEW PERFORMANCE CHART */}
+              <div className="flex flex-col items-center">
+                <h3 className="mb-2 text-sm text-gray-400">Performance</h3>
 
-                    <span className="text-gray-400">
-                      Score: {m.score.toFixed(1)}
-                    </span>
-                  </p>
-                ))}
+                <PieChart width={300} height={260}>
+                  <Pie
+                    data={performanceData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={90}
+                    dataKey="value"
+                  >
+                    <Cell fill="#22c55e" /> {/* On Time */}
+                    <Cell fill="#ef4444" /> {/* Late */}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </div>
+              <div className="bg-(--bg-secondary) p-6 rounded-xl border border-gray-700 mb-6">
+                <h2 className="text-yellow-400 text-lg mb-4">
+                  Team Performance
+                </h2>
+
+                <div className="w-full h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={rankingData}>
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+
+                      <Bar dataKey="OnTime" fill="#22c55e" />
+                      <Bar dataKey="Late" fill="#ef4444" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* TOP 3 RANK */}
+                <div className="mt-4 text-sm space-y-2">
+                  {rankingData.map((m, i) => (
+                    <p
+                      key={m.name}
+                      className="flex justify-between items-center bg-(--bg-secondary) p-2 rounded border border-(--border)"
+                    >
+                      <span>
+                        {i + 1}. {m.name}
+                      </span>
+
+                      <span className="text-gray-400">
+                        Score: {m.score.toFixed(1)}
+                      </span>
+                    </p>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-): (
-  // 🔒 FREE USER UI
-  <div className="bg-(--bg-secondary) p-6 rounded-xl border border-gray-700 mb-6 text-center">
-    <h2 className="text-red-400 text-lg mb-2">🔒 Premium Analytics</h2>
+        ) : (
+          // 🔒 FREE USER UI
+          <div className="bg-(--bg-secondary) p-6 rounded-xl border border-gray-700 mb-6 text-center">
+            <h2 className="text-red-400 text-lg mb-2">🔒 Premium Analytics</h2>
 
-    <p className="text-gray-400 mb-4">
-      Only premium project managers can access performance analytics.
-    </p>
+            <p className="text-gray-400 mb-4">
+              Only premium project managers can access performance analytics.
+            </p>
 
-    
-    <NavLink to="/pricingpage" className="bg-blue-500 px-4 py-2 rounded text-white">
-Upgrade Plan
-    </NavLink>
-  </div>
-)}
-      
+            <NavLink
+              to="/pricingpage"
+              className="bg-blue-500 px-4 py-2 rounded text-white"
+            >
+              Upgrade Plan
+            </NavLink>
+          </div>
+        )}
+
         {/* see all invite modal */}
 
         {showAllInvites && (
@@ -863,7 +861,7 @@ Upgrade Plan
             </div>
           </div>
         )}
-       
+
         <input
           type="text"
           placeholder="Search by name or email..."
@@ -956,7 +954,7 @@ Upgrade Plan
         {/* TASK MODAL */}
         {taskModal.open && (
           <div className="fixed inset-0 bg-black/70 flex justify-center items-center">
-            <div className="bg-(--card) text-(--text) max-w-xl rounded-2xl border border-(--border) p-4 max-h-[60vh] overflow-y-auto space-y-3">
+            <div className="bg-(--card) text-(--text) max-w-xl rounded-2xl border border-(--border) max-h-[60vh] flex flex-col p-5">
               <h2 className="mb-4 text-(--primary) text-lg font-semibold">
                 {taskModal.type.toUpperCase()} TASKS
               </h2>
@@ -971,7 +969,8 @@ Upgrade Plan
               />
 
               {/* TASK LIST */}
-              {filteredTasks.length ? (
+                <div className="px-4 overflow-y-auto h-screen flex-1 space-y-3">
+   {filteredTasks.length ? (
                 filteredTasks.map((t) => {
                   const priorityColor =
                     t.priority === "high"
@@ -1133,8 +1132,11 @@ Upgrade Plan
                 <p className="text-(--text-secondary)">No tasks</p>
               )}
 
+                </div>
+           
               {/* CLOSE BUTTON */}
-              <button
+              <div className="p-4 border-t border-(--border) flex justify-end">
+<button
                 onClick={() => {
                   setTaskModal({ open: false });
                   setTaskSearch(""); // reset search
@@ -1143,6 +1145,8 @@ Upgrade Plan
               >
                 Close
               </button>
+              </div>
+              
             </div>
           </div>
         )}

@@ -16,6 +16,7 @@ const Email_Communication = () => {
   const [selectedEmails, setSelectedEmails] = useState([]);
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
   const { quill, quillRef } = useQuill({
     theme: "snow",
     modules: {
@@ -98,6 +99,12 @@ const Email_Communication = () => {
   // -------------------------
 
   const handleSend = async () => {
+  if (!isValid) {
+    alert("Please fill all fields and select recipients!");
+    return;
+  }
+setLoading(true);
+  try {
     await axios.post(
       "http://localhost:5000/send-email",
       {
@@ -106,13 +113,31 @@ const Email_Communication = () => {
         message,
       },
       {
-        withCredentials: true, 
-      },
+        withCredentials: true,
+      }
     );
 
-    alert("Email Sent!");
-  };
+    alert("Email Sent successfull !");
 
+    // ✅ RESET ALL FIELDS AFTER SUCCESS
+    setSubject("");
+    setMessage("");
+    setSelectedEmails([]);
+
+    if (quill) {
+      quill.setText(""); // quill reset
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Email sending failed!");
+  } finally {
+    setLoading(false);
+  }
+};
+const isValid =
+  selectedEmails.length > 0 &&
+  subject.trim() !== "" &&
+  message.trim().trim() !== "";
   return (
     <div className="p-6 bg-(--bg) text-(--text) min-h-screen">
       {/*  Header */}
@@ -173,6 +198,7 @@ const Email_Communication = () => {
 
         {/* Subject */}
         <input
+        value={subject}
           className="w-full mb-3 p-3 rounded-xl border border-(--border) bg-(--bg-secondary) text-(--text) focus:outline-none focus:ring-2 focus:ring-(--primary)"
           placeholder="Enter subject..."
           onChange={(e) => setSubject(e.target.value)}
@@ -186,12 +212,18 @@ const Email_Communication = () => {
         </div>
 
         {/* Send Button */}
-        <button
-          onClick={handleSend}
-          className="w-full py-3 rounded-xl bg-(--primary) text-white font-semibold hover:bg-(--primary-hover) transition"
-        >
-          Send Email
-        </button>
+      <button
+  onClick={handleSend}
+  disabled={!isValid || loading}
+  className={`w-full py-3 rounded-xl font-semibold transition 
+    ${
+      !isValid || loading
+        ? "bg-gray-400 cursor-not-allowed text-white"
+        : "bg-(--primary) hover:bg-(--primary-hover) text-white"
+    }`}
+>
+  {loading ? "Sending..." : "Send Email"}
+</button>
       </div>
     </div>
   );
