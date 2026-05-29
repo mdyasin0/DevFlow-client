@@ -35,9 +35,10 @@ const Created_project_details = () => {
   const [memberSearch, setMemberSearch] = useState("");
   const [taskSearch, setTaskSearch] = useState("");
   const [files, setFiles] = useState([]);
-  const { dbUser } = useContext(AuthContext);
+  const { dbUser , user } = useContext(AuthContext);
   const isFreeUser = !dbUser?.plan || dbUser?.plan?.type === "free";
   const [editFiles, setEditFiles] = useState([]);
+  
   const [taskModal, setTaskModal] = useState({
     open: false,
     type: "",
@@ -226,36 +227,40 @@ const Created_project_details = () => {
     }
   };
   // reopen move done to running
-  const handleReopen = async (member, taskId) => {
-    try {
-      const res = await fetch(
-        `http://localhost:5000/reopen-task/${project._id}`,
-        {
-          method: "PATCH",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: member.email,
-            taskId,
-          }),
+ const handleReopen = async (taskId, email) => {
+  try {
+    const res = await fetch(
+      `http://localhost:5000/reopen-task/${id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        credentials: "include",
+        body: JSON.stringify({
+          taskId,
+          email,
+        }),
+      }
+    );
 
-      const data = await res.json();
-      // 👉 plan restriction
-      if (data.code === "PLAN_RESTRICTED") {
-        alert("Upgrade your plan to use this feature 🚀");
-        return;
-      }
-      if (data.success) {
-        fetchProject(); // reload data
-      }
-    } catch (err) {
-      alert(err);
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.message || "Something went wrong");
+      return;
     }
-  };
+
+    if (data.success) {
+      alert("Task moved to running ✅");
+      fetchProject(); // UI refresh
+    } else {
+      alert(data.message);
+    }
+  } catch (error) {
+    alert("Network error");
+  }
+};
   const MAX_SIZE = 20 * 1024 * 1024; // 20MB
 
   const uploadFilesToCloudinary = async () => {
@@ -354,6 +359,7 @@ const Created_project_details = () => {
       headers: { "Content-Type": "application/json" },
       credentials: "include",
       body: JSON.stringify({
+        manager:user.email,
         email,
         type,
         taskId,
@@ -1092,7 +1098,7 @@ const Created_project_details = () => {
                           onClick={() =>
                             startEdit(t, taskModal.type, taskModal.member)
                           }
-                          className="text-(--primary)"
+                          className="text-(--primary) cursor-pointer"
                         >
                           <FaPenToSquare />
                         </button>
@@ -1106,7 +1112,7 @@ const Created_project_details = () => {
                                 taskModal.member.email,
                               )
                             }
-                            className="text-(--danger)"
+                            className="text-(--danger) cursor-pointer"
                           >
                             <FaRegTrashAlt />
                           </button>
@@ -1116,10 +1122,10 @@ const Created_project_details = () => {
                           dbUser?.plan?.type !== "free" &&
                           dbUser?.plan && (
                             <button
-                              onClick={() =>
-                                handleReopen(taskModal.member, t.id)
-                              }
-                              className="text-yellow-400 flex items-center gap-1"
+                             onClick={() =>
+  handleReopen(t.id, taskModal.member.email)
+}
+                              className="text-yellow-400 cursor-pointer flex items-center gap-1"
                             >
                               <VscIssueReopened /> Reopen
                             </button>

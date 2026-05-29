@@ -89,6 +89,7 @@ const ProjectDiscussion = ({ projectId, onClose }) => {
       body: JSON.stringify({
         projectId,
         message: text,
+        senderEmail: user.email,
         senderName: user.displayName,
       }),
     });

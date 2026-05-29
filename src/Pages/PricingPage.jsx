@@ -1,13 +1,19 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { motion } from "framer-motion";
 import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { AuthContext } from "../Firebase/AuthContext";
 
 export default function PricingPage() {
-  const email = "mdy614020@gmail.com";
+ const { user } = useContext(AuthContext);
+ const email = user?.email;
 
   const [loadingFree, setLoadingFree] = useState(false);
   const [loadingPremium, setLoadingPremium] = useState(false);
 const handleUpgradePremium = async () => {
+  if (!email) {
+  alert("User not logged in");
+  return;
+}
   try {
     setLoadingPremium(true);
 
