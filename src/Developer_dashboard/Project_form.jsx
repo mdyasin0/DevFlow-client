@@ -1,13 +1,15 @@
 import React, { useContext, useState } from "react";
 import { AuthContext } from "../Firebase/AuthContext";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router";
 
-const Project_form = ({setform }) => {
+const Project_form = ({ setform }) => {
   const [teamName, setTeamName] = useState("");
   const [projectTitle, setProjectTitle] = useState("");
   const [description, setDescription] = useState("");
-
+const navigate = useNavigate();
   const [isCreated, setIsCreated] = useState(false);
-  const [loading, setLoading] = useState(false); // ✅ new
+  const [loading, setLoading] = useState(false);
 
   const { user, logOut } = useContext(AuthContext);
 
@@ -20,7 +22,7 @@ const Project_form = ({setform }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (loading) return; // ✅ prevent double click
+    if (loading) return; 
 
     setLoading(true);
 
@@ -44,46 +46,46 @@ const Project_form = ({setform }) => {
       const data = await res.json();
 
       if (res.status === 401) {
-        alert("Session expired. Please login again");
+        toast.warn("Session expired. Please login again");
         await logOut();
-        window.location.href = "/login";
+        navigate("/login");
         return;
       }
 
       if (data?.isBlocked) {
-        alert("You are blocked by admin");
+        toast.warn("You are blocked by admin");
         await logOut();
-        window.location.href = "/login";
+      navigate("/login");
         return;
       }
 
       if (data?.code === "LIMIT_REACHED") {
-        alert(data.message);
+        toast.info(data.message);
         return;
       }
 
       if (!res.ok) {
-        alert(data.message || "Something went wrong");
+        toast.error(data.message || "Something went wrong");
         return;
       }
 
       if (data.success) {
-        alert(
-          "Your project created successfully. You can start work when admin approves the project."
+        toast.success(
+          "Your project created successfully. You can start work when admin approves the project.",
         );
 
-        resetForm();       // ✅ clear inputs
-        setIsCreated(true); // ✅ hide form
-          setform(false);
+        resetForm(); 
+        setIsCreated(true); 
+        setform(false);
       }
     } catch (error) {
-      alert(error.message || "Something went wrong");
+      toast.error(error.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ hide form after create
+  // 
   if (isCreated) return null;
 
   return (
@@ -121,7 +123,7 @@ const Project_form = ({setform }) => {
 
       <button
         type="submit"
-        disabled={loading}   // ✅ disable button
+        disabled={loading} 
         className="bg-(--primary) hover:bg-(--primary-hover) disabled:opacity-50 text-white w-full py-2 rounded"
       >
         {loading ? "Creating..." : "Submit"}

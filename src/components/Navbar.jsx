@@ -9,6 +9,7 @@ import { Link, NavLink, useNavigate } from "react-router";
 import { FaEllipsisV } from "react-icons/fa";
 import { Socket } from "socket.io-client";
 import { socket } from "../Socket";
+import { toast } from "react-toastify";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
@@ -55,26 +56,26 @@ const Navbar = () => {
         method: "DELETE",
         credentials: "include",
       });
-      // ✅ 1. AUTH সমস্যা → logout
+      // 1. AUTH  logout
       if (res.status === 401) {
-        alert("Session expired. Please login again");
+        toast.error("Session expired. Please login again");
         await logOut();
-        window.location.href = "/login";
+        navigate("/login");
         return;
       }
       const data = await res.json();
-      // ✅ 2. BLOCKED USER
+      // 2. BLOCKED USER
       if (data?.isBlocked) {
-        alert("You are blocked by admin");
+        toast.error("You are blocked by admin");
         await logOut();
-        window.location.href = "/login";
+        navigate("/login");
         return;
       }
       if (data.success) {
         setNotifications((prev) => prev.filter((n) => n._id !== id));
       }
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     }
   };
   // notification read unread toggle
@@ -87,20 +88,20 @@ const Navbar = () => {
           credentials: "include",
         },
       );
-      // ✅ 1. AUTH সমস্যা → logout
+      // 1. AUTH  logout
       if (res.status === 401) {
-        alert("Session expired. Please login again");
+        toast.error("Session expired. Please login again");
         await logOut();
-        window.location.href = "/login";
+        navigate("/login");
         return;
       }
 
       const data = await res.json();
-      // ✅ 2. BLOCKED USER
+      // 2. BLOCKED USER
       if (data?.isBlocked) {
-        alert("You are blocked by admin");
+        toast.error("You are blocked by admin");
         await logOut();
-        window.location.href = "/login";
+       navigate("/login");
         return;
       }
       if (data.success) {
@@ -109,7 +110,7 @@ const Navbar = () => {
         );
       }
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     }
   };
   const handleNotificationToggle = () => {

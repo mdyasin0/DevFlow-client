@@ -3,14 +3,15 @@ import React from "react";
 const PrivacyPolicy = () => {
   return (
     <div className="max-w-5xl mx-auto px-4 py-10 text-(--text)">
-
       <h1 className="text-3xl font-bold text-(--primary) mb-6">
         Privacy Policy
       </h1>
 
       {/* Data Collection */}
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">1. Information We Collect</h2>
+        <h2 className="text-xl font-semibold mb-2">
+          1. Information We Collect
+        </h2>
 
         <ul className="list-disc pl-5 text-(--text-secondary) space-y-2">
           <li>User name, email, password (encrypted)</li>
@@ -38,8 +39,8 @@ const PrivacyPolicy = () => {
         <h2 className="text-xl font-semibold mb-2">3. Data Sharing</h2>
 
         <p className="text-(--text-secondary)">
-          We do not sell or share personal data with third parties.
-          Data is only shared within your team and system roles (Manager, Admin, Member)
+          We do not sell or share personal data with third parties. Data is only
+          shared within your team and system roles (Manager, Admin, Member)
           based on permissions.
         </p>
       </section>
@@ -73,10 +74,10 @@ const PrivacyPolicy = () => {
 
         <p className="text-(--text-secondary)">
           We may update this Privacy Policy when new features like pricing,
-          notifications, or analytics are added. Users will be notified in such cases.
+          notifications, or analytics are added. Users will be notified in such
+          cases.
         </p>
       </section>
-
     </div>
   );
 };

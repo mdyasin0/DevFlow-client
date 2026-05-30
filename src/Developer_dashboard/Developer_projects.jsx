@@ -1,9 +1,9 @@
-import React, { useContext, useState } from 'react';
-import { CiCircleQuestion } from 'react-icons/ci';
-import { IoCloseCircleOutline } from 'react-icons/io5';
-import { NavLink } from 'react-router';
-import Project_form from './Project_form';
-import { AuthContext } from '../Firebase/AuthContext';
+import React, { useContext, useState } from "react";
+import { CiCircleQuestion } from "react-icons/ci";
+import { IoCloseCircleOutline } from "react-icons/io5";
+import { NavLink } from "react-router";
+import Project_form from "./Project_form";
+import { AuthContext } from "../Firebase/AuthContext";
 
 const Developer_projects = () => {
   const [modal, setmodal] = useState(false);
@@ -12,10 +12,8 @@ const Developer_projects = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-(--bg) text-(--text) px-4">
-
       {/* Main Card */}
       <div className="bg-(--card) border border-(--border) p-8 rounded-2xl shadow-2xl text-center max-w-md w-full space-y-6">
-
         <p className="flex justify-center items-center gap-2 text-(--text-secondary) text-sm">
           You haven’t joined or created any team yet
           <CiCircleQuestion
@@ -36,7 +34,6 @@ const Developer_projects = () => {
       {modal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50">
           <div className="bg-(--card) text-(--text) p-6 rounded-2xl shadow-xl max-w-sm w-full relative border border-(--border)">
-
             <button
               onClick={() => setmodal(false)}
               className="absolute top-3 right-3 text-red-500 text-2xl"
@@ -47,14 +44,19 @@ const Developer_projects = () => {
             <h3 className="text-lg font-bold mb-3"> Team Info</h3>
 
             <p className="text-sm text-(--text-secondary) leading-relaxed">
-              If you want to join a team, contact the team manager or leader to get invited.
-              <br /><br />
+              If you want to join a team, contact the team manager or leader to
+              get invited.
+              <br />
+              <br />
               Or you can create your own team and start managing projects.
             </p>
 
             <p className="mt-4 text-sm text-(--text-secondary)">
               Read more in{" "}
-              <NavLink to="/docs" className="text-(--primary) font-semibold hover:underline">
+              <NavLink
+                to="/docs"
+                className="text-(--primary) font-semibold hover:underline"
+              >
                 documentation
               </NavLink>
             </p>
@@ -66,7 +68,6 @@ const Developer_projects = () => {
       {form && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50">
           <div className="bg-(--card) text-(--text) p-6 rounded-2xl shadow-xl w-full max-w-md relative border border-(--border)">
-
             <button
               onClick={() => setform(false)}
               className="absolute top-3 right-3 text-red-500 text-2xl"
@@ -74,7 +75,7 @@ const Developer_projects = () => {
               <IoCloseCircleOutline />
             </button>
 
-            <Project_form user={user} setform={setform}/>
+            <Project_form user={user} setform={setform} />
           </div>
         </div>
       )}

@@ -1,6 +1,8 @@
 import React, { useContext, useState } from "react";
 import Swal from "sweetalert2";
 import { AuthContext } from "../Firebase/AuthContext";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router";
 
 const Profile = () => {
   const { user, updateUserProfile, logOut } = useContext(AuthContext);
@@ -8,6 +10,7 @@ const Profile = () => {
   const [name, setName] = useState(() => user?.displayName || "");
   const [photo, setPhoto] = useState(() => user?.photoURL || "");
   const [imageUrl, setImageUrl] = useState(() => user?.photoURL || "");
+const navigate = useNavigate();
 
   const [uploading, setUploading] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -25,7 +28,6 @@ const Profile = () => {
       },
     );
 
-  
     const data = await res.json();
 
     return data.data.url;
@@ -66,33 +68,30 @@ const Profile = () => {
       await updateUserProfile(name, imageUrl);
 
       // MongoDB update
-      const res = await fetch(
-        `http://localhost:5000/users/${user.email}`,
-        {
-          method: "PATCH",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name,
-            photo: imageUrl,
-          }),
+      const res = await fetch(`http://localhost:5000/users/${user.email}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({
+          name,
+          photo: imageUrl,
+        }),
+      });
       const data = await res.json();
-            // ✅ 1. AUTH সমস্যা → logout
+      //  1. AUTH logout
       if (res.status === 401) {
-        alert("Session expired. Please login again");
+        toast.warn("Session expired. Please login again");
         await logOut();
-        window.location.href = "/login";
+       navigate("/login");
         return;
       }
-            // ✅ 2. BLOCKED USER
+      // 2. BLOCKED USER
       if (data?.isBlocked) {
-        alert("You are blocked by admin");
+        toast.warn("You are blocked by admin");
         await logOut();
-        window.location.href = "/login";
+       navigate("/login"); 
         return;
       }
       Swal.fire({

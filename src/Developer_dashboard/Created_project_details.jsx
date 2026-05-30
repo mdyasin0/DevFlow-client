@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
-import { NavLink, useParams } from "react-router";
+import { NavLink, useNavigate, useParams } from "react-router";
 import { useMemo } from "react";
 import {
   BarChart,
@@ -20,6 +20,7 @@ import { FaPenToSquare } from "react-icons/fa6";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { VscIssueReopened } from "react-icons/vsc";
 import ProjectDiscussion from "./ProjectDiscussion";
+import { toast } from "react-toastify";
 const Created_project_details = () => {
   const { id } = useParams();
   const [project, setProject] = useState(null);
@@ -35,10 +36,11 @@ const Created_project_details = () => {
   const [memberSearch, setMemberSearch] = useState("");
   const [taskSearch, setTaskSearch] = useState("");
   const [files, setFiles] = useState([]);
-  const { dbUser , user } = useContext(AuthContext);
+  const { dbUser, user } = useContext(AuthContext);
   const isFreeUser = !dbUser?.plan || dbUser?.plan?.type === "free";
   const [editFiles, setEditFiles] = useState([]);
-  
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const [taskModal, setTaskModal] = useState({
     open: false,
     type: "",
@@ -66,21 +68,21 @@ const Created_project_details = () => {
         credentials: "include",
       });
 
-      // ✅ 1. AUTH সমস্যা → logout
+      //  1. AUTH  logout
       if (res.status === 401) {
-        alert("Session expired. Please login again");
+        toast.warn("Session expired. Please login again");
         await logOut();
-        window.location.href = "/login";
+        navigate("/login");
         return;
       }
 
       const data = await res.json();
 
-      // ✅ 2. BLOCKED USER
+      //  2. BLOCKED USER
       if (data?.isBlocked) {
-        alert("You are blocked by admin");
+        toast.info("You are blocked by admin");
         await logOut();
-        window.location.href = "/login";
+       navigate("/login");
         return;
       }
 
@@ -88,7 +90,7 @@ const Created_project_details = () => {
         setProject(data.data);
       }
     } catch {
-      alert("Something went wrong");
+      toast.error("Something went wrong");
     }
   }, [id, logOut]);
   const managerPlan = project?.manager?.plan?.type;
@@ -192,7 +194,14 @@ const Created_project_details = () => {
   }, [id, fetchProject]);
   // INVITE
   const handleInvite = async () => {
+    if (!inviteEmail) {
+      toast.warn("Email required");
+      return;
+    }
+
     try {
+      setLoading(true);
+
       const res = await fetch(`http://localhost:5000/invite/${id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -202,36 +211,34 @@ const Created_project_details = () => {
 
       const data = await res.json();
 
-      // ❌ Backend error handling
+      // HTTP level error (403, 404, etc)
       if (!res.ok) {
-        alert(data.message || "Something went wrong");
+        toast.error(data.message || "Request failed");
         return;
       }
 
-      // ⚠️ Custom business logic errors
-      if (data.code === "TEAM_LIMIT" || data.code === "INVITE_LIMIT") {
-        alert(data.message);
+      // Backend business logic errors (important)
+      if (!data.success) {
+        toast.success(data.message);
         return;
       }
 
-      // ✅ Success
-      if (data.success) {
-        alert("Invitation sent successfully!");
-        setInviteEmail("");
-        setShowInvite(false);
-        fetchProject();
-      }
+      //  Success
+      toast.success(data.message || "Invitation sent successfully!");
+      setInviteEmail("");
+      setShowInvite(false);
+      fetchProject();
     } catch (error) {
-      console.error(error);
-      alert("Network error! Please try again.");
+      toast.error(error);
+      toast.warn("Network error! Please try again.");
+    } finally {
+      setLoading(false); 
     }
   };
   // reopen move done to running
- const handleReopen = async (taskId, email) => {
-  try {
-    const res = await fetch(
-      `http://localhost:5000/reopen-task/${id}`,
-      {
+  const handleReopen = async (taskId, email) => {
+    try {
+      const res = await fetch(`http://localhost:5000/reopen-task/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -241,35 +248,34 @@ const Created_project_details = () => {
           taskId,
           email,
         }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.message || "Something went wrong");
+        return;
       }
-    );
 
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.message || "Something went wrong");
-      return;
+      if (data.success) {
+        toast.success("Task moved to running ");
+        fetchProject(); 
+      } else {
+        toast(data.message);
+      }
+    } catch (error) {
+      toast.error(error);
     }
-
-    if (data.success) {
-      alert("Task moved to running ✅");
-      fetchProject(); // UI refresh
-    } else {
-      alert(data.message);
-    }
-  } catch (error) {
-    alert("Network error");
-  }
-};
+  };
   const MAX_SIZE = 20 * 1024 * 1024; // 20MB
 
   const uploadFilesToCloudinary = async () => {
     const uploadedFiles = [];
 
     for (let file of files) {
-      // 🔒 SIZE CHECK (before upload)
+      //  SIZE CHECK (before upload)
       if (file.size > MAX_SIZE) {
-        alert(`${file.name} is larger than 20MB (Upload skipped) 🚫`);
+        toast.warn(`${file.name} is larger than 20MB (Upload skipped) `);
         continue; // skip this file
       }
 
@@ -288,9 +294,9 @@ const Created_project_details = () => {
 
         const data = await res.json();
 
-        // 🔒 check upload success
+        //  check upload success
         if (!data?.secure_url) {
-          alert(`${file.name} upload failed ❌`);
+          toast.error(`${file.name} upload failed `);
           continue;
         }
 
@@ -300,8 +306,8 @@ const Created_project_details = () => {
           name: file.name,
         });
       } catch (err) {
-        console.error("Upload error:", err);
-        alert(`${file.name} upload error ❌`);
+        toast.error("Upload error:", err);
+        toast.error(`${file.name} upload error `);
       }
     }
 
@@ -324,22 +330,22 @@ const Created_project_details = () => {
         text: taskText,
         deadline,
         priority,
-        attachments: uploadedFiles, // 🔥 NEW
+        attachments: uploadedFiles,
       }),
     });
 
     const data = await res.json();
-    // 🔒 FILE UPLOAD BLOCK
+    //  FILE UPLOAD BLOCK
     if (data.code === "FILE_UPLOAD_RESTRICTED") {
-      alert("🚀 File upload is only available for Pro users");
+      toast.info("File upload is only available for Pro users");
       return;
     }
     if (data.code === "CHAR_LIMIT_EXCEEDED") {
-      alert("Max 500 characters allowed in free plan 🚀");
+      toast.info("Max 500 characters allowed in free plan ");
       return;
     }
     if (data.code === "TASK_LIMIT_EXCEEDED") {
-      alert("Free plan limit reached. Upgrade for more tasks 🚀");
+      toast.warn("Free plan limit reached. Upgrade for more tasks ");
       return;
     }
     if (data.success) {
@@ -359,7 +365,7 @@ const Created_project_details = () => {
       headers: { "Content-Type": "application/json" },
       credentials: "include",
       body: JSON.stringify({
-        manager:user.email,
+        manager: user.email,
         email,
         type,
         taskId,
@@ -367,24 +373,24 @@ const Created_project_details = () => {
     });
 
     const data = await res.json();
-    // ✅ 1. AUTH সমস্যা → logout
+    //  1. AUTH logout
     if (res.status === 401) {
-      alert("Session expired. Please login again");
+      toast.warn("Session expired. Please login again");
       await logOut();
-      window.location.href = "/login";
+      navigate("/login");
       return;
     }
 
-    // ✅ 2. BLOCKED USER
+    // 2. BLOCKED USER
     if (data?.isBlocked) {
-      alert("You are blocked by admin");
+      toast.warn("You are blocked by admin");
       await logOut();
-      window.location.href = "/login";
+      navigate("/login");
       return;
     }
 
     if (data.code === "PLAN_RESTRICTED for delete") {
-      alert("Upgrade your plan to delete tasks 🚀");
+      toast.info("Upgrade your plan to delete tasks ");
       return;
     }
     fetchProject(); //  UI update
@@ -409,31 +415,31 @@ const Created_project_details = () => {
     try {
       data = await res.json();
     } catch {
-      alert("Server error");
+      toast.error("Server error");
       return;
     }
 
     if (res.status === 401) {
-      alert("Session expired. Please login again");
+      toast.warn("Session expired. Please login again");
       await logOut();
-      window.location.href = "/login";
+      navigate("/login");
       return;
     }
 
     if (data?.isBlocked) {
-      alert("You are blocked by admin");
+      toast.warn("You are blocked by admin");
       await logOut();
-      window.location.href = "/login";
+      navigate("/login");
       return;
     }
 
     if (data?.code === "PLAN_RESTRICTED for remove member") {
-      alert(data.message);
+      toast.info(data.message);
       return;
     }
 
     if (!res.ok) {
-      alert(data?.message || "Failed to remove member");
+      toast.error(data?.message || "Failed to remove member");
       return;
     }
 
@@ -453,35 +459,35 @@ const Created_project_details = () => {
       const data = await res.json();
 
       if (res.status === 401) {
-        alert("Session expired. Please login again");
+        toast.warn("Session expired. Please login again");
         await logOut();
-        window.location.href = "/login";
+        navigate("/login");
         return;
       }
 
       if (data?.isBlocked) {
-        alert("You are blocked by admin");
+        toast.warn("You are blocked by admin");
         await logOut();
-        window.location.href = "/login";
+       navigate("/login");
         return;
       }
 
       if (data?.code === "NO permission to delete invaitations") {
-        alert(data.message);
+        toast.info(data.message);
         return;
       }
       if (data?.code === "LIMIT_REACHED") {
-        alert(data.message);
+        toast.info(data.message);
         return;
       }
       if (!res.ok) {
-        alert(data.message || "Something went wrong");
+        toast.error(data.message || "Something went wrong");
         return;
       }
-      alert("Invite removed successfully");
+      toast.success("Invite removed successfully");
       fetchProject();
     } catch (error) {
-      alert(error);
+      toast.error(error);
     }
   };
 
@@ -502,12 +508,12 @@ const Created_project_details = () => {
         type: editData.type,
         taskId: editData.task.id,
         text: editText,
-        newAttachments: newFiles, // 🔥 NEW
+        newAttachments: newFiles, 
       }),
     });
     const data = await res.json();
     if (data.code === "FILE_UPLOAD_RESTRICTED for update") {
-      alert("🚀 File upload is only for Pro users");
+      toast.info(" File upload is only for Pro users");
       return;
     }
 
@@ -528,9 +534,9 @@ const Created_project_details = () => {
     const uploaded = [];
 
     for (let file of editFiles) {
-      // 🔒 FILE SIZE CHECK
+      //  FILE SIZE CHECK
       if (file.size > MAX_SIZE) {
-        alert(`${file.name} is larger than 20MB limit 🚫`);
+        toast.warn(`${file.name} is larger than 20MB limit `);
         continue; // skip this file
       }
 
@@ -549,9 +555,9 @@ const Created_project_details = () => {
 
         const data = await res.json();
 
-        // 🔒 Cloudinary error check
+        //  Cloudinary error check
         if (!data.secure_url) {
-          alert("Upload failed for:", file.name);
+          toast.error("Upload failed for:", file.name);
           continue;
         }
 
@@ -561,7 +567,7 @@ const Created_project_details = () => {
           name: file.name,
         });
       } catch (error) {
-        alert("Upload error:", file.name, error.message);
+        toast.error("Upload error:", file.name, error.message);
       }
     }
 
@@ -607,7 +613,9 @@ const Created_project_details = () => {
             <button
               onClick={() => {
                 if (isFreeUser) {
-                  alert("Upgrade your plan to use project discussion chat 🚀");
+                  toast.info(
+                    "Upgrade your plan to use project discussion chat 🚀",
+                  );
                   return;
                 }
                 setShowChat(true);
@@ -654,14 +662,22 @@ const Created_project_details = () => {
               className="flex-1 p-2 rounded bg-(--card) border border-(--border) text-(--text) placeholder:text-(--text-secondary)"
               placeholder="Enter email"
               value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\s/g, ""); //  remove all spaces
+                setInviteEmail(value);
+              }}
             />
 
             <button
               onClick={handleInvite}
-              className="bg-(--success) hover:opacity-90 text-white px-4 py-2 rounded"
+              disabled={loading}
+              className={`px-4 py-2 rounded text-white ${
+                loading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-(--success) hover:opacity-90"
+              }`}
             >
-              Send
+              {loading ? "Sending..." : "Send"}
             </button>
           </div>
         )}
@@ -754,7 +770,7 @@ const Created_project_details = () => {
             </div>
           </div>
         ) : (
-          // 🔒 FREE USER UI
+          //  FREE USER UI
           <div className="bg-(--bg-secondary) p-6 rounded-xl border border-gray-700 mb-6 text-center">
             <h2 className="text-red-400 text-lg mb-2">🔒 Premium Analytics</h2>
 
@@ -941,7 +957,7 @@ const Created_project_details = () => {
                     <button
                       onClick={() => {
                         if (isFreeUser) {
-                          alert("Upgrade your plan to remove members 🚀");
+                          toast.info("Upgrade your plan to remove members 🚀");
                           return;
                         }
                         handleRemoveMember(m.email);
@@ -975,184 +991,182 @@ const Created_project_details = () => {
               />
 
               {/* TASK LIST */}
-                <div className="px-4 overflow-y-auto h-screen flex-1 space-y-3">
-   {filteredTasks.length ? (
-                filteredTasks.map((t) => {
-                  const priorityColor =
-                    t.priority === "high"
-                      ? "bg-red-500/10 text-red-500 border-red-500/30"
-                      : t.priority === "medium"
-                        ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/30"
-                        : "bg-green-500/10 text-green-500 border-green-500/30";
+              <div className="px-4 overflow-y-auto h-screen flex-1 space-y-3">
+                {filteredTasks.length ? (
+                  filteredTasks.map((t) => {
+                    const priorityColor =
+                      t.priority === "high"
+                        ? "bg-red-500/10 text-red-500 border-red-500/30"
+                        : t.priority === "medium"
+                          ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/30"
+                          : "bg-green-500/10 text-green-500 border-green-500/30";
 
-                  const isLate =
-                    t.submittedAt &&
-                    new Date(t.submittedAt) > new Date(t.deadline);
+                    const isLate =
+                      t.submittedAt &&
+                      new Date(t.submittedAt) > new Date(t.deadline);
 
-                  return (
-                    <div
-                      key={t.id}
-                      className="bg-(--bg-secondary) p-4 mb-3 rounded-xl border border-(--border)"
-                    >
-                      {/* TASK TEXT */}
-                      <p
-                        className="text-(--text) font-medium"
-                        dangerouslySetInnerHTML={{ __html: t.text }}
-                      />
-                      {/* ATTACHMENTS */}
-                      {t.attachments?.length > 0 && (
-                        <div className="mt-3 space-y-2">
-                          <p className="text-sm text-(--text-secondary)">
-                            Attachments:
-                          </p>
+                    return (
+                      <div
+                        key={t.id}
+                        className="bg-(--bg-secondary) p-4 mb-3 rounded-xl border border-(--border)"
+                      >
+                        {/* TASK TEXT */}
+                        <p
+                          className="text-(--text) font-medium"
+                          dangerouslySetInnerHTML={{ __html: t.text }}
+                        />
+                        {/* ATTACHMENTS */}
+                        {t.attachments?.length > 0 && (
+                          <div className="mt-3 space-y-2">
+                            <p className="text-sm text-(--text-secondary)">
+                              Attachments:
+                            </p>
 
-                          {t.attachments.map((file, index) => {
-                            const isImage = file.type.startsWith("image");
-                            const isVideo = file.type.startsWith("video");
-                            const isAudio = file.type.startsWith("audio");
+                            {t.attachments.map((file, index) => {
+                              const isImage = file.type.startsWith("image");
+                              const isVideo = file.type.startsWith("video");
+                              const isAudio = file.type.startsWith("audio");
 
-                            return (
-                              <div
-                                key={index}
-                                className="border p-2 rounded bg-(--bg)"
-                              >
-                                {/* IMAGE */}
-                                {isImage && (
-                                  <img
-                                    src={file.url}
-                                    alt={file.name}
-                                    className="w-40 rounded mb-2"
-                                  />
-                                )}
+                              return (
+                                <div
+                                  key={index}
+                                  className="border p-2 rounded bg-(--bg)"
+                                >
+                                  {/* IMAGE */}
+                                  {isImage && (
+                                    <img
+                                      src={file.url}
+                                      alt={file.name}
+                                      className="w-40 rounded mb-2"
+                                    />
+                                  )}
 
-                                {/* VIDEO */}
-                                {isVideo && (
-                                  <video controls className="w-48 mb-2">
-                                    <source src={file.url} />
-                                  </video>
-                                )}
+                                  {/* VIDEO */}
+                                  {isVideo && (
+                                    <video controls className="w-48 mb-2">
+                                      <source src={file.url} />
+                                    </video>
+                                  )}
 
-                                {/* AUDIO */}
-                                {isAudio && (
-                                  <audio controls className="mb-2">
-                                    <source src={file.url} />
-                                  </audio>
-                                )}
+                                  {/* AUDIO */}
+                                  {isAudio && (
+                                    <audio controls className="mb-2">
+                                      <source src={file.url} />
+                                    </audio>
+                                  )}
 
-                                {/* FILE NAME + DOWNLOAD */}
-                                <div className="flex justify-between items-center">
-                                  <span className="text-xs">{file.name}</span>
+                                  {/* FILE NAME + DOWNLOAD */}
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-xs">{file.name}</span>
 
-                                  <a
-                                    href={file.url}
-                                    download={file.name}
-                                    target="_blank"
-                                    className="text-blue-400 text-xs underline"
-                                  >
-                                    Download
-                                  </a>
+                                    <a
+                                      href={file.url}
+                                      download={file.name}
+                                      target="_blank"
+                                      className="text-blue-400 text-xs underline"
+                                    >
+                                      Download
+                                    </a>
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                      {/* META INFO */}
-                      <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                        <span className="px-2 py-1 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                          Start: {new Date(t.createdAt).toLocaleString()}
-                        </span>
-
-                        <span className="px-2 py-1 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                          Deadline: {new Date(t.deadline).toLocaleString()}
-                        </span>
-
-                        {t.submittedAt && (
-                          <span className="px-2 py-1 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                            Done: {new Date(t.submittedAt).toLocaleString()}
-                          </span>
+                              );
+                            })}
+                          </div>
                         )}
+                        {/* META INFO */}
+                        <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                          <span className="px-2 py-1 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                            Start: {new Date(t.createdAt).toLocaleString()}
+                          </span>
 
-                        <span
-                          className={`px-2 py-1 rounded border ${priorityColor}`}
-                        >
-                          {t.priority}
-                        </span>
+                          <span className="px-2 py-1 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                            Deadline: {new Date(t.deadline).toLocaleString()}
+                          </span>
 
-                        {t.submittedAt && (
+                          {t.submittedAt && (
+                            <span className="px-2 py-1 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                              Done: {new Date(t.submittedAt).toLocaleString()}
+                            </span>
+                          )}
+
                           <span
-                            className={`px-2 py-1 rounded border ${
-                              isLate
-                                ? "bg-red-500/10 text-red-500 border-red-500/30"
-                                : "bg-green-500/10 text-green-500 border-green-500/30"
-                            }`}
+                            className={`px-2 py-1 rounded border ${priorityColor}`}
                           >
-                            {isLate ? "Late" : "In Time"}
+                            {t.priority}
                           </span>
-                        )}
-                      </div>
 
-                      {/* ACTION */}
-                      <div className="flex gap-3 mt-3">
-                        <button
-                          onClick={() =>
-                            startEdit(t, taskModal.type, taskModal.member)
-                          }
-                          className="text-(--primary) cursor-pointer"
-                        >
-                          <FaPenToSquare />
-                        </button>
+                          {t.submittedAt && (
+                            <span
+                              className={`px-2 py-1 rounded border ${
+                                isLate
+                                  ? "bg-red-500/10 text-red-500 border-red-500/30"
+                                  : "bg-green-500/10 text-green-500 border-green-500/30"
+                              }`}
+                            >
+                              {isLate ? "Late" : "In Time"}
+                            </span>
+                          )}
+                        </div>
 
-                        {!isFreeUser && (
+                        {/* ACTION */}
+                        <div className="flex gap-3 mt-3">
                           <button
                             onClick={() =>
-                              handleDelete(
-                                taskModal.type,
-                                t.id,
-                                taskModal.member.email,
-                              )
+                              startEdit(t, taskModal.type, taskModal.member)
                             }
-                            className="text-(--danger) cursor-pointer"
+                            className="text-(--primary) cursor-pointer"
                           >
-                            <FaRegTrashAlt />
+                            <FaPenToSquare />
                           </button>
-                        )}
 
-                        {taskModal.type === "done" &&
-                          dbUser?.plan?.type !== "free" &&
-                          dbUser?.plan && (
+                          {!isFreeUser && (
                             <button
-                             onClick={() =>
-  handleReopen(t.id, taskModal.member.email)
-}
-                              className="text-yellow-400 cursor-pointer flex items-center gap-1"
+                              onClick={() =>
+                                handleDelete(
+                                  taskModal.type,
+                                  t.id,
+                                  taskModal.member.email,
+                                )
+                              }
+                              className="text-(--danger) cursor-pointer"
                             >
-                              <VscIssueReopened /> Reopen
+                              <FaRegTrashAlt />
                             </button>
                           )}
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <p className="text-(--text-secondary)">No tasks</p>
-              )}
 
-                </div>
-           
+                          {taskModal.type === "done" &&
+                            dbUser?.plan?.type !== "free" &&
+                            dbUser?.plan && (
+                              <button
+                                onClick={() =>
+                                  handleReopen(t.id, taskModal.member.email)
+                                }
+                                className="text-yellow-400 cursor-pointer flex items-center gap-1"
+                              >
+                                <VscIssueReopened /> Reopen
+                              </button>
+                            )}
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="text-(--text-secondary)">No tasks</p>
+                )}
+              </div>
+
               {/* CLOSE BUTTON */}
               <div className="p-4 border-t border-(--border) flex justify-end">
-<button
-                onClick={() => {
-                  setTaskModal({ open: false });
-                  setTaskSearch(""); // reset search
-                }}
-                className="mt-4 bg-(--danger) text-white px-4 py-2 rounded"
-              >
-                Close
-              </button>
+                <button
+                  onClick={() => {
+                    setTaskModal({ open: false });
+                    setTaskSearch(""); // reset search
+                  }}
+                  className="mt-4 bg-(--danger) text-white px-4 py-2 rounded"
+                >
+                  Close
+                </button>
               </div>
-              
             </div>
           </div>
         )}
@@ -1169,7 +1183,7 @@ const Created_project_details = () => {
 
               {isFreeUser ? (
                 <p className="text-red-400 text-sm">
-                  File upload is available only for Pro users 🚀
+                  File upload is available only for Pro users 
                 </p>
               ) : (
                 <>
@@ -1244,7 +1258,7 @@ const Created_project_details = () => {
 
               {isFreeUser ? (
                 <p className="text-red-400 text-sm">
-                  File upload is available only for Pro users 🚀
+                  File upload is available only for Pro users 
                 </p>
               ) : (
                 <input

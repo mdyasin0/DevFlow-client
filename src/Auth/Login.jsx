@@ -5,78 +5,74 @@ import { AuthContext } from "../Firebase/AuthContext";
 import Swal from "sweetalert2";
 
 const Login = () => {
-  const { signInUser, googleLogin} = useContext(AuthContext);
+  const { signInUser, googleLogin } = useContext(AuthContext);
   const [showPass, setShowPass] = useState(false);
- const navigate = useNavigate();
+  const navigate = useNavigate();
   const location = useLocation();
-  // user back form which page 
+  // user back form which page
   const from = location.state?.from?.pathname || "/";
 
   const handleLogin = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const form = e.target;
-  const email = form.email.value;
-  const password = form.password.value;
+    const form = e.target;
+    const email = form.email.value;
+    const password = form.password.value;
 
-  try {
-    await signInUser(email, password);
+    try {
+      await signInUser(email, password);
 
-    
+      Swal.fire({
+        icon: "success",
+        title: "Login Successful!",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+      //  login success → return to previous page
 
-  
-
-    Swal.fire({
-      icon: "success",
-      title: "Login Successful!",
-      timer: 2000,
-      showConfirmButton: false,
-    });
-   //  login success → return to previous page
-  
       navigate(from, { replace: true });
-  } catch (err) {
-    Swal.fire({
-      icon: "error",
-      title: "Login Failed",
-      text: err.message,
-    });
-  }
-};
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Login Failed",
+        text: err.message,
+      });
+    }
+  };
 
-const handleGoogle = async () => {
-  try {
-    await googleLogin();
+  const handleGoogle = async () => {
+    try {
+      await googleLogin();
 
-    Swal.fire({
-      icon: "success",
-      title: "Logged in with Google!",
-      timer: 2000,
-      showConfirmButton: false,
-    });
+      Swal.fire({
+        icon: "success",
+        title: "Logged in with Google!",
+        timer: 2000,
+        showConfirmButton: false,
+      });
 
-    navigate(from, { replace: true });
-
-  } catch (err) {
-    Swal.fire({
-      icon: "error",
-      title: "Google Login Failed",
-      text: err.message,
-    });
-  }
-};
+      navigate(from, { replace: true });
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Google Login Failed",
+        text: err.message,
+      });
+    }
+  };
   return (
     <div className="min-h-screen flex items-center justify-center bg-(--bg)">
       <div className="w-full max-w-md p-6 rounded-2xl shadow-lg bg-(--card) border border-(--border)">
-
-        <h2 className="text-2xl font-bold text-(--text) mb-2">
-          Welcome Back 
-        </h2>
+        <h2 className="text-2xl font-bold text-(--text) mb-2">Welcome Back</h2>
 
         <form onSubmit={handleLogin} className="space-y-4">
-
-          <input name="email" type="email" placeholder="Email"
-            className="w-full p-3 rounded-lg bg-(--bg-secondary) border border-(--border)" required />
+          <input
+            name="email"
+            type="email"
+            placeholder="Email"
+            className="w-full p-3 rounded-lg bg-(--bg-secondary) border border-(--border)"
+            required
+          />
 
           <div className="relative">
             <input
@@ -86,8 +82,15 @@ const handleGoogle = async () => {
               className="w-full p-3 rounded-lg bg-(--bg-secondary) border border-(--border)"
               required
             />
-            <span onClick={() => setShowPass(!showPass)} className="absolute right-3 top-3 cursor-pointer">
-              {showPass ? <FaEyeSlash className="text-(--text-secondary)" /> : <FaEye  className="text-(--text-secondary)"/>}
+            <span
+              onClick={() => setShowPass(!showPass)}
+              className="absolute right-3 top-3 cursor-pointer"
+            >
+              {showPass ? (
+                <FaEyeSlash className="text-(--text-secondary)" />
+              ) : (
+                <FaEye className="text-(--text-secondary)" />
+              )}
             </span>
           </div>
 
@@ -106,7 +109,10 @@ const handleGoogle = async () => {
         </button>
 
         <p className="text-sm mt-4 text-(--text-secondary)">
-          No account? <Link to="/register" className="text-(--primary)">Register</Link>
+          No account?{" "}
+          <Link to="/register" className="text-(--primary)">
+            Register
+          </Link>
         </p>
       </div>
     </div>

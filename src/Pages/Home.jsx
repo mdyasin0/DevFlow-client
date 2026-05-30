@@ -27,40 +27,36 @@ const Home = () => {
             >
               Get Started
             </NavLink>
-            
-           <button
-  onClick={() => setIsOpen(true)}
-  className="px-6 py-3 border border-(--border) cursor-pointer rounded-xl hover:bg-(--bg-secondary) transition"
->
-  View Demo
-</button>
-{
-  isOpen && (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-      <div className="bg-(--card) p-10 rounded-xl w-[90%] md:w-175 relative">
 
-        {/* Close Button */}
-        <button
-          onClick={() => setIsOpen(false)}
-          className="absolute top-1 right-1 text-xl font-bold"
-        >
-         <IoIosCloseCircle />
-        </button>
+            <button
+              onClick={() => setIsOpen(true)}
+              className="px-6 py-3 border border-(--border) cursor-pointer rounded-xl hover:bg-(--bg-secondary) transition"
+            >
+              View Demo
+            </button>
+            {isOpen && (
+              <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+                <div className="bg-(--card) p-10 rounded-xl w-[90%] md:w-175 relative">
+                  {/* Close Button */}
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="absolute top-1 right-1 text-xl font-bold"
+                  >
+                    <IoIosCloseCircle />
+                  </button>
 
-        {/* YouTube Video */}
-        <div className="aspect-video">
-          <iframe
-            className="w-full h-full rounded-lg"
-            src="https://www.youtube.com/embed/oPPZ1kqg8Ao"
-            title="Demo Video"
-            allowFullScreen
-          ></iframe>
-        </div>
-
-      </div>
-    </div>
-  )
-}
+                  {/* YouTube Video */}
+                  <div className="aspect-video">
+                    <iframe
+                      className="w-full h-full rounded-lg"
+                      src="https://www.youtube.com/embed/oPPZ1kqg8Ao"
+                      title="Demo Video"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -166,9 +162,12 @@ const Home = () => {
       <section className="bg-(--primary) space-y-5 text-white text-center py-20">
         <h2 className="text-3xl font-bold">Start Managing Your Team Today</h2>
         <p className="">Boost productivity and simplify workflows.</p>
-        
-        <NavLink to="/login" className=" px-6 py-3  bg-white text-(--primary) rounded-xl font-semibold hover:opacity-90 transition">
-Get Started
+
+        <NavLink
+          to="/login"
+          className=" px-6 py-3  bg-white text-(--primary) rounded-xl font-semibold hover:opacity-90 transition"
+        >
+          Get Started
         </NavLink>
       </section>
     </div>

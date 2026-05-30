@@ -2,17 +2,20 @@ import React, { useContext, useEffect, useState } from "react";
 import { useQuill } from "react-quilljs";
 import "quill/dist/quill.snow.css";
 import { AuthContext } from "../Firebase/AuthContext";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 
 const Inactive_Users = () => {
   const [users, setUsers] = useState([]);
   const [subject, setSubject] = useState("");
-const {  logOut} = useContext(AuthContext);
+  const { logOut } = useContext(AuthContext);
   const [recipientType, setRecipientType] = useState("allInactive");
   const [rangeValue, setRangeValue] = useState("");
   const [rangeType, setRangeType] = useState("days");
-const [sending, setSending] = useState(false);
+  const [sending, setSending] = useState(false);
   const [selectedEmails, setSelectedEmails] = useState([]);
 
+const navigate = useNavigate();
   //  QUILL
   const { quill, quillRef } = useQuill({
     theme: "snow",
@@ -40,39 +43,35 @@ const [sending, setSending] = useState(false);
 
     return () => quill.off("text-change", handler);
   }, [quill]);
-useEffect(() => {
-  const fetchUsers = async () => {
-    const res = await fetch(
-      "http://localhost:5000/approved_users",
-      {
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const res = await fetch("http://localhost:5000/approved_users", {
         credentials: "include",
-      }
-    );
+      });
 
-       // ✅ 1. AUTH সমস্যা → logout
+      //  1. AUTH সমস্যা → logout
       if (res.status === 401) {
-        alert("Session expired. Please login again");
+        toast.error("Session expired. Please login again");
         await logOut();
-        window.location.href = "/login";
+        navigate("/login");
         return;
       }
-const data = await res.json();
-      // ✅ 2. BLOCKED USER
+      const data = await res.json();
+      // 2. BLOCKED USER
       if (data?.isBlocked) {
-        alert("You are blocked by admin");
+        toast.error("You are blocked by admin");
         await logOut();
-        window.location.href = "/login";
+       navigate("/login");
         return;
       }
 
+      if (data.success) {
+        setUsers(data.data);
+      }
+    };
 
-    if (data.success) {
-      setUsers(data.data);
-    }
-  };
-
-  fetchUsers();
-});
+    fetchUsers();
+  });
   const isActive = (date) => {
     const last = new Date(date);
     const now = new Date();
@@ -80,8 +79,7 @@ const data = await res.json();
     return diff <= 7;
   };
 
-  const getInactiveUsers = () =>
-    users.filter((u) => !isActive(u.lastActiveAt));
+  const getInactiveUsers = () => users.filter((u) => !isActive(u.lastActiveAt));
 
   const filterByRange = (inactiveUsers) => {
     if (!rangeValue) return inactiveUsers;
@@ -112,7 +110,7 @@ const data = await res.json();
       const filtered = filterByRange(inactive);
 
       if (filtered.length === 0) {
-        alert("No recipients in this range ");
+        toast.error("No recipients in this range ");
         setSelectedEmails([]);
         return;
       }
@@ -121,20 +119,18 @@ const data = await res.json();
     }
   };
 
-const sendEmail = async () => {
-  if (sending) return;
+  const sendEmail = async () => {
+    if (sending) return;
 
-  if (selectedEmails.length === 0) {
-    alert("No recipients selected ");
-    return;
-  }
+    if (selectedEmails.length === 0) {
+      toast.error("No recipients selected ");
+      return;
+    }
 
-  setSending(true); // 🔒 LOCK
+    setSending(true); //  LOCK
 
-  try {
-    const res = await fetch(
-      "http://localhost:5000/email/send-inactive",
-      {
+    try {
+      const res = await fetch("http://localhost:5000/email/send-inactive", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -143,197 +139,187 @@ const sendEmail = async () => {
           subject,
           message,
         }),
+      });
+
+      if (res.status === 401) {
+        toast.error("Session expired. Please login again");
+        await logOut();
+        navigate("/login");
+        return;
       }
-    );
 
-    if (res.status === 401) {
-      alert("Session expired. Please login again");
-      await logOut();
-      window.location.href = "/login";
-      return;
+      const data = await res.json();
+
+      if (data?.isBlocked) {
+        toast.error("You are blocked by admin");
+        await logOut();
+        navigate("/login");
+        return;
+      }
+
+      if (data.success) {
+        toast.success("Email sent successfull ");
+
+        // optional reset
+        setSubject("");
+        setMessage("");
+        setSelectedEmails([]);
+        if (quill) quill.setText("");
+      } else {
+        toast(data.message || "Something went wrong");
+      }
+    } catch (err) {
+      toast.error(err);
+      toast.error("Request failed");
+    } finally {
+      setSending(false); // 🔓 ALWAYS UNLOCK (IMPORTANT)
     }
-
-    const data = await res.json();
-
-    if (data?.isBlocked) {
-      alert("You are blocked by admin");
-      await logOut();
-      window.location.href = "/login";
-      return;
-    }
-
-    if (data.success) {
-      alert("Email sent ");
-
-      // optional reset
-      setSubject("");
-      setMessage("");
-      setSelectedEmails([]);
-      if (quill) quill.setText("");
-
-    } else {
-      alert(data.message || "Something went wrong");
-    }
-
-  } catch (err) {
-    console.error(err);
-    alert("Request failed");
-  } finally {
-    setSending(false); // 🔓 ALWAYS UNLOCK (IMPORTANT)
-  }
-};
+  };
 
   return (
-   <div className="p-6 space-y-6 bg-(--bg) text-(--text)">
+    <div className="p-6 space-y-6 bg-(--bg) text-(--text)">
+      {/* ===== CARDS ===== */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        {/* Active Users */}
+        <div
+          className="p-4 rounded-xl shadow"
+          style={{
+            background: "var(--card)",
+            border: "1px solid var(--border)",
+            boxShadow: "0 2px 10px var(--shadow)",
+          }}
+        >
+          <h2 className="text-lg font-semibold text-(--text-secondary)">
+            Active Users
+          </h2>
+          <p className="text-2xl font-bold text-(--success)">
+            {
+              users.filter((u) => {
+                const last = new Date(u.lastActiveAt);
+                const now = new Date();
+                const diff = (now - last) / (1000 * 60 * 60 * 24);
+                return diff <= 7;
+              }).length
+            }
+          </p>
+        </div>
 
-  {/* ===== CARDS ===== */}
-  <div className="grid grid-cols-2 gap-4 mb-6">
+        {/* Inactive Users */}
+        <div
+          className="p-4 rounded-xl shadow"
+          style={{
+            background: "var(--card)",
+            border: "1px solid var(--border)",
+            boxShadow: "0 2px 10px var(--shadow)",
+          }}
+        >
+          <h2 className="text-lg font-semibold text-(--text-secondary)">
+            Inactive Users
+          </h2>
+          <p className="text-2xl font-bold text-(--danger)">
+            {
+              users.filter((u) => {
+                const last = new Date(u.lastActiveAt);
+                const now = new Date();
+                const diff = (now - last) / (1000 * 60 * 60 * 24);
+                return diff > 7;
+              }).length
+            }
+          </p>
+        </div>
+      </div>
 
-    {/* Active Users */}
-    <div className="p-4 rounded-xl shadow"
-      style={{
-        background: "var(--card)",
-        border: "1px solid var(--border)",
-        boxShadow: "0 2px 10px var(--shadow)"
-      }}
-    >
-      <h2 className="text-lg font-semibold text-(--text-secondary)">
-        Active Users
-      </h2>
-      <p className="text-2xl font-bold text-(--success)">
-        {
-          users.filter((u) => {
-            const last = new Date(u.lastActiveAt);
-            const now = new Date();
-            const diff = (now - last) / (1000 * 60 * 60 * 24);
-            return diff <= 7;
-          }).length
-        }
-      </p>
-    </div>
-
-    {/* Inactive Users */}
-    <div className="p-4 rounded-xl shadow"
-      style={{
-        background: "var(--card)",
-        border: "1px solid var(--border)",
-        boxShadow: "0 2px 10px var(--shadow)"
-      }}
-    >
-      <h2 className="text-lg font-semibold text-(--text-secondary)">
-        Inactive Users
-      </h2>
-      <p className="text-2xl font-bold text-(--danger)">
-        {
-          users.filter((u) => {
-            const last = new Date(u.lastActiveAt);
-            const now = new Date();
-            const diff = (now - last) / (1000 * 60 * 60 * 24);
-            return diff > 7;
-          }).length
-        }
-      </p>
-    </div>
-
-  </div>
-
-  {/* ===== RECIPIENT ===== */}
-  <div
-    className="p-4 rounded-xl shadow space-y-3"
-    style={{
-      background: "var(--card)",
-      border: "1px solid var(--border)",
-      boxShadow: "0 2px 10px var(--shadow)"
-    }}
-  >
-    <h2 className="text-xl font-bold">
-      Select Recipients
-    </h2>
-
-    <select
-      className="w-full p-2 rounded border bg-(--bg-secondary) text-(--text)"
-      onChange={(e) => setRecipientType(e.target.value)}
-    >
-      <option value="allInactive">All Inactive Users</option>
-      <option value="custom">Custom Range</option>
-    </select>
-
-    {recipientType === "custom" && (
-      <div className="flex gap-2">
-        <input
-          type="number"
-          placeholder="Value (e.g 20)"
-          className="w-full p-2 rounded border bg-(--bg-secondary)"
-          onChange={(e) => setRangeValue(e.target.value)}
-        />
+      {/* ===== RECIPIENT ===== */}
+      <div
+        className="p-4 rounded-xl shadow space-y-3"
+        style={{
+          background: "var(--card)",
+          border: "1px solid var(--border)",
+          boxShadow: "0 2px 10px var(--shadow)",
+        }}
+      >
+        <h2 className="text-xl font-bold">Select Recipients</h2>
 
         <select
-          className="p-2 rounded border bg-(--bg-secondary)"
-          onChange={(e) => setRangeType(e.target.value)}
+          className="w-full p-2 rounded border bg-(--bg-secondary) text-(--text)"
+          onChange={(e) => setRecipientType(e.target.value)}
         >
-          <option value="days">Days</option>
-          <option value="months">Months</option>
-          <option value="years">Years</option>
+          <option value="allInactive">All Inactive Users</option>
+          <option value="custom">Custom Range</option>
         </select>
+
+        {recipientType === "custom" && (
+          <div className="flex gap-2">
+            <input
+              type="number"
+              placeholder="Value (e.g 20)"
+              className="w-full p-2 rounded border bg-(--bg-secondary)"
+              onChange={(e) => setRangeValue(e.target.value)}
+            />
+
+            <select
+              className="p-2 rounded border bg-(--bg-secondary)"
+              onChange={(e) => setRangeType(e.target.value)}
+            >
+              <option value="days">Days</option>
+              <option value="months">Months</option>
+              <option value="years">Years</option>
+            </select>
+          </div>
+        )}
+
+        <button
+          onClick={handleRecipient}
+          className="w-full py-2 rounded font-semibold text-white"
+          style={{ background: "var(--primary)" }}
+        >
+          Load Recipients
+        </button>
+
+        <p className="text-sm text-(--text-secondary)">
+          Selected: {selectedEmails.length}
+        </p>
       </div>
-    )}
 
-    <button
-      onClick={handleRecipient}
-      className="w-full py-2 rounded font-semibold text-white"
-      style={{ background: "var(--primary)" }}
-    >
-      Load Recipients
-    </button>
+      {/* ===== EMAIL ===== */}
+      <div
+        className="p-4 rounded-xl shadow space-y-3"
+        style={{
+          background: "var(--card)",
+          border: "1px solid var(--border)",
+          boxShadow: "0 2px 10px var(--shadow)",
+        }}
+      >
+        <h2 className="text-xl font-bold">Send Email</h2>
 
-    <p className="text-sm text-(--text-secondary)">
-      Selected: {selectedEmails.length}
-    </p>
-  </div>
+        <input
+          className="w-full p-2 rounded border bg-(--bg-secondary)"
+          placeholder="Subject"
+          value={subject}
+          onChange={(e) => setSubject(e.target.value)}
+        />
 
-  {/* ===== EMAIL ===== */}
-  <div
-    className="p-4 rounded-xl shadow space-y-3"
-    style={{
-      background: "var(--card)",
-      border: "1px solid var(--border)",
-      boxShadow: "0 2px 10px var(--shadow)"
-    }}
-  >
-    <h2 className="text-xl font-bold">
-      Send Email
-    </h2>
+        {/* QUILL EDITOR */}
+        <div
+          className="rounded border p-2"
+          style={{
+            background: "var(--bg-secondary)",
+            color: "var(--text)",
+          }}
+        >
+          <div ref={quillRef} />
+        </div>
 
-    <input
-      className="w-full p-2 rounded border bg-(--bg-secondary)"
-      placeholder="Subject"
-      value={subject}
-      onChange={(e) => setSubject(e.target.value)}
-    />
-
-    {/* QUILL EDITOR */}
-    <div
-      className="rounded border p-2"
-      style={{
-        background: "var(--bg-secondary)",
-        color: "var(--text)"
-      }}
-    >
-      <div ref={quillRef} />
+        <button
+          onClick={sendEmail}
+          disabled={sending}
+          className="w-full py-2 rounded font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ background: "var(--success)" }}
+        >
+          {sending ? "Sending..." : "Send Email"}
+        </button>
+      </div>
     </div>
-
-   <button
-  onClick={sendEmail}
-  disabled={sending}
-  className="w-full py-2 rounded font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
-  style={{ background: "var(--success)" }}
->
-  {sending ? "Sending..." : "Send Email"}
-</button>
-
-  </div>
-
-</div>
   );
 };
 

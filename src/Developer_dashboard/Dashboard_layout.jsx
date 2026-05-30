@@ -16,13 +16,12 @@ const Dashboard_layout = () => {
 
   return (
     <div className="flex h-screen bg-(--bg) text-(--text)">
-      
       {/* MOBILE MENU BUTTON */}
       <button
         onClick={() => setOpen(!open)}
         className="md:hidden fixed z-50  bg-(--primary) text-white p-2 rounded-lg"
       >
-        <FaAnglesRight  size={20} />
+        <FaAnglesRight size={20} />
       </button>
 
       {/* SIDEBAR */}
@@ -32,9 +31,7 @@ const Dashboard_layout = () => {
         md:translate-x-0`}
       >
         {/* LOGO */}
-        <div className="p-5 text-xl font-bold text-(--primary)">
-          DevFlow
-        </div>
+        <div className="p-5 text-xl font-bold text-(--primary)">DevFlow</div>
 
         {/* NAV */}
         <div className="flex-1 overflow-y-auto px-3 space-y-2">

@@ -24,7 +24,7 @@ export default function DocumentationPage() {
 
   const contentRef = useRef(null);
 
-  // 🔥 FIXED: scroll detection on content div (not window)
+  //  FIXED: scroll detection on content div (not window)
   useEffect(() => {
     const el = contentRef.current;
     if (!el) return;

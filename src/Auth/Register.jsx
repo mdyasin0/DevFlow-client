@@ -10,13 +10,13 @@ const Register = () => {
 
   const [showPass, setShowPass] = useState(false);
 
-  const [loading, setLoading] = useState(false); // register loading
+  const [loading, setLoading] = useState(false);
   const [googleLoading] = useState(false);
-  const [uploading, setUploading] = useState(false); //  image upload state
-  const [photoURL, setPhotoURL] = useState(""); // store uploaded image
+  const [uploading, setUploading] = useState(false); 
+  const [photoURL, setPhotoURL] = useState("");
 
   const navigate = useNavigate();
-const from = location.state?.from?.pathname || "/";
+  const from = location.state?.from?.pathname || "/";
   //  IMAGE UPLOAD
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -33,7 +33,7 @@ const from = location.state?.from?.pathname || "/";
         {
           method: "POST",
           body: formData,
-        }
+        },
       );
 
       const imgData = await res.json();
@@ -50,74 +50,73 @@ const from = location.state?.from?.pathname || "/";
   };
 
   // REGISTER
- const handleRegister = async (e) => {
-  e.preventDefault();
+  const handleRegister = async (e) => {
+    e.preventDefault();
 
-  if (loading || uploading) return;
+    if (loading || uploading) return;
 
-  if (!photoURL) {
-    Swal.fire({
-      icon: "warning",
-      title: "Please wait",
-      text: "Image is still uploading...",
-    });
-    return;
-  }
+    if (!photoURL) {
+      Swal.fire({
+        icon: "warning",
+        title: "Please wait",
+        text: "Image is still uploading...",
+      });
+      return;
+    }
 
-  setLoading(true);
+    setLoading(true);
 
-  const form = e.target;
-  const name = form.name.value;
-  const email = form.email.value;
-  const password = form.password.value;
+    const form = e.target;
+    const name = form.name.value;
+    const email = form.email.value;
+    const password = form.password.value;
 
-  try {
-    // 🔥 Firebase user create
-    await createUser(email, password);
+    try {
+      //  Firebase user create
+      await createUser(email, password);
 
-    // 🔥 Firebase profile update (IMPORTANT)
-    await updateUserProfile(name, photoURL);
+      //  Firebase profile update (IMPORTANT)
+      await updateUserProfile(name, photoURL);
 
-    Swal.fire({
-      icon: "success",
-      title: "Account Created!",
-      timer: 2000,
-      showConfirmButton: false,
-    });
-navigate("/login");
-  } catch (err) {
-    Swal.fire({
-      icon: "error",
-      title: "Failed",
-      text: err.message,
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+      Swal.fire({
+        icon: "success",
+        title: "Account Created!",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+      navigate("/login");
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Failed",
+        text: err.message,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   //  GOOGLE LOGIN
   const handleGoogle = async () => {
-  try {
-    await googleLogin();
+    try {
+      await googleLogin();
 
-    Swal.fire({
-      icon: "success",
-      title: "Logged in with Google!",
-      timer: 2000,
-      showConfirmButton: false,
-    });
+      Swal.fire({
+        icon: "success",
+        title: "Logged in with Google!",
+        timer: 2000,
+        showConfirmButton: false,
+      });
 
-    navigate(from, { replace: true });
-
-  } catch (err) {
-    Swal.fire({
-      icon: "error",
-      title: "Google Login Failed",
-      text: err.message,
-    });
-  }
-};
+      navigate(from, { replace: true });
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Google Login Failed",
+        text: err.message,
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-(--bg)">
@@ -174,7 +173,7 @@ navigate("/login");
           {/*  Upload status */}
           {uploading && (
             <p className="text-sm text-yellow-500">
-               Image uploading... please wait
+              Image uploading... please wait
             </p>
           )}
 
@@ -189,8 +188,8 @@ navigate("/login");
             {uploading
               ? "Uploading Image..."
               : loading
-              ? "Creating Account..."
-              : "Register"}
+                ? "Creating Account..."
+                : "Register"}
           </button>
         </form>
 

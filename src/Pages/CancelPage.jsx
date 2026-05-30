@@ -5,8 +5,7 @@ export default function CancelPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-400">
-
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-gray-200 to-gray-400">
       <motion.div
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -16,13 +15,10 @@ export default function CancelPage() {
         {/* Icon */}
         <div className="text-6xl mb-4">😔</div>
 
-        <h1 className="text-2xl font-bold text-gray-700">
-          Payment Cancelled
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-700">Payment Cancelled</h1>
 
         <p className="text-gray-600 mt-3">
-          You cancelled the payment.  
-          If at any time you want, you can try again.
+          You cancelled the payment. If at any time you want, you can try again.
         </p>
 
         <div className="mt-6 flex flex-col gap-3">

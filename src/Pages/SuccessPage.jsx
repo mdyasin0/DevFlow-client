@@ -5,8 +5,7 @@ export default function SuccessPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 to-green-300">
-
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-green-100 to-green-300">
       <motion.div
         initial={{ scale: 0.5, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -27,7 +26,7 @@ export default function SuccessPage() {
         </h1>
 
         <p className="text-gray-600 mt-3">
-          Now enjoy full features without any limit 🚀
+          Now enjoy full features without any limit 
         </p>
 
         <div className="mt-6 flex flex-col gap-3">

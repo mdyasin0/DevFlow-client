@@ -1,12 +1,13 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../Firebase/AuthContext";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import Developer_projects from "./Developer_projects";
+import { toast } from "react-toastify";
 
 const Joined_Team = () => {
   const { user, logOut } = useContext(AuthContext);
   const email = user?.email;
-
+const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -19,19 +20,19 @@ const Joined_Team = () => {
         const res = await fetch(`http://localhost:5000/my-projects/${email}`, {
           credentials: "include",
         });
-        // ✅ 1. AUTH সমস্যা → logout
+        //  1. AUTH  logout
         if (res.status === 401) {
-          alert("Session expired. Please login again");
+          toast.warn("Session expired. Please login again");
           await logOut();
-          window.location.href = "/login";
+          navigate("/login");
           return;
         }
         const data = await res.json();
-        // ✅ 2. BLOCKED USER
+        // 2. BLOCKED USER
         if (data?.isBlocked) {
-          alert("You are blocked by admin");
+          toast.warn("You are blocked by admin");
           await logOut();
-          window.location.href = "/login";
+         navigate("/login"); 
           return;
         }
         if (data.success) {

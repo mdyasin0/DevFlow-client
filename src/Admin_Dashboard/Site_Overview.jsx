@@ -1,65 +1,68 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../Firebase/AuthContext";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 
 const Site_Overview = () => {
   const [users, setUsers] = useState([]);
   const [projects, setProjects] = useState([]);
-const { logOut} = useContext(AuthContext);
- useEffect(() => {
-  // Fetch users
-  fetch("http://localhost:5000/users", {
-    credentials: "include",
-  })
-    .then(async (res) => {
-      if (res.status === 401) {
-        alert("Session expired. Please login again");
-        await logOut();
-        window.location.href = "/login";
-        return;
-      }
-
-      const data = await res.json(); // ✅ আগে data আনো
-
-      if (data?.isBlocked) {
-        alert("You are blocked by admin");
-        await logOut();
-        window.location.href = "/login";
-        return;
-      }
-
-      return data;
+  const { logOut } = useContext(AuthContext);
+  const navigate = useNavigate();
+  useEffect(() => {
+    // Fetch users
+    fetch("http://localhost:5000/users", {
+      credentials: "include",
     })
-    .then((data) => {
-      if (data) setUsers(data.data);
-    });
+      .then(async (res) => {
+        if (res.status === 401) {
+          toast.error("Session expired. Please login again");
+          await logOut();
+          navigate("/login");
+          return;
+        }
 
-  // Fetch projects
-  fetch("http://localhost:5000/projects", {
-    credentials: "include",
-  })
-    .then(async (res) => {
-      if (res.status === 401) {
-        alert("Session expired. Please login again");
-        await logOut();
-        window.location.href = "/login";
-        return;
-      }
+        const data = await res.json(); 
 
-      const data = await res.json(); // ✅ same fix
+        if (data?.isBlocked) {
+          toast.error("You are blocked by admin");
+          await logOut();
+          navigate("/login");
+          return;
+        }
 
-      if (data?.isBlocked) {
-        alert("You are blocked by admin");
-        await logOut();
-        window.location.href = "/login";
-        return;
-      }
+        return data;
+      })
+      .then((data) => {
+        if (data) setUsers(data.data);
+      });
 
-      return data;
+    // Fetch projects
+    fetch("http://localhost:5000/projects", {
+      credentials: "include",
     })
-    .then((data) => {
-      if (data) setProjects(data.data);
-    });
-}, []);
+      .then(async (res) => {
+        if (res.status === 401) {
+          toast.error("Session expired. Please login again");
+          await logOut();
+         navigate("/login");
+          return;
+        }
+
+        const data = await res.json(); 
+
+        if (data?.isBlocked) {
+          toast.error("You are blocked by admin");
+          await logOut();
+          navigate("/login");
+          return;
+        }
+
+        return data;
+      })
+      .then((data) => {
+        if (data) setProjects(data.data);
+      });
+  });
 
   // CURRENT TIME
   const now = new Date();
@@ -81,9 +84,7 @@ const { logOut} = useContext(AuthContext);
   }).length;
 
   // Total Managers (unique created_by)
-  const managers = [
-    ...new Set(projects.map((p) => p.created_by)),
-  ].length;
+  const managers = [...new Set(projects.map((p) => p.created_by))].length;
 
   //  Total Projects
   const totalProjects = projects.length;
@@ -110,17 +111,15 @@ const { logOut} = useContext(AuthContext);
   }).length;
 
   return (
-   <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 bg-(--bg-secondary) min-h-screen transition-colors duration-300">
-  
-  <Card title="Total Users" value={totalUsers} />
-  <Card title="Total Admin" value={totalAdmin} />
-  <Card title="Active Users" value={activeUsers} />
+    <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 bg-(--bg-secondary) min-h-screen transition-colors duration-300">
+      <Card title="Total Users" value={totalUsers} />
+      <Card title="Total Admin" value={totalAdmin} />
+      <Card title="Active Users" value={activeUsers} />
 
-  <Card title="Total Managers" value={managers} />
-  <Card title="Total Projects" value={totalProjects} />
-  <Card title="Active Projects" value={activeProjects} />
-
-</div>
+      <Card title="Total Managers" value={managers} />
+      <Card title="Total Projects" value={totalProjects} />
+      <Card title="Active Projects" value={activeProjects} />
+    </div>
   );
 };
 
@@ -128,13 +127,9 @@ const { logOut} = useContext(AuthContext);
 const Card = ({ title, value }) => {
   return (
     <div className="p-6 rounded-xl border shadow-sm bg-(--card) border-(--border) transition-colors duration-300">
-      <h2 className="text-sm text-(--text-secondary)">
-        {title}
-      </h2>
+      <h2 className="text-sm text-(--text-secondary)">{title}</h2>
 
-      <p className="text-3xl font-bold text-(--primary) mt-2">
-        {value}
-      </p>
+      <p className="text-3xl font-bold text-(--primary) mt-2">{value}</p>
     </div>
   );
 };

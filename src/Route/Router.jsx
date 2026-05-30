@@ -57,12 +57,11 @@ const router = createBrowserRouter([
       },
       {
         path: "/developer_dashboard",
-        element: 
-        (
-              <ProtectedRoute allowedRoles={["developer"]}>
-                <Dashboard_layout />
-              </ProtectedRoute>
-            ),
+        element: (
+          <ProtectedRoute allowedRoles={["developer"]}>
+            <Dashboard_layout />
+          </ProtectedRoute>
+        ),
         children: [
           {
             index: true,
@@ -128,12 +127,11 @@ const router = createBrowserRouter([
       },
       {
         path: "/admin_dashboard_layout",
-        element: 
-         (
-              <ProtectedRoute allowedRoles={["admin"]}>
-                <Admin_Dashboard_Layout />
-              </ProtectedRoute>
-            ),
+        element: (
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <Admin_Dashboard_Layout />
+          </ProtectedRoute>
+        ),
         children: [
           {
             index: true,
@@ -151,9 +149,9 @@ const router = createBrowserRouter([
           },
           {
             path: "/admin_dashboard_layout/user_administration",
-            element:  (
+            element: (
               <ProtectedRoute allowedRoles={["admin"]}>
-               <User_Administration />
+                <User_Administration />
               </ProtectedRoute>
             ),
           },
@@ -161,59 +159,62 @@ const router = createBrowserRouter([
             path: "/admin_dashboard_layout/site_overview",
             element: (
               <ProtectedRoute allowedRoles={["admin"]}>
-               <Site_Overview />
+                <Site_Overview />
               </ProtectedRoute>
             ),
           },
           {
             path: "/admin_dashboard_layout/profile",
-            element:  (
+            element: (
               <ProtectedRoute allowedRoles={["admin"]}>
-               <Profile />
+                <Profile />
               </ProtectedRoute>
             ),
           },
           {
             path: "/admin_dashboard_layout/project_monitoring",
-            element:  (
+            element: (
               <ProtectedRoute allowedRoles={["admin"]}>
-               <Project_Monitoring />
+                <Project_Monitoring />
               </ProtectedRoute>
             ),
           },
           {
             path: "/admin_dashboard_layout/inactive_users",
-            element:(
+            element: (
               <ProtectedRoute allowedRoles={["admin"]}>
-                <Inactive_Users /> 
+                <Inactive_Users />
               </ProtectedRoute>
             ),
           },
         ],
       },
       {
-        path:"/docs",
-        element:<DocumentationPage/>,
-      },{
-        path:"/privacypolicy",
-        element:<PrivacyPolicy/>,
-      },{
-        path:"/rolesregulations",
-        element:<RolesRegulations/>,
-      }
+        path: "/docs",
+        element: <DocumentationPage />,
+      },
+      {
+        path: "/privacypolicy",
+        element: <PrivacyPolicy />,
+      },
+      {
+        path: "/rolesregulations",
+        element: <RolesRegulations />,
+      },
     ],
-  },{
-    path:"/success",
-    element:<SuccessPage/>,
-  },{
-    path:"/cancel",
-    element:<CancelPage/>,
-  }
-  ,
+  },
   {
-    path:"*",
-    element:<NotFoundPage/>,
-  }
+    path: "/success",
+    element: <SuccessPage />,
+  },
+  {
+    path: "/cancel",
+    element: <CancelPage />,
+  },
+  {
+    path: "*",
+    element: <NotFoundPage />,
+  },
 ]);
 
 export default router;

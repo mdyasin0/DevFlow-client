@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useQuill } from "react-quilljs";
 import "quill/dist/quill.snow.css";
+import toast from "react-hot-toast";
 const FilterBtn = ({ text, onClick }) => (
   <button
     onClick={onClick}
@@ -99,45 +100,45 @@ const Email_Communication = () => {
   // -------------------------
 
   const handleSend = async () => {
-  if (!isValid) {
-    alert("Please fill all fields and select recipients!");
-    return;
-  }
-setLoading(true);
-  try {
-    await axios.post(
-      "http://localhost:5000/send-email",
-      {
-        emails: selectedEmails,
-        subject,
-        message,
-      },
-      {
-        withCredentials: true,
-      }
-    );
-
-    alert("Email Sent successfull !");
-
-    // ✅ RESET ALL FIELDS AFTER SUCCESS
-    setSubject("");
-    setMessage("");
-    setSelectedEmails([]);
-
-    if (quill) {
-      quill.setText(""); // quill reset
+    if (!isValid) {
+      toast.error("Please fill all fields and select recipients!");
+      return;
     }
-  } catch (err) {
-    console.error(err);
-    alert("Email sending failed!");
-  } finally {
-    setLoading(false);
-  }
-};
-const isValid =
-  selectedEmails.length > 0 &&
-  subject.trim() !== "" &&
-  message.trim().trim() !== "";
+    setLoading(true);
+    try {
+      await axios.post(
+        "http://localhost:5000/send-email",
+        {
+          emails: selectedEmails,
+          subject,
+          message,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+
+      toast.success("Email Sent successfull !");
+
+      //RESET ALL FIELDS AFTER SUCCESS
+      setSubject("");
+      setMessage("");
+      setSelectedEmails([]);
+
+      if (quill) {
+        quill.setText(""); // quill reset
+      }
+    } catch (err) {
+      toast.error(err);
+      toast.error("Email sending failed!");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const isValid =
+    selectedEmails.length > 0 &&
+    subject.trim() !== "" &&
+    message.trim().trim() !== "";
   return (
     <div className="p-6 bg-(--bg) text-(--text) min-h-screen">
       {/*  Header */}
@@ -198,7 +199,7 @@ const isValid =
 
         {/* Subject */}
         <input
-        value={subject}
+          value={subject}
           className="w-full mb-3 p-3 rounded-xl border border-(--border) bg-(--bg-secondary) text-(--text) focus:outline-none focus:ring-2 focus:ring-(--primary)"
           placeholder="Enter subject..."
           onChange={(e) => setSubject(e.target.value)}
@@ -212,18 +213,18 @@ const isValid =
         </div>
 
         {/* Send Button */}
-      <button
-  onClick={handleSend}
-  disabled={!isValid || loading}
-  className={`w-full py-3 rounded-xl font-semibold transition 
+        <button
+          onClick={handleSend}
+          disabled={!isValid || loading}
+          className={`w-full py-3 rounded-xl font-semibold transition 
     ${
       !isValid || loading
         ? "bg-gray-400 cursor-not-allowed text-white"
         : "bg-(--primary) hover:bg-(--primary-hover) text-white"
     }`}
->
-  {loading ? "Sending..." : "Send Email"}
-</button>
+        >
+          {loading ? "Sending..." : "Send Email"}
+        </button>
       </div>
     </div>
   );

@@ -1,30 +1,29 @@
-import React from 'react';
-import { CgProfile } from 'react-icons/cg';
-import { GrOverview } from 'react-icons/gr';
-import { IoHome } from 'react-icons/io5';
-import { MdCreateNewFolder, MdOutlineAirplanemodeInactive, MdOutlineInsertInvitation } from 'react-icons/md';
-import { RiTeamFill } from 'react-icons/ri';
-import { SiMinutemailer } from 'react-icons/si';
-import { TbDeviceIpadMinus, TbHeartRateMonitor } from 'react-icons/tb';
-import { NavLink, Outlet } from 'react-router';
+import React from "react";
+import { CgProfile } from "react-icons/cg";
+import { GrOverview } from "react-icons/gr";
+import { IoHome } from "react-icons/io5";
+import {
+  MdCreateNewFolder,
+  MdOutlineAirplanemodeInactive,
+  MdOutlineInsertInvitation,
+} from "react-icons/md";
+import { RiTeamFill } from "react-icons/ri";
+import { SiMinutemailer } from "react-icons/si";
+import { TbDeviceIpadMinus, TbHeartRateMonitor } from "react-icons/tb";
+import { NavLink, Outlet } from "react-router";
 
 const Admin_Dashboard_Layout = () => {
-     const navClass =
+  const navClass =
     "flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200";
-    return (
-        <div className="flex h-screen bg-(--bg) text-(--text)">
-
+  return (
+    <div className="flex h-screen bg-(--bg) text-(--text)">
       {/* SIDEBAR */}
       <aside className="w-64 border-r border-(--border) bg-(--card) flex flex-col">
-
         {/* LOGO */}
-        <div className="p-5 text-xl font-bold text-(--primary)">
-          DevFlow
-        </div>
+        <div className="p-5 text-xl font-bold text-(--primary)">DevFlow</div>
 
         {/* NAV */}
         <div className="flex-1 overflow-y-auto px-3 space-y-2">
-
           <NavLink
             to="/"
             className={({ isActive }) =>
@@ -50,8 +49,6 @@ const Admin_Dashboard_Layout = () => {
           >
             <CgProfile /> Profile
           </NavLink>
-
-          
 
           <NavLink
             to="/admin_dashboard_layout/email_communication"
@@ -91,7 +88,7 @@ const Admin_Dashboard_Layout = () => {
           >
             <GrOverview /> Site_Overview
           </NavLink>
-          
+
           <NavLink
             to="/admin_dashboard_layout/project_monitoring"
             className={({ isActive }) =>
@@ -104,7 +101,7 @@ const Admin_Dashboard_Layout = () => {
           >
             <TbHeartRateMonitor /> Project_Monitoring
           </NavLink>
-          
+
           <NavLink
             to="/admin_dashboard_layout/inactive_users"
             className={({ isActive }) =>
@@ -115,7 +112,7 @@ const Admin_Dashboard_Layout = () => {
               }`
             }
           >
-           <MdOutlineAirplanemodeInactive /> Inactive_Users
+            <MdOutlineAirplanemodeInactive /> Inactive_Users
           </NavLink>
         </div>
       </aside>
@@ -125,7 +122,7 @@ const Admin_Dashboard_Layout = () => {
         <Outlet />
       </main>
     </div>
-    );
+  );
 };
 
 export default Admin_Dashboard_Layout;

@@ -1,21 +1,22 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../Firebase/AuthContext";
 import { socket } from "../Socket";
-
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router";
 
 const Invitations = () => {
   const [projects, setProjects] = useState([]);
   const { user, logOut } = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState("");
-  
+const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   //  get user name
   useEffect(() => {
     if (!user?.email) return;
 
-    fetch(`http://localhost:5000/user/${user.email}`,{
-      credentials:"include"
+    fetch(`http://localhost:5000/user/${user.email}`, {
+      credentials: "include",
     })
       .then((res) => res.json())
       .then((data) => {
@@ -39,28 +40,28 @@ const Invitations = () => {
             credentials: "include",
           },
         );
-            // ✅ 1. AUTH সমস্যা → logout
-      if (res.status === 401) {
-        alert("Session expired. Please login again");
-        await logOut();
-        window.location.href = "/login";
-        return;
-      }
+        //  1. AUTH  logout
+        if (res.status === 401) {
+          toast.warn("Session expired. Please login again");
+          await logOut();
+         navigate("/login");
+          return;
+        }
         const data = await res.json();
-  // ✅ 2. BLOCKED USER
-      if (data?.isBlocked) {
-        alert("You are blocked by admin");
-        await logOut();
-        window.location.href = "/login";
-        return;
-      }
+        //  2. BLOCKED USER
+        if (data?.isBlocked) {
+          toast.warn("You are blocked by admin");
+          await logOut();
+        navigate("/login");
+          return;
+        }
         if (data.success) {
           setProjects(data.data);
         }
 
         setLoading(false);
       } catch (err) {
-        alert(err);
+        toast.error(err);
         setLoading(false);
       }
     };
@@ -88,48 +89,48 @@ const Invitations = () => {
 
     return () => socket.off("projectUpdated");
   }, []);
- useEffect(() => {
-  const handler = async (data) => {
-    try {
-      const res = await fetch(
-        `http://localhost:5000/my-invitations/${user.email}`,
-        {
-          credentials: "include",
+  useEffect(() => {
+    const handler = async (data) => {
+      try {
+        const res = await fetch(
+          `http://localhost:5000/my-invitations/${user.email}`,
+          {
+            credentials: "include",
+          },
+        );
+
+        
+        if (res.status === 401) {
+          toast.warn("Session expired. Please login again");
+          await logOut();
+         navigate("/login");
+          return;
         }
-      );
 
-      // ✅ AUTH সমস্যা
-      if (res.status === 401) {
-        alert("Session expired. Please login again");
-        await logOut();
-        window.location.href = "/login";
-        return;
+        const result = await res.json();
+
+        // BLOCKED USER
+        if (data?.isBlocked) {
+          toast.warn("You are blocked by admin");
+          await logOut();
+         navigate("/login");
+          return;
+        }
+
+        if (result.success) {
+          setProjects(result.data);
+        }
+      } catch (err) {
+        toast.error(err);
       }
+    };
 
-      const result = await res.json();
+    socket.on("newInvitation", handler);
 
-      // ✅ BLOCKED USER
-      if (data?.isBlocked) {
-        alert("You are blocked by admin");
-        await logOut();
-        window.location.href = "/login";
-        return;
-      }
-
-      if (result.success) {
-        setProjects(result.data);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  socket.on("newInvitation", handler);
-
-  return () => {
-    socket.off("newInvitation", handler); // 🔥 IMPORTANT
-  };
-}, [user?.email ,logOut] );
+    return () => {
+      socket.off("newInvitation", handler); 
+    };
+  }, [user?.email, logOut]);
   const filteredProjects = projects.filter(
     (project) =>
       project.teamName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -157,17 +158,16 @@ const Invitations = () => {
           }),
         },
       );
-     
+
       const data = await res.json();
       if (!res.ok) {
         if (data?.code === "TEAM_LIMIT_REACHED") {
-          alert(data.message);
+          toast.info(data.message);
           return;
         }
-
       }
       if (data.success) {
-        alert(data.message);
+        toast.success(data.message);
 
         setProjects((prev) =>
           prev.map((p) =>
@@ -182,11 +182,11 @@ const Invitations = () => {
           ),
         );
       } else {
-        alert(data.message);
+        toast(data.message);
       }
     } catch (err) {
-      alert(err);
-      alert("Something went wrong");
+      toast.error(err);
+      toast.warn("Something went wrong");
     }
   };
 

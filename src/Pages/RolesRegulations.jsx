@@ -3,7 +3,6 @@ import React from "react";
 const RolesRegulations = () => {
   return (
     <div className="max-w-5xl mx-auto px-4 py-10 text-(--text)">
-
       <h1 className="text-3xl font-bold text-(--primary) mb-6">
         Roles & Regulations
       </h1>
@@ -12,9 +11,9 @@ const RolesRegulations = () => {
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">1. System Overview</h2>
         <p className="text-(--text-secondary)">
-          DevFlow is a collaboration platform where users can work as Developers,
-          Managers, or Admins. Every role has specific permissions and limitations
-          to ensure secure and structured teamwork.
+          DevFlow is a collaboration platform where users can work as
+          Developers, Managers, or Admins. Every role has specific permissions
+          and limitations to ensure secure and structured teamwork.
         </p>
       </section>
 
@@ -24,8 +23,9 @@ const RolesRegulations = () => {
 
         <ul className="list-disc pl-5 text-(--text-secondary) space-y-2">
           <li>
-            <b>Developer (Team Member):</b> Can join teams, work on assigned tasks,
-            update task status, and participate in project discussions (based on plan).
+            <b>Developer (Team Member):</b> Can join teams, work on assigned
+            tasks, update task status, and participate in project discussions
+            (based on plan).
           </li>
 
           <li>
@@ -34,8 +34,9 @@ const RolesRegulations = () => {
           </li>
 
           <li>
-            <b>Admin:</b> Full control over the platform including user management,
-            project approval, analytics, email communication, and system monitoring.
+            <b>Admin:</b> Full control over the platform including user
+            management, project approval, analytics, email communication, and
+            system monitoring.
           </li>
         </ul>
       </section>
@@ -48,7 +49,9 @@ const RolesRegulations = () => {
           <li>Every project must be approved by Admin before activation.</li>
           <li>Only project owner (manager) can update or delete project.</li>
           <li>Team members can only access projects they are invited to.</li>
-          <li>Unauthorized access is strictly restricted via JWT authentication.</li>
+          <li>
+            Unauthorized access is strictly restricted via JWT authentication.
+          </li>
         </ul>
       </section>
 
@@ -75,7 +78,6 @@ const RolesRegulations = () => {
           <li>Real-time updates use Socket.IO for secure sync.</li>
         </ul>
       </section>
-
     </div>
   );
 };

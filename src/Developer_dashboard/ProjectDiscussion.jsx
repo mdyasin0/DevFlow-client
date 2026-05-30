@@ -2,15 +2,17 @@ import React, { useEffect, useState, useContext, useRef } from "react";
 import { socket } from "../Socket";
 import { AuthContext } from "../Firebase/AuthContext";
 import { HiDotsVertical } from "react-icons/hi";
+import { toast } from "react-toastify";
+import { IoIosClose } from "react-icons/io";
 
 const emojiGroups = {
-  happy: ["😀","😃","😄","😁","😆"],
-  sad: ["😢","😭","😞"],
-  angry: ["😡","😠"],
-  love: ["😍","❤️","😘"],
-  laugh: ["😂","🤣"],
-  thinking: ["🤔","😐"],
-  ok: ["👍","👌"],
+  happy: ["😀", "😃", "😄", "😁", "😆"],
+  sad: ["😢", "😭", "😞"],
+  angry: ["😡", "😠"],
+  love: ["😍", "❤️", "😘"],
+  laugh: ["😂", "🤣"],
+  thinking: ["🤔", "😐"],
+  ok: ["👍", "👌"],
 };
 
 const ProjectDiscussion = ({ projectId, onClose }) => {
@@ -61,10 +63,10 @@ const ProjectDiscussion = ({ projectId, onClose }) => {
 
     socket.on("newMessage", (msg) => setMessages((p) => [...p, msg]));
     socket.on("deleteMessage", (id) =>
-      setMessages((p) => p.filter((m) => m._id !== id))
+      setMessages((p) => p.filter((m) => m._id !== id)),
     );
     socket.on("updateMessage", (updated) =>
-      setMessages((p) => p.map((m) => (m._id === updated._id ? updated : m)))
+      setMessages((p) => p.map((m) => (m._id === updated._id ? updated : m))),
     );
 
     return () => {
@@ -78,36 +80,36 @@ const ProjectDiscussion = ({ projectId, onClose }) => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
- const sendMessage = async () => {
-  if (!text.trim()) return;
+  const sendMessage = async () => {
+    if (!text.trim()) return;
 
-  try {
-    const res = await fetch("http://localhost:5000/project-message", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({
-        projectId,
-        message: text,
-        senderEmail: user.email,
-        senderName: user.displayName,
-      }),
-    });
+    try {
+      const res = await fetch("http://localhost:5000/project-message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          projectId,
+          message: text,
+          senderEmail: user.email,
+          senderName: user.displayName,
+        }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if ( data.code === "PLAN_RESTRICTED for msaage send") {
-      alert("Upgrade your plan to use chat 🚀");
-      return;
+      if (data.code === "PLAN_RESTRICTED for msaage send") {
+        toast.info("Upgrade your plan to use chat ");
+        return;
+      }
+
+      if (data.success) {
+        setText("");
+      }
+    } catch (err) {
+      toast.error(err);
     }
-
-    if (data.success) {
-      setText("");
-    }
-  } catch (err) {
-    console.error(err);
-  }
-};
+  };
 
   const handleDelete = async (id) => {
     await fetch(`http://localhost:5000/project-message/${id}`, {
@@ -133,13 +135,12 @@ const ProjectDiscussion = ({ projectId, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50 p-4">
       <div className="w-full max-w-2xl max-h-[90vh] bg-(--bg-secondary) text-(--text) rounded-xl flex flex-col shadow-xl">
-
         {/* HEADER */}
         <div className="p-4 border-b border-(--border) flex justify-between items-center">
           <h2 className="font-semibold text-(--primary) text-lg">
             Project Discussion
           </h2>
-          <button onClick={onClose}>❌</button>
+          <button onClick={onClose}><IoIosClose /></button>
         </div>
 
         {/* CHAT */}
@@ -153,7 +154,6 @@ const ProjectDiscussion = ({ projectId, onClose }) => {
                 className={`flex ${isMe ? "justify-end" : "justify-start"}`}
               >
                 <div className="relative max-w-[70%] group">
-
                   {isMe && (
                     <div
                       ref={menuRef}
@@ -190,9 +190,7 @@ const ProjectDiscussion = ({ projectId, onClose }) => {
                   {/* MESSAGE */}
                   <div
                     className={`px-3 py-2 rounded-lg shadow-md ${
-                      isMe
-                        ? "bg-(--primary) text-white"
-                        : "bg-(--bg)"
+                      isMe ? "bg-(--primary) text-white" : "bg-(--bg)"
                     }`}
                   >
                     {!isMe && (
@@ -242,7 +240,6 @@ const ProjectDiscussion = ({ projectId, onClose }) => {
 
         {/* INPUT */}
         <div className="p-3 border-t border-(--border) flex gap-2 items-center">
-
           {/* EMOJI */}
           <div className="relative emoji-box">
             <button

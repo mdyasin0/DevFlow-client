@@ -5,6 +5,7 @@ import Developer_projects from "./Developer_projects";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import Project_form from "./Project_form";
 import { socket } from "../Socket";
+import { toast } from "react-toastify";
 
 const Created_project = () => {
   const { user, logOut } = useContext(AuthContext);
@@ -31,20 +32,20 @@ const Created_project = () => {
           }),
         },
       );
-      // ✅ 1. AUTH সমস্যা → logout
+      // 1. AUTH  logout
       if (res.status === 401) {
-        alert("Session expired. Please login again");
+        toast.warn("Session expired. Please login again");
         await logOut();
-        window.location.href = "/login";
+        navigate("/login");
         return;
       }
       const data = await res.json();
 
-      // ✅ 2. BLOCKED USER
+      //  2. BLOCKED USER
       if (data?.isBlocked) {
-        alert("You are blocked by admin");
+        toast.warn("You are blocked by admin");
         await logOut();
-        window.location.href = "/login";
+        navigate("/login");
         return;
       }
 
@@ -55,11 +56,11 @@ const Created_project = () => {
           ),
         );
 
-        alert("Project updated successfully ");
+        toast.success("Project updated successfully ");
         setIsModalOpen(false);
       }
     } catch (error) {
-      alert(error);
+      toast.error(error);
     }
   };
   const handleDelete = async (id) => {
@@ -74,32 +75,32 @@ const Created_project = () => {
         method: "DELETE",
         credentials: "include",
       });
-      // ✅ 1. AUTH সমস্যা → logout
+      //  1. AUTH logout
       if (res.status === 401) {
-        alert("Session expired. Please login again");
+        toast.warn("Session expired. Please login again");
         await logOut();
-        window.location.href = "/login";
+        navigate("/login");
         return;
       }
       const data = await res.json();
-      // ✅ 2. BLOCKED USER
+      //  2. BLOCKED USER
       if (data?.isBlocked) {
-        alert("You are blocked by admin");
+        toast.warn("You are blocked by admin");
         await logOut();
-        window.location.href = "/login";
+        navigate("/login");
         return;
       }
-      // ❌ FREE USER (ANY 403 reason)
+      //  FREE USER (ANY 403 reason)
       if (data.code === "Project only premium user can delete") {
-        alert(data.message);
+        toast.info(data.message);
         return;
       }
       if (data.success) {
         setProjects((prev) => prev.filter((p) => p._id !== id));
-        alert("Project deleted successfully ");
+        toast.success("Project deleted successfully ");
       }
     } catch (error) {
-      alert(error);
+      toast.error(error);
     }
   };
   useEffect(() => {
@@ -108,21 +109,21 @@ const Created_project = () => {
         credentials: "include",
       })
         .then(async (res) => {
-          // ✅ 1. AUTH সমস্যা → logout
+          //  1. AUTH logout
           if (res.status === 401) {
-            alert("Session expired. Please login again");
+            toast.warn("Session expired. Please login again");
             await logOut();
-            window.location.href = "/login";
+           navigate("/login");
             return;
           }
 
-          const data = await res.json(); // 👈 আগে data নিতে হবে
+          const data = await res.json();
 
-          // ✅ 2. BLOCKED USER
+          //  2. BLOCKED USER
           if (data?.isBlocked) {
-            alert("You are blocked by admin");
+            toast.warn("You are blocked by admin");
             await logOut();
-            window.location.href = "/login";
+           navigate("/login");
             return;
           }
 
@@ -142,7 +143,7 @@ const Created_project = () => {
   useEffect(() => {
     if (!user?._id) return;
 
-    socket.connect(); // IMPORTANT
+    socket.connect();
 
     socket.emit("join", user._id.toString());
 
@@ -152,24 +153,23 @@ const Created_project = () => {
   }, [user]);
   useEffect(() => {
     const handler = async (data) => {
-      // ✅ 1. BLOCKED USER আগে check করো
       if (data?.isBlocked) {
-        alert("You are blocked by admin");
+        toast.warn("You are blocked by admin");
         await logOut();
-        window.location.href = "/login";
+       navigate("/login");
         return;
       }
 
-      // ✅ 2. তারপর API call
+      //
       const res = await fetch(`http://localhost:5000/projects/${user.email}`, {
         credentials: "include",
       });
 
-      // ✅ 1. AUTH সমস্যা → logout
+      //  1. AUTH  logout
       if (res.status === 401) {
-        alert("Session expired. Please login again");
+        toast.warn("Session expired. Please login again");
         await logOut();
-        window.location.href = "/login";
+      navigate("/login");
         return;
       }
 
@@ -234,7 +234,7 @@ const Created_project = () => {
               <IoCloseCircleOutline />
             </button>
 
-            <Project_form user={user}  setform={setOpen} />
+            <Project_form user={user} setform={setOpen} />
           </div>
         </div>
       )}
