@@ -26,7 +26,7 @@ const AuthProvider = ({ children }) => {
   const [roleLoading, setRoleLoading] = useState(true);
 
   const getJwtToken = async (email) => {
-    const res = await fetch("http://localhost:5000/jwt", {
+    const res = await fetch("https://devflow-server-s7bh.onrender.com/jwt", {
       method: "POST",
       headers: { "content-type": "application/json" },
       credentials: "include",
@@ -44,7 +44,7 @@ const AuthProvider = ({ children }) => {
     setLoading(true);
 
     try {
-      await fetch("http://localhost:5000/logout", {
+      await fetch("https://devflow-server-s7bh.onrender.com/logout", {
         method: "POST",
         credentials: "include",
       });
@@ -68,7 +68,7 @@ const AuthProvider = ({ children }) => {
     setRoleLoading(true);
 
     try {
-      const res = await fetch(`http://localhost:5000/user/${email}`, {
+      const res = await fetch(`https://devflow-server-s7bh.onrender.com/user/${email}`, {
         method: "GET",
         credentials: "include",
       });
@@ -173,7 +173,7 @@ const AuthProvider = ({ children }) => {
   }, []);
   useEffect(() => {
     if (user?.email && !tokenLoading) {
-      fetch("http://localhost:5000/users", {
+      fetch("https://devflow-server-s7bh.onrender.com/users", {
         method: "POST",
         credentials: "include",
         headers: {

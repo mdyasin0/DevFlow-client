@@ -64,7 +64,7 @@ const Created_project_details = () => {
   //  FETCH PROJECT (reuseable)
   const fetchProject = useCallback(async () => {
     try {
-      const res = await fetch(`http://localhost:5000/project/${id}`, {
+      const res = await fetch(`https://devflow-server-s7bh.onrender.com/project/${id}`, {
         credentials: "include",
       });
 
@@ -82,7 +82,7 @@ const Created_project_details = () => {
       if (data?.isBlocked) {
         toast.info("You are blocked by admin");
         await logOut();
-       navigate("/login");
+        navigate("/login");
         return;
       }
 
@@ -202,7 +202,7 @@ const Created_project_details = () => {
     try {
       setLoading(true);
 
-      const res = await fetch(`http://localhost:5000/invite/${id}`, {
+      const res = await fetch(`https://devflow-server-s7bh.onrender.com/invite/${id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -230,15 +230,14 @@ const Created_project_details = () => {
       fetchProject();
     } catch (error) {
       toast.error(error);
-      toast.warn("Network error! Please try again.");
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
   // reopen move done to running
   const handleReopen = async (taskId, email) => {
     try {
-      const res = await fetch(`http://localhost:5000/reopen-task/${id}`, {
+      const res = await fetch(`https://devflow-server-s7bh.onrender.com/reopen-task/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -259,7 +258,7 @@ const Created_project_details = () => {
 
       if (data.success) {
         toast.success("Task moved to running ");
-        fetchProject(); 
+        fetchProject();
       } else {
         toast(data.message);
       }
@@ -321,7 +320,7 @@ const Created_project_details = () => {
       uploadedFiles = await uploadFilesToCloudinary();
     }
 
-    const res = await fetch(`http://localhost:5000/add-task/${id}`, {
+    const res = await fetch(`https://devflow-server-s7bh.onrender.com/add-task/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -360,7 +359,7 @@ const Created_project_details = () => {
 
   // DELETE TASK
   const handleDelete = async (type, taskId, email) => {
-    const res = await fetch(`http://localhost:5000/delete-task/${id}`, {
+    const res = await fetch(`https://devflow-server-s7bh.onrender.com/delete-task/${id}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -404,7 +403,7 @@ const Created_project_details = () => {
   // remove member
   const handleRemoveMember = async (email) => {
     const res = await fetch(
-      `http://localhost:5000/remove-member/${id}/${encodeURIComponent(email)}`,
+      `https://devflow-server-s7bh.onrender.com/remove-member/${id}/${encodeURIComponent(email)}`,
       {
         method: "DELETE",
         credentials: "include",
@@ -449,7 +448,7 @@ const Created_project_details = () => {
   const handleRemoveInvite = async (email) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/remove-invite/${id}/${encodeURIComponent(email)}`,
+        `https://devflow-server-s7bh.onrender.com/remove-invite/${id}/${encodeURIComponent(email)}`,
         {
           method: "DELETE",
           credentials: "include",
@@ -468,7 +467,7 @@ const Created_project_details = () => {
       if (data?.isBlocked) {
         toast.warn("You are blocked by admin");
         await logOut();
-       navigate("/login");
+        navigate("/login");
         return;
       }
 
@@ -499,7 +498,7 @@ const Created_project_details = () => {
       newFiles = await uploadEditFiles();
     }
 
-    const res = await fetch(`http://localhost:5000/update-task/${id}`, {
+    const res = await fetch(`https://devflow-server-s7bh.onrender.com/update-task/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -508,7 +507,7 @@ const Created_project_details = () => {
         type: editData.type,
         taskId: editData.task.id,
         text: editText,
-        newAttachments: newFiles, 
+        newAttachments: newFiles,
       }),
     });
     const data = await res.json();
@@ -588,73 +587,80 @@ const Created_project_details = () => {
     );
 
   return (
-    <div className="min-h-screen bg-(--bg-secondary) text-white p-6">
-      <div className="max-w-6xl mx-auto bg-(--bg-secondary) p-6 rounded-2xl shadow-xl border border-gray-700">
+    <div className="min-h-screen bg-(--bg-secondary) text-white ">
+      <div className="max-w-7xl mx-auto bg-(--bg-secondary) p-6 rounded-2xl shadow-xl ">
         {/* HEADER */}
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-blue-400">
-              {project.teamName}
-            </h1>
-            <p className="text-gray-300">{project.projectTitle}</p>
+       <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-6">
+  <div className="w-full">
+    <h1 className="text-xl sm:text-2xl font-bold text-blue-400">
+      {project.teamName}
+    </h1>
+    <p className="text-gray-300 text-sm sm:text-base">
+      {project.projectTitle}
+    </p>
 
-            <div className="mt-2 text-sm text-gray-400 space-y-1">
-              <p className="flex items-center gap-2">
-                <FcManager /> Manager: {project.created_by}
-              </p>
-              <p className="flex items-center gap-2">
-                <MdOutlineWatchLater /> Start:{" "}
-                {new Date(project.created_time).toLocaleString()}
-              </p>
-              <p className="flex items-center gap-2">
-                <IoIosPeople /> Total Members: {project.teammember?.length}
-              </p>
-            </div>
-            <button
-              onClick={() => {
-                if (isFreeUser) {
-                  toast.info(
-                    "Upgrade your plan to use project discussion chat 🚀",
-                  );
-                  return;
-                }
-                setShowChat(true);
-              }}
-              className="bg-green-600 px-4 py-2 rounded-lg ml-2"
-            >
-              Discuss on Project
-            </button>
+    <div className="mt-2 text-xs sm:text-sm text-gray-400 space-y-1">
+      <p className="flex items-center gap-2 flex-wrap">
+        <FcManager /> Manager: {project.created_by}
+      </p>
+      <p className="flex items-center gap-2 flex-wrap">
+        <MdOutlineWatchLater /> Start:{" "}
+        {new Date(project.created_time).toLocaleString()}
+      </p>
+      <p className="flex items-center gap-2 flex-wrap">
+        <IoIosPeople /> Total Members: {project.teammember?.length}
+      </p>
+    </div>
 
-            {showChat && isFreeUser ? (
-              <div className="p-4 bg-red-100 text-red-600 rounded">
-                Upgrade your plan to access project discussion
-              </div>
-            ) : (
-              showChat && (
-                <ProjectDiscussion
-                  projectId={project._id}
-                  onClose={() => setShowChat(false)}
-                />
-              )
-            )}
-          </div>
+    <button
+      onClick={() => {
+        if (isFreeUser) {
+          toast.info(
+            "Upgrade your plan to use project discussion chat 🚀",
+          );
+          return;
+        }
+        setShowChat(true);
+      }}
+      className="bg-green-600 px-4 py-2 rounded-lg mt-3 md:mt-2 md:ml-2 w-full sm:w-auto"
+    >
+      Discuss on Project
+    </button>
 
-          <button
-            onClick={() => setShowInvite(!showInvite)}
-            className="bg-blue-600 px-4 py-2 rounded-lg"
-          >
-            Invite Member
-          </button>
-          <button
-            onClick={async () => {
-              await fetchProject();
-              setShowAllInvites(true);
-            }}
-            className="bg-yellow-600 px-4 py-2 rounded-lg ml-2"
-          >
-            See All Invite
-          </button>
-        </div>
+    {showChat && isFreeUser ? (
+      <div className="p-4 bg-red-100 text-red-600 rounded mt-2">
+        Upgrade your plan to access project discussion
+      </div>
+    ) : (
+      showChat && (
+        <ProjectDiscussion
+          projectId={project._id}
+          onClose={() => setShowChat(false)}
+        />
+      )
+    )}
+  </div>
+
+  {/* BUTTON GROUP */}
+  <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+    <button
+      onClick={() => setShowInvite(!showInvite)}
+      className="bg-blue-600 px-4 py-2 rounded-lg w-full sm:w-auto"
+    >
+      Invite Member
+    </button>
+
+    <button
+      onClick={async () => {
+        await fetchProject();
+        setShowAllInvites(true);
+      }}
+      className="bg-yellow-600 px-4 py-2 rounded-lg w-full sm:w-auto"
+    >
+      See All Invite
+    </button>
+  </div>
+</div>
         {/* INVITE */}
         {showInvite && (
           <div className="flex gap-2 mb-6">
@@ -682,60 +688,72 @@ const Created_project_details = () => {
           </div>
         )}
         {isPremium ? (
-          <div className="bg-(--bg-secondary) p-6 rounded-xl border border-gray-700 mb-6">
-            <h2 className="text-blue-400 text-lg mb-4"> Project Progress</h2>
+          <div className="bg-(--bg-secondary) p-4 sm:p-6 rounded-xl border border-gray-700 mb-6">
+            <h2 className="text-blue-400 text-center  text-base sm:text-lg mb-4">
+              Project works overview
+            </h2>
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* EXISTING CHART */}
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center w-full">
                 <h3 className="mb-2 text-sm text-gray-400">
                   Task Distribution
                 </h3>
 
-                <PieChart width={300} height={260}>
-                  <Pie
-                    data={chartData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={90}
-                    dataKey="value"
-                  >
-                    <Cell fill="var(--warning)" />
-                    <Cell fill="var(--primary)" />
-                    <Cell fill="var(--success)" />
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
+                <div className="w-full h-[250px] sm:h-[260px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={chartData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius="40%"
+                        outerRadius="70%"
+                        dataKey="value"
+                      >
+                        <Cell fill="var(--warning)" />
+                        <Cell fill="var(--primary)" />
+                        <Cell fill="var(--success)" />
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
 
               {/* NEW PERFORMANCE CHART */}
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center w-full">
                 <h3 className="mb-2 text-sm text-gray-400">Performance</h3>
 
-                <PieChart width={300} height={260}>
-                  <Pie
-                    data={performanceData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={90}
-                    dataKey="value"
-                  >
-                    <Cell fill="#22c55e" /> {/* On Time */}
-                    <Cell fill="#ef4444" /> {/* Late */}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
+                <div className="w-full h-62.5 sm:h-65">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={performanceData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius="40%"
+                        outerRadius="70%"
+                        dataKey="value"
+                      >
+                        <Cell fill="#22c55e" />
+                        <Cell fill="#ef4444" />
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
-              <div className="bg-(--bg-secondary) p-6 rounded-xl border border-gray-700 mb-6">
-                <h2 className="text-yellow-400 text-lg mb-4">
+
+              {/* TEAM PERFORMANCE */}
+              <div className="bg-(--bg-secondary) p-4 sm:p-6 rounded-xl  mb-6 md:col-span-2">
+                <h2 className="text-yellow-400 text-base sm:text-lg mb-4">
                   Team Performance
                 </h2>
 
-                <div className="w-full h-80">
+                <div className="w-full h-64 sm:h-80">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={rankingData}>
                       <XAxis dataKey="name" />
@@ -754,13 +772,13 @@ const Created_project_details = () => {
                   {rankingData.map((m, i) => (
                     <p
                       key={m.name}
-                      className="flex justify-between items-center bg-(--bg-secondary) p-2 rounded border border-(--border)"
+                      className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-(--text) bg-(--bg-secondary) p-2 rounded border border-(--border)"
                     >
-                      <span>
+                      <span className="text-(--text)">
                         {i + 1}. {m.name}
                       </span>
 
-                      <span className="text-gray-400">
+                      <span className="text-(--text)">
                         Score: {m.score.toFixed(1)}
                       </span>
                     </p>
@@ -1183,7 +1201,7 @@ const Created_project_details = () => {
 
               {isFreeUser ? (
                 <p className="text-red-400 text-sm">
-                  File upload is available only for Pro users 
+                  File upload is available only for Pro users
                 </p>
               ) : (
                 <>
@@ -1258,7 +1276,7 @@ const Created_project_details = () => {
 
               {isFreeUser ? (
                 <p className="text-red-400 text-sm">
-                  File upload is available only for Pro users 
+                  File upload is available only for Pro users
                 </p>
               ) : (
                 <input

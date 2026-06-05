@@ -68,7 +68,7 @@ const navigate = useNavigate();
       await updateUserProfile(name, imageUrl);
 
       // MongoDB update
-      const res = await fetch(`http://localhost:5000/users/${user.email}`, {
+      const res = await fetch(`https://devflow-server-s7bh.onrender.com/users/${user.email}`, {
         method: "PATCH",
         credentials: "include",
         headers: {

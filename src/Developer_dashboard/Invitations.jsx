@@ -15,7 +15,7 @@ const navigate = useNavigate();
   useEffect(() => {
     if (!user?.email) return;
 
-    fetch(`http://localhost:5000/user/${user.email}`, {
+    fetch(`https://devflow-server-s7bh.onrender.com/user/${user.email}`, {
       credentials: "include",
     })
       .then((res) => res.json())
@@ -35,7 +35,7 @@ const navigate = useNavigate();
         setLoading(true);
 
         const res = await fetch(
-          `http://localhost:5000/my-invitations/${user.email}`,
+          `https://devflow-server-s7bh.onrender.com/my-invitations/${user.email}`,
           {
             credentials: "include",
           },
@@ -93,7 +93,7 @@ const navigate = useNavigate();
     const handler = async (data) => {
       try {
         const res = await fetch(
-          `http://localhost:5000/my-invitations/${user.email}`,
+          `https://devflow-server-s7bh.onrender.com/my-invitations/${user.email}`,
           {
             credentials: "include",
           },
@@ -146,7 +146,7 @@ const navigate = useNavigate();
 
     try {
       const res = await fetch(
-        `http://localhost:5000/invite-status/${projectId}`,
+        `https://devflow-server-s7bh.onrender.com/invite-status/${projectId}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },

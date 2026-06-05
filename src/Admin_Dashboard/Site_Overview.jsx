@@ -10,7 +10,7 @@ const Site_Overview = () => {
   const navigate = useNavigate();
   useEffect(() => {
     // Fetch users
-    fetch("http://localhost:5000/users", {
+    fetch("https://devflow-server-s7bh.onrender.com/users", {
       credentials: "include",
     })
       .then(async (res) => {
@@ -37,7 +37,7 @@ const Site_Overview = () => {
       });
 
     // Fetch projects
-    fetch("http://localhost:5000/projects", {
+    fetch("https://devflow-server-s7bh.onrender.com/projects", {
       credentials: "include",
     })
       .then(async (res) => {

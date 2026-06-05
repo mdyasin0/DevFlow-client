@@ -51,7 +51,7 @@ const ProjectDiscussion = ({ projectId, onClose }) => {
   };
 
   useEffect(() => {
-    fetch(`http://localhost:5000/project-message/${projectId}`, {
+    fetch(`https://devflow-server-s7bh.onrender.com/project-message/${projectId}`, {
       credentials: "include",
     })
       .then((res) => res.json())
@@ -84,7 +84,7 @@ const ProjectDiscussion = ({ projectId, onClose }) => {
     if (!text.trim()) return;
 
     try {
-      const res = await fetch("http://localhost:5000/project-message", {
+      const res = await fetch("https://devflow-server-s7bh.onrender.com/project-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -112,7 +112,7 @@ const ProjectDiscussion = ({ projectId, onClose }) => {
   };
 
   const handleDelete = async (id) => {
-    await fetch(`http://localhost:5000/project-message/${id}`, {
+    await fetch(`https://devflow-server-s7bh.onrender.com/project-message/${id}`, {
       method: "DELETE",
       credentials: "include",
     });
@@ -121,7 +121,7 @@ const ProjectDiscussion = ({ projectId, onClose }) => {
   const handleUpdate = async (id) => {
     if (!editText.trim()) return;
 
-    await fetch(`http://localhost:5000/project-message/${id}`, {
+    await fetch(`https://devflow-server-s7bh.onrender.com/project-message/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       credentials: "include",

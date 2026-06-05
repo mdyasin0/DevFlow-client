@@ -17,7 +17,7 @@ const navigate = useNavigate();
 
       setLoading(true);
       try {
-        const res = await fetch(`http://localhost:5000/my-projects/${email}`, {
+        const res = await fetch(`https://devflow-server-s7bh.onrender.com/my-projects/${email}`, {
           credentials: "include",
         });
         //  1. AUTH  logout

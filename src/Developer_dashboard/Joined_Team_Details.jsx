@@ -25,7 +25,7 @@ const Joined_Team_Details = () => {
   });
 
   const fetchProject = useCallback(async () => {
-    const res = await fetch(`http://localhost:5000/project/${id}`, {
+    const res = await fetch(`https://devflow-server-s7bh.onrender.com/project/${id}`, {
       credentials: "include",
     });
 
@@ -134,45 +134,50 @@ const Joined_Team_Details = () => {
         </div>
 
         {/* TABLE */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm border border-(--border)">
-            <thead className="bg-(--bg-secondary) text-(--text-secondary)">
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Todo</th>
-                <th>Running</th>
-                <th>Done</th>
-              </tr>
-            </thead>
+       <div className="overflow-x-auto">
+  <table className="w-full min-w-[500px] text-xs sm:text-sm border border-(--border)">
+    <thead className="bg-(--bg-secondary) text-(--text-secondary)">
+      <tr>
+        <th className="px-2 sm:px-4 py-2">Name</th>
+        <th className="px-2 sm:px-4 py-2">Email</th>
+        <th className="px-2 sm:px-4 py-2">Todo</th>
+        <th className="px-2 sm:px-4 py-2">Running</th>
+        <th className="px-2 sm:px-4 py-2">Done</th>
+      </tr>
+    </thead>
 
-            <tbody>
-              {myMember && (
-                <tr className="border-t border-(--border) text-center hover:bg-(--bg-secondary)">
-                  <td>{myMember.name}</td>
-                  <td>{myMember.email}</td>
+    <tbody>
+      {myMember && (
+        <tr className="border-t border-(--border) text-center hover:bg-(--bg-secondary)">
+          <td className="px-2 sm:px-4 py-2 break-words">
+            {myMember.name}
+          </td>
 
-                  {["todo", "running", "done"].map((type) => (
-                    <td key={type}>
-                      <button
-                        className="bg-(--primary) hover:bg-(--primary-hover) text-white px-2 py-1 rounded"
-                        onClick={() =>
-                          setModal({
-                            open: true,
-                            member: myMember,
-                            type,
-                          })
-                        }
-                      >
-                        {myMember[type]?.length || 0}
-                      </button>
-                    </td>
-                  ))}
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+          <td className="px-2 sm:px-4 py-2 break-words">
+            {myMember.email}
+          </td>
+
+          {["todo", "running", "done"].map((type) => (
+            <td key={type} className="px-2 sm:px-4 py-2">
+              <button
+                className="bg-(--primary) hover:bg-(--primary-hover) text-white px-2 sm:px-3 py-1 rounded text-xs sm:text-sm"
+                onClick={() =>
+                  setModal({
+                    open: true,
+                    member: myMember,
+                    type,
+                  })
+                }
+              >
+                {myMember[type]?.length || 0}
+              </button>
+            </td>
+          ))}
+        </tr>
+      )}
+    </tbody>
+  </table>
+</div>
 
         {/* MODAL */}
         {modal.open && (
@@ -316,7 +321,7 @@ const Joined_Team_Details = () => {
                             <button
                               onClick={async () => {
                                 const res = await fetch(
-                                  `http://localhost:5000/move-task/${id}`,
+                                  `https://devflow-server-s7bh.onrender.com/move-task/${id}`,
                                   {
                                     method: "PATCH",
                                     headers: {
@@ -349,6 +354,8 @@ const Joined_Team_Details = () => {
                                   return;
                                 }
                                 fetchProject();
+                                setModal({ open: false, member: null, type: "" });
+setTaskSearch("");
                               }}
                               className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700"
                             >
@@ -360,7 +367,7 @@ const Joined_Team_Details = () => {
                             <button
                               onClick={async () => {
                                 const res = await fetch(
-                                  `http://localhost:5000/move-task/${id}`,
+                                  `https://devflow-server-s7bh.onrender.com/move-task/${id}`,
                                   {
                                     method: "PATCH",
                                     headers: {
@@ -393,6 +400,8 @@ const Joined_Team_Details = () => {
                                   return;
                                 }
                                 fetchProject();
+                                setModal({ open: false, member: null, type: "" });
+setTaskSearch("");
                               }}
                               className="px-4 py-2 text-sm rounded-lg bg-green-600 text-white hover:bg-green-700"
                             >

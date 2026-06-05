@@ -12,7 +12,7 @@ const Project_Monitoring = () => {
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
   useEffect(() => {
-    fetch("http://localhost:5000/projects", {
+    fetch("https://devflow-server-s7bh.onrender.com/projects", {
       credentials: "include",
     })
       .then(async (res) => {
@@ -50,7 +50,7 @@ const Project_Monitoring = () => {
     projects.filter((p) => p.status === status).length;
   const handleStatusChange = async (id, status) => {
     try {
-      const res = await fetch(`http://localhost:5000/projects/${id}/status`, {
+      const res = await fetch(`https://devflow-server-s7bh.onrender.com/projects/${id}/status`, {
         method: "PATCH",
         credentials: "include",
         headers: {
@@ -111,7 +111,7 @@ const Project_Monitoring = () => {
   }, []);
   useEffect(() => {
     if (user?.email) {
-      fetch(`http://localhost:5000/users/${user.email}`, {
+      fetch(`https://devflow-server-s7bh.onrender.com/users/${user.email}`, {
         credentials: "include",
       })
         .then(async (res) => {

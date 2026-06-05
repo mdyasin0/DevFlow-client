@@ -44,14 +44,14 @@ const Email_Communication = () => {
   }, [quill]);
 
   const loadUsers = async () => {
-    const res = await axios.get("http://localhost:5000/users", {
+    const res = await axios.get("https://devflow-server-s7bh.onrender.com/users", {
       withCredentials: true,
     });
     setUsers(res.data.data);
   };
 
   const loadProjects = async () => {
-    const res = await axios.get("http://localhost:5000/projects", {
+    const res = await axios.get("https://devflow-server-s7bh.onrender.com/projects", {
       withCredentials: true,
     });
     setProjects(res.data.data);
@@ -107,7 +107,7 @@ const Email_Communication = () => {
     setLoading(true);
     try {
       await axios.post(
-        "http://localhost:5000/send-email",
+        "https://devflow-server-s7bh.onrender.com/send-email",
         {
           emails: selectedEmails,
           subject,

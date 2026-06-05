@@ -39,7 +39,7 @@ const Navbar = () => {
   useEffect(() => {
     if (!user?.email) return;
 
-    fetch(`http://localhost:5000/notifications?email=${user.email}`, {
+    fetch(`https://devflow-server-s7bh.onrender.com/notifications?email=${user.email}`, {
       credentials: "include",
     })
       .then((res) => res.json())
@@ -52,7 +52,7 @@ const Navbar = () => {
   // delete notification
   const deleteNotification = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/notifications/${id}`, {
+      const res = await fetch(`https://devflow-server-s7bh.onrender.com/notifications/${id}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -82,7 +82,7 @@ const Navbar = () => {
   const toggleRead = async (id) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/notifications/${id}/toggle-read`,
+        `https://devflow-server-s7bh.onrender.com/notifications/${id}/toggle-read`,
         {
           method: "PATCH",
           credentials: "include",

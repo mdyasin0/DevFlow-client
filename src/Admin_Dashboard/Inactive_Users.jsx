@@ -45,7 +45,7 @@ const navigate = useNavigate();
   }, [quill]);
   useEffect(() => {
     const fetchUsers = async () => {
-      const res = await fetch("http://localhost:5000/approved_users", {
+      const res = await fetch("https://devflow-server-s7bh.onrender.com/approved_users", {
         credentials: "include",
       });
 
@@ -130,7 +130,7 @@ const navigate = useNavigate();
     setSending(true); //  LOCK
 
     try {
-      const res = await fetch("http://localhost:5000/email/send-inactive", {
+      const res = await fetch("https://devflow-server-s7bh.onrender.com/email/send-inactive", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

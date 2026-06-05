@@ -19,7 +19,7 @@ export default function PricingPage() {
       setLoadingPremium(true);
 
       // STEP 1: Check plan first
-      const checkRes = await fetch(`http://localhost:5000/plan/check/${email}`);
+      const checkRes = await fetch(`https://devflow-server-s7bh.onrender.com/plan/check/${email}`);
 
       const checkData = await checkRes.json();
 
@@ -36,7 +36,7 @@ export default function PricingPage() {
 
       //  STEP 3: Continue normal process
       const res = await fetch(
-        `http://localhost:5000/plan/upgrade-premium/${email}`,
+        `https://devflow-server-s7bh.onrender.com/plan/upgrade-premium/${email}`,
         {
           method: "POST",
           headers: {
@@ -65,7 +65,7 @@ export default function PricingPage() {
       setLoadingFree(true);
 
       //  STEP 1: Check current plan
-      const resCheck = await fetch(`http://localhost:5000/plan/check/${email}`);
+      const resCheck = await fetch(`https://devflow-server-s7bh.onrender.com/plan/check/${email}`);
 
       const dataCheck = await resCheck.json();
 
@@ -86,7 +86,7 @@ export default function PricingPage() {
 
       //  STEP 2: Call backend
       const res = await fetch(
-        `http://localhost:5000/plan/start-free/${email}`,
+        `https://devflow-server-s7bh.onrender.com/plan/start-free/${email}`,
         {
           method: "POST",
           headers: {

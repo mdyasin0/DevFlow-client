@@ -10,7 +10,7 @@ const User_Administration = () => {
   const navigate = useNavigate();
   // Load users
   useEffect(() => {
-    fetch("http://localhost:5000/users", {
+    fetch("https://devflow-server-s7bh.onrender.com/users", {
       credentials: "include",
     })
       .then(async (res) => {
@@ -48,7 +48,7 @@ const User_Administration = () => {
 
   const handleBlock = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/users/block/${id}`, {
+      const res = await fetch(`https://devflow-server-s7bh.onrender.com/users/block/${id}`, {
         method: "PATCH",
         credentials: "include",
       });
@@ -76,7 +76,7 @@ const User_Administration = () => {
 
   const handleUnblock = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/users/unblock/${id}`, {
+      const res = await fetch(`https://devflow-server-s7bh.onrender.com/users/unblock/${id}`, {
         method: "PATCH",
         credentials: "include",
       });
@@ -109,7 +109,7 @@ const User_Administration = () => {
   };
 
   const handleRoleChange = (id, newRole) => {
-    fetch(`http://localhost:5000/users/role/${id}`, {
+    fetch(`https://devflow-server-s7bh.onrender.com/users/role/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
