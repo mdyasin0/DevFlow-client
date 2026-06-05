@@ -6,40 +6,47 @@ import { useNavigate } from "react-router";
 const User_Administration = () => {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
   const { logOut } = useContext(AuthContext);
   const navigate = useNavigate();
   // Load users
   useEffect(() => {
-    fetch("https://devflow-server-s7bh.onrender.com/users", {
-      credentials: "include",
+  setLoading(true);
+
+  fetch("https://devflow-server-s7bh.onrender.com/users", {
+    credentials: "include",
+  })
+    .then(async (res) => {
+      if (res.status === 401) {
+        toast.error("Session expired. Please login again");
+        await logOut();
+        navigate("/login");
+        return;
+      }
+
+      const data = await res.json();
+
+      if (data?.isBlocked) {
+        toast.error("You are blocked by admin");
+        await logOut();
+        navigate("/login");
+        return;
+      }
+
+      return data;
     })
-      .then(async (res) => {
-       
-        if (res.status === 401) {
-          toast.error("Session expired. Please login again");
-          await logOut();
-         navigate("/login");
-          return;
-        }
-
-        const data = await res.json(); 
-
-        // 2. BLOCKED USER
-        if (data?.isBlocked) {
-          toast.error("You are blocked by admin");
-          await logOut();
-          navigate("/login");
-          return;
-        }
-
-        return data;
-      })
-      .then((data) => {
-        if (data) {
-          setUsers(data.data);
-        }
-      });
-  });
+    .then((data) => {
+      if (data) {
+        setUsers(data.data);
+      }
+    })
+    .catch(() => {
+      toast.error("Failed to load users");
+    })
+    .finally(() => {
+      setLoading(false);
+    });
+}, [logOut,navigate]);
 
   // Filter users by email
   const filteredUsers = users?.filter((user) =>
@@ -153,7 +160,13 @@ const User_Administration = () => {
         toast.error(err.message);
       });
   };
-
+if (loading) {
+  return (
+    <div className="flex justify-center items-center h-screen">
+      <span className="loading loading-spinner text-primary"></span>
+    </div>
+  );
+}
   return (
     <div className="p-6 bg-(--bg) text-(--text) min-h-screen">
       {/* Search */}

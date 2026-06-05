@@ -7,62 +7,54 @@ const Site_Overview = () => {
   const [users, setUsers] = useState([]);
   const [projects, setProjects] = useState([]);
   const { logOut } = useContext(AuthContext);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  useEffect(() => {
-    // Fetch users
+ useEffect(() => {
+  setLoading(true);
+
+  Promise.all([
     fetch("https://devflow-server-s7bh.onrender.com/users", {
       credentials: "include",
-    })
-      .then(async (res) => {
-        if (res.status === 401) {
-          toast.error("Session expired. Please login again");
-          await logOut();
-          navigate("/login");
-          return;
-        }
-
-        const data = await res.json(); 
-
-        if (data?.isBlocked) {
-          toast.error("You are blocked by admin");
-          await logOut();
-          navigate("/login");
-          return;
-        }
-
-        return data;
-      })
-      .then((data) => {
-        if (data) setUsers(data.data);
-      });
-
-    // Fetch projects
+    }),
     fetch("https://devflow-server-s7bh.onrender.com/projects", {
       credentials: "include",
+    }),
+  ])
+    .then(async ([userRes, projectRes]) => {
+      // AUTH check (users)
+      if (userRes.status === 401 || projectRes.status === 401) {
+        toast.error("Session expired. Please login again");
+        await logOut();
+        navigate("/login");
+        return;
+      }
+
+      const userData = await userRes.json();
+      const projectData = await projectRes.json();
+
+      // BLOCK check
+      if (userData?.isBlocked || projectData?.isBlocked) {
+        toast.error("You are blocked by admin");
+        await logOut();
+        navigate("/login");
+        return;
+      }
+
+      return { userData, projectData };
     })
-      .then(async (res) => {
-        if (res.status === 401) {
-          toast.error("Session expired. Please login again");
-          await logOut();
-         navigate("/login");
-          return;
-        }
-
-        const data = await res.json(); 
-
-        if (data?.isBlocked) {
-          toast.error("You are blocked by admin");
-          await logOut();
-          navigate("/login");
-          return;
-        }
-
-        return data;
-      })
-      .then((data) => {
-        if (data) setProjects(data.data);
-      });
-  });
+    .then((data) => {
+      if (data) {
+        setUsers(data.userData.data);
+        setProjects(data.projectData.data);
+      }
+    })
+    .catch(() => {
+      toast.error("Failed to load data");
+    })
+    .finally(() => {
+      setLoading(false); // spinner off
+    });
+}, [logOut,navigate]);
 
   // CURRENT TIME
   const now = new Date();
@@ -109,7 +101,13 @@ const Site_Overview = () => {
 
     return diffDays <= 7;
   }).length;
-
+if (loading) {
+  return (
+    <div className="flex justify-center items-center h-screen">
+     <span className="loading loading-spinner text-primary"></span>
+    </div>
+  );
+}
   return (
     <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 bg-(--bg-secondary) min-h-screen transition-colors duration-300">
       <Card title="Total Users" value={totalUsers} />

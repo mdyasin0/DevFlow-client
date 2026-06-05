@@ -7,16 +7,18 @@ import toast from "react-hot-toast";
 const Project_Monitoring = () => {
   const [projects, setProjects] = useState([]);
   const [filter, setFilter] = useState("all");
+  const [loading, setLoading] = useState(true);
   const [selectedDescription, setSelectedDescription] = useState(null);
   const { logOut, user } = useContext(AuthContext);
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
   useEffect(() => {
+      setLoading(true); 
     fetch("https://devflow-server-s7bh.onrender.com/projects", {
       credentials: "include",
     })
       .then(async (res) => {
-        //  1. AUTH সমস্যা → logout
+      
         if (res.status === 401) {
           toast.error("Session expired. Please login again");
           await logOut();
@@ -40,8 +42,13 @@ const Project_Monitoring = () => {
         if (data && data.success) {
           setProjects(data.data);
         }
-      });
-  }, [logOut]);
+      }) .catch(() => {
+      toast.error("Failed to load projects");
+    })
+    .finally(() => {
+      setLoading(false); 
+    });
+  }, [logOut ,navigate]);
 
   // filter
 
@@ -61,7 +68,7 @@ const Project_Monitoring = () => {
           updatedBy: user.email,
         }),
       });
-      //  1. AUTH সমস্যা → logout
+      
       if (res.status === 401) {
         toast.error("Session expired. Please login again");
         await logOut();
@@ -115,7 +122,7 @@ const Project_Monitoring = () => {
         credentials: "include",
       })
         .then(async (res) => {
-          //  1. AUTH সমস্যা → logout
+          
           if (res.status === 401) {
             toast.error("Session expired. Please login again");
             await logOut();
@@ -123,7 +130,7 @@ const Project_Monitoring = () => {
             return;
           }
 
-          //  আগে JSON parse করো
+         
           const data = await res.json();
 
           //  2. BLOCKED USER
@@ -162,6 +169,13 @@ const Project_Monitoring = () => {
         p.teamName.toLowerCase().includes(search.toLowerCase()) ||
         p.projectTitle.toLowerCase().includes(search.toLowerCase()),
     );
+    if (loading) {
+  return (
+    <div className="flex justify-center items-center h-screen">
+     <span className="loading loading-spinner text-primary"></span>
+    </div>
+  );
+}
   return (
     <div className="p-6 min-h-screen bg-(--bg) text-(--text)">
       {/* ===== CARDS ===== */}

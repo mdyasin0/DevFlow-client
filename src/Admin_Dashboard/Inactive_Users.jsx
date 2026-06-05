@@ -14,7 +14,7 @@ const Inactive_Users = () => {
   const [rangeType, setRangeType] = useState("days");
   const [sending, setSending] = useState(false);
   const [selectedEmails, setSelectedEmails] = useState([]);
-
+const [loading, setLoading] = useState(true);
 const navigate = useNavigate();
   //  QUILL
   const { quill, quillRef } = useQuill({
@@ -44,34 +44,42 @@ const navigate = useNavigate();
     return () => quill.off("text-change", handler);
   }, [quill]);
   useEffect(() => {
-    const fetchUsers = async () => {
+  const fetchUsers = async () => {
+    setLoading(true);
+
+    try {
       const res = await fetch("https://devflow-server-s7bh.onrender.com/approved_users", {
         credentials: "include",
       });
 
-      //  1. AUTH সমস্যা → logout
       if (res.status === 401) {
         toast.error("Session expired. Please login again");
         await logOut();
         navigate("/login");
         return;
       }
+
       const data = await res.json();
-      // 2. BLOCKED USER
+
       if (data?.isBlocked) {
         toast.error("You are blocked by admin");
         await logOut();
-       navigate("/login");
+        navigate("/login");
         return;
       }
 
       if (data.success) {
         setUsers(data.data);
       }
-    };
+    } catch (err) {
+      toast.error(err);
+    } finally {
+      setLoading(false); //  MUST
+    }
+  };
 
-    fetchUsers();
-  });
+  fetchUsers();
+}, [logOut,navigate]); //  VERY IMPORTANT
   const isActive = (date) => {
     const last = new Date(date);
     const now = new Date();
@@ -172,10 +180,16 @@ const navigate = useNavigate();
       toast.error(err);
       toast.error("Request failed");
     } finally {
-      setSending(false); // 🔓 ALWAYS UNLOCK (IMPORTANT)
+      setSending(false); //  ALWAYS UNLOCK (IMPORTANT)
     }
   };
-
+if (loading) {
+  return (
+    <div className="flex justify-center items-center h-screen">
+      <span className="loading loading-spinner text-primary"></span>
+    </div>
+  );
+}
   return (
     <div className="p-6 space-y-6 bg-(--bg) text-(--text)">
       {/* ===== CARDS ===== */}

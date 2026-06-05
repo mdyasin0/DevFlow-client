@@ -441,7 +441,7 @@ const Navbar = () => {
                     to="/admin_dashboard_layout"
                     className="font-medium text-(--text)"
                   >
-                    admin Dashboard
+                   Dashboard
                   </NavLink>
                 )
               )}
