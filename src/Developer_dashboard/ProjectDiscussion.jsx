@@ -157,7 +157,7 @@ const ProjectDiscussion = ({ projectId, onClose }) => {
                   {isMe && (
                     <div
                       ref={menuRef}
-                      className="absolute top-1 -right-1 opacity-0 group-hover:opacity-100 transition z-10"
+                      className="absolute top-1 -right-1  transition z-10"
                     >
                       <button onClick={() => setMenuId(msg._id)}>
                         <HiDotsVertical />
@@ -189,9 +189,7 @@ const ProjectDiscussion = ({ projectId, onClose }) => {
 
                   {/* MESSAGE */}
                   <div
-                    className={`px-3 py-2 rounded-lg shadow-md ${
-                      isMe ? "bg-(--primary) text-white" : "bg-(--bg)"
-                    }`}
+                    className={`px-3 py-2 rounded-lg shadow-md bg-(--bg)`}
                   >
                     {!isMe && (
                       <p className="text-xs text-(--text-secondary) mb-1">

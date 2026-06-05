@@ -294,14 +294,14 @@ const Navbar = () => {
                                 <FaEllipsisV className="text-gray-400 text-sm" />
 
                                 {activeMenu === n._id && (
-                                  <div className="absolute right-2 top-8 bg-white dark:bg-gray-800 shadow-lg rounded-md text-sm w-36 sm:w-40 overflow-hidden z-50">
+                                  <div className="absolute right-2 top-8 bg-(--warning) dark:bg-gray-800 shadow-lg rounded-md text-sm w-36 sm:w-40 overflow-hidden z-50">
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         toggleRead(n._id);
                                         setActiveMenu(null); // close menu
                                       }}
-                                      className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                      className="w-full text-left cursor-pointer px-3 py-2 text-(--text) "
                                     >
                                       {n.read
                                         ? "Mark as unread"
@@ -314,7 +314,7 @@ const Navbar = () => {
                                         deleteNotification(n._id);
                                         setActiveMenu(null); // close menu
                                       }}
-                                      className="w-full text-left px-3 py-2 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                      className="w-full text-left cursor-pointer px-3 py-2 text-(--text)"
                                     >
                                       Delete
                                     </button>
@@ -390,9 +390,21 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Menu Button */}
-        <button className="md:hidden text-xl" onClick={() => setOpen(!open)}>
-          {open ? <IoClose /> : <BiMenu />}
-        </button>
+       <div className="relative md:hidden">
+  <button
+    className="text-xl"
+    onClick={() => setOpen(!open)}
+  >
+    {open ? <IoClose /> : <BiMenu />}
+  </button>
+
+  {/* UNREAD BADGE */}
+  {unreadCount > 0 && (
+    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] px-1.5 rounded-full min-w-4 text-center">
+      {unreadCount}
+    </span>
+  )}
+</div>
       </div>
 
       {/* Mobile */}
@@ -462,118 +474,127 @@ const Navbar = () => {
                   </button>
                   {/* NOTIFICATION BOX */}
                   {openNoti && (
-                    <div className="absolute right-0 mt-3 w-[90vw] sm:w-96 max-w-sm bg-(--card) border border-(--border) rounded-xl shadow-2xl z-9999 overflow-hidden">
-                      {/* Header */}
-                      <div className="p-3 sm:p-4 border-b border-(--border) flex justify-between items-center">
-                        <h2 className="font-semibold text-base sm:text-lg">
-                          Notifications
-                        </h2>
-                        <span className="text-xs text-gray-400">
-                          {notifications.length} total
-                        </span>
+  <div
+    className="fixed inset-0 h-screen md:static z-[9999] flex md:block items-center justify-center bg-black/40 md:bg-transparent"
+    onClick={() => setOpenNoti(false)} // outside click
+  >
+    <div
+      className="w-[90vw] sm:w-96 max-w-sm bg-(--card) border border-(--border) rounded-xl shadow-2xl overflow-hidden
+                 md:absolute md:right-0 md:mt-3"
+      onClick={(e) => e.stopPropagation()} // prevent close inside click
+    >
+      {/* Header */}
+      <div className="p-3 sm:p-4 border-b border-(--border) flex justify-between items-center">
+        <h2 className="font-semibold text-base sm:text-lg">
+          Notifications
+        </h2>
+        <span className="text-xs text-gray-400">
+          {notifications.length} total
+        </span>
+      </div>
+
+      {/* Body */}
+      <div className="max-h-80 sm:max-h-96 py-6 sm:py-10 overflow-y-auto">
+        {notifications.length === 0 ? (
+          <p className="p-4 text-sm text-center text-(--text-secondary)">
+            No notifications
+          </p>
+        ) : (
+          notifications.map((n) => {
+            const isExpanded = expanded === n._id;
+
+            return (
+              <div
+                key={n._id}
+                className={`relative p-3 border-b border-(--border) transition hover:bg-(--bg-secondary) ${
+                  n.read ? "opacity-60" : "bg-opacity-100"
+                }`}
+              >
+                <div className="flex justify-between items-start">
+                  <div className="pr-4 sm:pr-6">
+                    <p className="text-xs sm:text-sm font-medium wrap-break-words">
+                      {isExpanded
+                        ? n.message
+                        : n.message.length > 60
+                          ? n.message.slice(0, 60) + "..."
+                          : n.message}
+                    </p>
+
+                    {n.message.length > 60 && (
+                      <button
+                        onClick={() =>
+                          setExpanded(isExpanded ? null : n._id)
+                        }
+                        className="text-xs text-blue-500 mt-1"
+                      >
+                        {isExpanded ? "Show less" : "Read more"}
+                      </button>
+                    )}
+
+                    <p className="text-[10px] sm:text-[11px] text-gray-400 mt-1">
+                      {getTimeAgo(n.created_time)}
+                    </p>
+                  </div>
+
+                  {/* 3 DOT */}
+                  <div
+                    className="cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveMenu(
+                        activeMenu === n._id ? null : n._id,
+                      );
+                    }}
+                  >
+                    <FaEllipsisV className="text-gray-400 text-sm" />
+
+                    {activeMenu === n._id && (
+                      <div className="absolute right-2 top-8 bg-(--warning)  dark:bg-gray-800 shadow-lg rounded-md text-sm w-36 sm:w-40 overflow-hidden z-50">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleRead(n._id);
+                            setActiveMenu(null);
+                          }}
+                          className="w-full text-left cursor-pointer px-3 py-2 text-(--text) "
+                        >
+                          {n.read
+                            ? "Mark as unread"
+                            : "Mark as read"}
+                        </button>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteNotification(n._id);
+                            setActiveMenu(null);
+                          }}
+                          className="w-full text-left cursor-pointer px-3 py-2 text-(--text) "
+                        >
+                          Delete
+                        </button>
                       </div>
+                    )}
+                  </div>
+                </div>
 
-                      {/* Body */}
-                      <div className="max-h-80 sm:max-h-96 py-6 sm:py-10 overflow-y-auto">
-                        {notifications.length === 0 ? (
-                          <p className="p-4 text-sm text-center text-(--text-secondary)">
-                            No notifications
-                          </p>
-                        ) : (
-                          notifications.map((n) => {
-                            const isExpanded = expanded === n._id;
-
-                            return (
-                              <div
-                                key={n._id}
-                                className={`relative p-3 border-b border-(--border) transition hover:bg-(--bg-secondary) ${
-                                  n.read ? "opacity-60" : "bg-opacity-100"
-                                }`}
-                              >
-                                <div className="flex justify-between items-start">
-                                  <div className="pr-4 sm:pr-6">
-                                    <p className="text-xs sm:text-sm font-medium wrap-break-words">
-                                      {isExpanded
-                                        ? n.message
-                                        : n.message.length > 60
-                                          ? n.message.slice(0, 60) + "..."
-                                          : n.message}
-                                    </p>
-
-                                    {n.message.length > 60 && (
-                                      <button
-                                        onClick={() =>
-                                          setExpanded(isExpanded ? null : n._id)
-                                        }
-                                        className="text-xs text-blue-500 mt-1"
-                                      >
-                                        {isExpanded ? "Show less" : "Read more"}
-                                      </button>
-                                    )}
-
-                                    <p className="text-[10px] sm:text-[11px] text-gray-400 mt-1">
-                                      {getTimeAgo(n.created_time)}
-                                    </p>
-                                  </div>
-
-                                  {/* 3 DOT */}
-                                  <div
-                                    className="cursor-pointer"
-                                    onClick={(e) => {
-                                      e.stopPropagation(); // important
-                                      setActiveMenu(
-                                        activeMenu === n._id ? null : n._id,
-                                      );
-                                    }}
-                                  >
-                                    <FaEllipsisV className="text-gray-400 text-sm" />
-
-                                    {activeMenu === n._id && (
-                                      <div className="absolute right-2 top-8 bg-white dark:bg-gray-800 shadow-lg rounded-md text-sm w-36 sm:w-40 overflow-hidden z-50">
-                                        <button
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            toggleRead(n._id);
-                                            setActiveMenu(null); // close menu
-                                          }}
-                                          className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                        >
-                                          {n.read
-                                            ? "Mark as unread"
-                                            : "Mark as read"}
-                                        </button>
-
-                                        <button
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            deleteNotification(n._id);
-                                            setActiveMenu(null); // close menu
-                                          }}
-                                          className="w-full text-left px-3 py-2 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                        >
-                                          Delete
-                                        </button>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-
-                                {n.url && (
-                                  <Link
-                                    to={n.url}
-                                    onClick={() => setOpenNoti(false)}
-                                    className="text-xs text-blue-500 underline mt-2 inline-block"
-                                  >
-                                    View details
-                                  </Link>
-                                )}
-                              </div>
-                            );
-                          })
-                        )}
-                      </div>
-                    </div>
-                  )}
+                {n.url && (
+                  <Link
+                    to={n.url}
+                    onClick={() => setOpenNoti(false)}
+                    className="text-xs text-blue-500 underline mt-2 inline-block"
+                  >
+                    View details
+                  </Link>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  </div>
+)}
                 </div>
               )}
 
@@ -587,40 +608,51 @@ const Navbar = () => {
                     className="w-8 h-8 rounded-full border cursor-pointer"
                   />
 
-                  {dropdown && (
-                    <div className="absolute right-0 mt-3 w-44 bg-(--card) border rounded-lg shadow-lg overflow-hidden z-50">
-                      <div className="p-3 border-b">
-                        <p className="text-sm font-medium">
-                          {user?.displayName || "User"}
-                        </p>
-                        <p className="text-xs text-(--text-secondary)">
-                          {user?.email}
-                        </p>
-                      </div>
+                 {dropdown && (
+  <div
+    className="
+      absolute right-0 mt-3 w-44 bg-(--card) border rounded-lg shadow-lg overflow-hidden z-50
 
-                      <NavLink
-                        to="/profile"
-                        onClick={() => {
-                          setDropdown(false);
-                          setOpen(false); // mobile menu close
-                        }}
-                        className="flex items-center gap-2 px-3 py-2 hover:bg-(--bg-secondary)"
-                      >
-                        <FaUser /> Profile
-                      </NavLink>
+      /* mobile: center fix */
+      left-1/2 -translate-x-1/2
 
-                      <button
-                        onClick={() => {
-                          handleLogout();
-                          setDropdown(false);
-                          setOpen(false);
-                        }}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-red-500 hover:bg-(--bg-secondary)"
-                      >
-                        <FaSignOutAlt /> Logout
-                      </button>
-                    </div>
-                  )}
+      /* small screen override (optional clarity) */
+      sm:left-auto sm:translate-x-0 sm:right-0
+    "
+  >
+    {/* Header */}
+    <div className="p-3 border-b">
+      <p className="text-sm font-medium">
+        {user?.displayName || "User"}
+      </p>
+      <p className="text-xs text-(--text-secondary)">
+        {user?.email}
+      </p>
+    </div>
+
+    <NavLink
+      to="/profile"
+      onClick={() => {
+        setDropdown(false);
+        setOpen(false);
+      }}
+      className="flex items-center gap-2 px-3 py-2 hover:bg-(--bg-secondary)"
+    >
+      <FaUser /> Profile
+    </NavLink>
+
+    <button
+      onClick={() => {
+        handleLogout();
+        setDropdown(false);
+        setOpen(false);
+      }}
+      className="w-full flex items-center gap-2 px-3 py-2 text-red-500 hover:bg-(--bg-secondary)"
+    >
+      <FaSignOutAlt /> Logout
+    </button>
+  </div>
+)}
                 </div>
               ) : (
                 <Link
