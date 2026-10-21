@@ -21,7 +21,7 @@ const navigate = useNavigate();
     formData.append("image", file);
 
     const res = await fetch(
-      "https://api.imgbb.com/1/upload?key=c0c2b847b1b59290ac14668dd140a262",
+      "https://api.imgbb.com/1/upload?key=38261f8c8098ed2b08e416b7ea3e8ba9",
       {
         method: "POST",
         body: formData,

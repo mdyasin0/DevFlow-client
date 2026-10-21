@@ -4,7 +4,7 @@ import { FaUsers, FaTasks, FaChartLine, FaShieldAlt } from "react-icons/fa";
 import { NavLink } from "react-router";
 import { IoIosCloseCircle } from "react-icons/io";
 const Home = () => {
-  const [isOpen, setIsOpen] = useState(false);
+ 
   return (
     <div className="bg-(--bg) text-(--text) min-h-screen">
       {/* HERO */}
@@ -28,35 +28,14 @@ const Home = () => {
               Get Started
             </NavLink>
 
-            <button
-              onClick={() => setIsOpen(true)}
+            <NavLink 
+            to="/docs"
+              
               className="px-6 py-3 border border-(--border) cursor-pointer rounded-xl hover:bg-(--bg-secondary) transition"
             >
-              View Demo
-            </button>
-            {isOpen && (
-              <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-                <div className="bg-(--card) p-10 rounded-xl w-[90%] md:w-175 relative">
-                  {/* Close Button */}
-                  <button
-                    onClick={() => setIsOpen(false)}
-                    className="absolute top-1 right-1 text-xl font-bold"
-                  >
-                    <IoIosCloseCircle />
-                  </button>
-
-                  {/* YouTube Video */}
-                  <div className="aspect-video">
-                    <iframe
-                      className="w-full h-full rounded-lg"
-                      src="https://www.youtube.com/embed/oPPZ1kqg8Ao"
-                      title="Demo Video"
-                      allowFullScreen
-                    ></iframe>
-                  </div>
-                </div>
-              </div>
-            )}
+              View docs
+            </NavLink>
+           
           </div>
         </div>
 
