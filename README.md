@@ -110,7 +110,7 @@ It allows the interface to receive updates such as notifications and task change
 ### 1. Clone the repository
 
 ```bash
-git clone YOUR_CLIENT_REPOSITORY_URL
+git clone https://github.com/mdyasin0/DevFlow-client.git
 cd YOUR_CLIENT_REPOSITORY_FOLDER
 ```
 
