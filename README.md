@@ -43,7 +43,6 @@ The application provides role-based interfaces for Users, Managers, and Admins, 
 ### Frontend
 - React.js
 - Vite
-- TypeScript (if used in this client repository; otherwise remove)
 - Tailwind CSS
 - DaisyUI
 
