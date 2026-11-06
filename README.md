@@ -1,89 +1,162 @@
-# Team Collaboration SaaS Platform 
+# Team Collaboration SaaS Platform — Client
 
 ## Overview
 
-This is the frontend of a full stack team collaboration and project management platform. The application allows users to manage projects, assign tasks, collaborate with team members, and track performance in a structured way.
+The frontend of a full-stack Team Collaboration and Project Management SaaS Platform built to help teams organize projects, manage tasks, collaborate with members, and monitor work progress through a centralized dashboard.
 
-The system is designed based on real-world tools like Jira, Trello, and Asana, focusing on usability, workflow clarity, and real-time interaction.
+The application provides role-based interfaces for Users, Managers, and Admins, with interactive project workflows, real-time updates, team collaboration tools, and subscription-based feature access.
 
 ## Key Features
 
-* Authentication system with email/password and Google login
-* Role-based UI (User, Manager, Admin)
-* Project creation and management
-* Task management with status flow (Todo, Running, Done)
-* Real-time notifications
-* Project-based discussion system
-* Performance analytics with charts
-* Invitation and team management system
-* Advanced search and filtering
-* File upload support (premium users)
-* SaaS plan-based feature control
+### Authentication & User Experience
+- Email and password login and registration.
+- Google authentication.
+- Role-based user interfaces for Users, Managers, and Admins.
+- Protected routes and role-specific dashboard views.
+
+### Project & Task Management
+- Create and manage projects.
+- Project approval workflow interfaces.
+- Assign and manage tasks.
+- Track task progress through Todo, Running, and Done statuses.
+- Search and filter projects and tasks.
+
+### Team Collaboration
+- Team invitation and member management interfaces.
+- Project-based discussion system.
+- Real-time notifications and task updates.
+- Interactive collaboration workflows.
+
+### Dashboard & Analytics
+- Role-based dashboards.
+- Performance analytics with interactive charts.
+- Data visualization using Recharts.
+- Organized views for monitoring project and task progress.
+
+### Subscription-Based Features
+- Subscription-aware feature access.
+- Premium file upload interface.
+- UI-level feature restrictions based on user subscription plans.
 
 ## Tech Stack
 
-* React.js
-* Vite
-* Tailwind CSS
-* DaisyUI
-* React Router
-* Context API
-* Axios
-* Socket.io Client
-* Firebase Authentication
-* Framer Motion
-* React Icons
-* React Quill
-* Recharts
-* SweetAlert2
+### Frontend
+- React.js
+- Vite
+- TypeScript (if used in this client repository; otherwise remove)
+- Tailwind CSS
+- DaisyUI
+
+### Routing & State Management
+- React Router
+- Context API
+
+### API Communication
+- Axios
+- Native Fetch API
+
+### Authentication
+- Firebase Authentication
+
+### Real-Time Communication
+- Socket.io Client
+
+### UI & Animation
+- Framer Motion
+- React Icons
+- SweetAlert2
+
+### Rich Text Editing
+- React Quill
+
+### Data Visualization
+- Recharts
 
 ## Application Structure
 
 The frontend is organized into reusable components and feature-based modules:
 
-* Authentication (Login, Register)
-* Dashboard (Role-based views)
-* Project Management
-* Task Management
-* Team Management
-* Notification System
-* Analytics
-* Discussion System
+- **Authentication:** Login, registration, and authentication interfaces.
+- **Dashboard:** Role-based dashboards for different user types.
+- **Project Management:** Project creation, management, and approval interfaces.
+- **Task Management:** Task assignment, status updates, and progress tracking.
+- **Team Management:** Member management and invitation interfaces.
+- **Notifications:** Real-time notification interfaces.
+- **Analytics:** Performance dashboards and interactive charts.
+- **Discussion:** Project-based discussion interfaces.
+- **Admin Dashboard:** Administrative interfaces for managing users, projects, and email-related workflows.
 
-## State Management
+## State Management & API Integration
 
-Global state is managed using Context API. API data is fetched using Axios ,Fetch and synchronized with backend services.
+Context API is used to manage shared application state across components.
 
-## Real-time Communication
+Axios and the native Fetch API are used for communicating with backend services and retrieving application data.
 
-Socket.io client is used to receive instant updates such as notifications and task changes without refreshing the UI.
+The frontend integrates with the backend API to support authentication, project workflows, task management, team collaboration, and other application features.
 
-## Installation and Setup
+## Real-Time Communication
 
-1. Clone the repository
-2. Install dependencies:
-   npm install
-3. Create a .env file and configure:
-  VITE_apiKey= 
-  VITE_authDomain= 
-  VITE_projectId= 
-  VITE_storageBucket= 
-  VITE_messagingSenderId=
-  VITE_appId= 
-1. Run the development server:
-   npm run dev
+Socket.io Client is used to establish real-time communication with the backend.
 
-## Build
+It allows the interface to receive updates such as notifications and task changes without requiring a manual page refresh.
 
-To create a production build:
+## Installation & Setup
+
+### Prerequisites
+- Node.js
+- npm
+- Access to the backend API
+- Firebase project configuration
+
+### 1. Clone the repository
+
+```bash
+git clone YOUR_CLIENT_REPOSITORY_URL
+cd YOUR_CLIENT_REPOSITORY_FOLDER
+```
+
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+### 3. Configure environment variables
+
+Create a `.env` file in the project root and add your Firebase configuration:
+
+```env
+VITE_apiKey=YOUR_FIREBASE_API_KEY
+VITE_authDomain=YOUR_FIREBASE_AUTH_DOMAIN
+VITE_projectId=YOUR_FIREBASE_PROJECT_ID
+VITE_storageBucket=YOUR_FIREBASE_STORAGE_BUCKET
+VITE_messagingSenderId=YOUR_FIREBASE_MESSAGING_SENDER_ID
+VITE_appId=YOUR_FIREBASE_APP_ID
+```
+
+Also configure the backend API URL using the actual environment variable name expected by your client code.
+
+**Note:** Use your actual environment variable names. Do not commit real credentials or secret values to the repository.
+
+### 4. Start the development server
+
+```bash
+npm run dev
+```
+
+### 5. Create a production build
+
+```bash
 npm run build
+```
 
-## Notes
+## Important Notes
 
-* Make sure the backend server is running before starting the frontend
-* Environment variables must be properly configured
-* Some features are restricted based on user subscription plan
+- The backend server must be running and accessible for API-dependent features.
+- Firebase environment variables must be configured correctly.
+- Some interface features are available according to the user's subscription plan.
+- Backend-dependent functionality requires a working connection to the server.
 
-## Purpose
+## Project Purpose
 
-This project demonstrates the ability to build a scalable, role-based, real-time frontend application with modern UI/UX practices and structured state management.
+This project demonstrates practical frontend development skills through a feature-rich SaaS application, including component-based architecture, role-based interfaces, API integration, state management, real-time communication, and interactive data visualization.
